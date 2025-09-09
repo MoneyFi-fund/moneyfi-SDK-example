@@ -45,8 +45,8 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       moneyfiaptosmockup:
-        specifier: ^0.1.5
-        version: 0.1.5(got@11.8.6)
+        specifier: ^0.1.7
+        version: 0.1.7(got@11.8.6)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -2387,8 +2387,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  moneyfiaptosmockup@0.1.5:
-    resolution: {integrity: sha512-3TsfLL87QtYoASY0MNfStgEYAO4Q3X4WYzY6Vjqb2e8sSsRIWkyAz3wzZzUySiBYZsRMgP8S/JsMl+1XtxHU4Q==}
+  moneyfiaptosmockup@0.1.7:
+    resolution: {integrity: sha512-/rK+SHoL9pLNEGMNyuOwZICnMiMAnqIB9OGIF6pll239/WwVzxu5WvZkJLqE/AfLnhzmoErV/bcrn4rsnJwqTQ==}
 
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
@@ -5574,7 +5574,7 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
-  moneyfiaptosmockup@0.1.5(got@11.8.6):
+  moneyfiaptosmockup@0.1.7(got@11.8.6):
     dependencies:
       '@aptos-labs/ts-sdk': 4.0.0(got@11.8.6)
       axios: 0.19.2

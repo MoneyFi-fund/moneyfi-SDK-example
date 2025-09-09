@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   VStack,
@@ -6,50 +6,68 @@ import {
   Text,
   Button,
   Input,
-  Alert
-} from '@chakra-ui/react';
-import { useAuth } from '@/providers/auth-provider';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import {MoneyFiAptos} from 'moneyfiaptosmockup';
-import { Account, Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk";
+  Alert,
+} from "@chakra-ui/react";
+import { useAuth } from "@/providers/auth-provider";
+import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+import { MoneyFiAptos } from "moneyfiaptosmockup";
+import {
+  Account,
+  Aptos,
+  AptosConfig,
+  Network,
+} from "@aptos-labs/ts-sdk";
 
 export const DepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const config = new AptosConfig({
-    network: Network.MAINNET
-  })
+    network: Network.MAINNET,
+  });
   const moneyFiAptos = new MoneyFiAptos(config);
+  const aptos = new Aptos(config);
   const handleDeposit = async () => {
     if (!isAuthenticated || !user) {
-      setMessage('Please connect your wallet first');
+      setMessage("Please connect your wallet first");
       return;
     }
 
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setMessage('Please enter a valid amount');
+      setMessage("Please enter a valid amount");
       return;
     }
 
     try {
       setIsLoading(true);
-      setMessage('');
+      setMessage("");
 
-      const amountInSmallestUnit = BigInt(Math.floor(Number(amount) * 1_000_000));
-      
+      const amountInSmallestUnit = BigInt(
+        Math.floor(Number(amount) * 1_000_000)
+      );
+
       console.log(user.address, amountInSmallestUnit);
-      const payload = await moneyFiAptos.getDepositTxPayload(user.address, amountInSmallestUnit);
-      console.log(JSON.stringify(payload));
-      const response = await signAndSubmitTransaction(payload);
+      const payload = await moneyFiAptos.getDepositTxPayload(
+        amountInSmallestUnit
+      );
+      console.log(JSON.stringify(payload, null, 2));
+      const transaction: InputTransactionData = {
+        data: {
+          function: payload.function as `${string}::${string}::${string}`,
+          functionArguments: payload.functionArguments,
+        }
+      };
       
-      setMessage(`Deposit successful! Transaction: ${response}`);
-      setAmount('');
+      console.log("Transaction response:", transaction);
+      const response = await signAndSubmitTransaction(transaction);
+      console.log(response.hash);
+      setMessage(`Deposit successful! Transaction: ${response.hash}`);
+      setAmount("");
     } catch (error) {
-      console.error('Deposit failed:', error);
-      setMessage(error instanceof Error ? error.message : 'Deposit failed');
+      console.error("Deposit failed:", error);
+      setMessage(error instanceof Error ? error.message : "Deposit failed");
     } finally {
       setIsLoading(false);
     }
@@ -102,14 +120,14 @@ export const DepositComponent: React.FC = () => {
             colorScheme="blue"
             size="md"
           >
-            {isLoading ? 'Depositing...' : 'Deposit'}
+            {isLoading ? "Depositing..." : "Deposit"}
           </Button>
 
           {message && (
-            <Alert.Root status={message.includes('successful') ? 'success' : 'error'}>
-              <Alert.Description>
-                {message}
-              </Alert.Description>
+            <Alert.Root
+              status={message.includes("successful") ? "success" : "error"}
+            >
+              <Alert.Description>{message}</Alert.Description>
             </Alert.Root>
           )}
         </VStack>
