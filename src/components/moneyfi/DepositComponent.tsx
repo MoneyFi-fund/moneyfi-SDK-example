@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Card,
   VStack,
-  HStack,
   Text,
   Button,
   Input,
@@ -12,8 +11,6 @@ import { useAuth } from "@/providers/auth-provider";
 import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { MoneyFiAptos } from "moneyfiaptosmockup";
 import {
-  Account,
-  Aptos,
   AptosConfig,
   Network,
 } from "@aptos-labs/ts-sdk";
@@ -28,7 +25,6 @@ export const DepositComponent: React.FC = () => {
     network: Network.MAINNET,
   });
   const moneyFiAptos = new MoneyFiAptos(config);
-  const aptos = new Aptos(config);
   const handleDeposit = async () => {
     if (!isAuthenticated || !user) {
       setMessage("Please connect your wallet first");

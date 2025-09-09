@@ -28,17 +28,21 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       output: {
-        format: 'es'
-      },
-      external: (id) => {
-        // Don't bundle these as they might cause conflicts
-        return id.includes('@aptos-labs/wallet-adapter') || 
-               id.includes('@aptos-connect') ||
-               id.includes('@identity-connect');
+        format: 'es',
+        manualChunks: {
+          'aptos-wallet': ['@aptos-labs/wallet-adapter-react'],
+          'aptos-sdk': ['@aptos-labs/ts-sdk'],
+          'moneyfi': ['moneyfiaptosmockup']
+        }
       }
     }
   },
   optimizeDeps: {
-    include: ['@chakra-ui/react']
+    include: [
+      '@chakra-ui/react',
+      '@aptos-labs/wallet-adapter-react',
+      '@aptos-labs/ts-sdk',
+      'moneyfiaptosmockup'
+    ]
   }
 })

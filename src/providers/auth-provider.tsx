@@ -2,9 +2,6 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback } 
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import type { AuthState, AuthContextValue, AuthUser, AuthSession } from '@/auth/types';
 import { 
-  generateNonce, 
-  createSignMessage, 
-  createAuthPayload, 
   formatAddress,
   isSessionExpiring,
   safeJsonParse 
