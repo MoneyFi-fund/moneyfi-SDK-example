@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Card,
   VStack,
@@ -7,37 +7,50 @@ import {
   Stat,
   Alert,
   HStack,
-  Skeleton
-} from '@chakra-ui/react';
-import { useAuth } from '@/providers/auth-provider';
-import { previewWithdraw } from 'moneyfiaptosmockup';
+  Skeleton,
+} from "@chakra-ui/react";
+import { useAuth } from "@/providers/auth-provider";
+import { MoneyFiAptos } from "moneyfiaptosmockup";
+import {
+  AptosConfig,
+  Network,
+} from "@aptos-labs/ts-sdk";
 
 export const BalancePreviewComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceUsdt, setBalanceUsdt] = useState<number | null>(null);
+  const [balanceUsdc, setBalanceUsdc] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const config = new AptosConfig({
+    network: Network.MAINNET,
+  });
+  const moneyFiAptos = new MoneyFiAptos(config);
 
   const fetchBalance = async () => {
     if (!isAuthenticated || !user) {
-      setBalance(null);
+      setBalanceUsdt(null);
+      setBalanceUsdc(null);
       return;
     }
 
     try {
       setIsLoading(true);
-      setError('');
+      setMessage("");
 
       // Get the withdrawable balance
-      const withdrawableAmount = await previewWithdraw(user.address);
+      const withdrawableAmount = await moneyFiAptos.previewWithdraw(user.address);
+      // Convert from smallest unit (assuming 6 decimals for both USDT and USDC)
+      const balanceInUsdt = withdrawableAmount[0][0] / 1_000_000;
+      const balanceInUsdc = withdrawableAmount[0][1] / 1_000_000;
       
-      // Convert from smallest unit to USDC (assuming 6 decimals)
-      const balanceInUsdc = withdrawableAmount / 1_000_000;
-      setBalance(balanceInUsdc);
+      setBalanceUsdt(balanceInUsdt);
+      setBalanceUsdc(balanceInUsdc);
     } catch (error) {
-      console.error('Failed to fetch balance:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch balance');
-      setBalance(null);
+      console.error("Failed to fetch balance:", error);
+      setMessage(error instanceof Error ? error.message : "Failed to fetch balance");
+      setBalanceUsdt(null);
+      setBalanceUsdc(null);
     } finally {
       setIsLoading(false);
     }
@@ -85,26 +98,40 @@ export const BalancePreviewComponent: React.FC = () => {
       <Card.Body>
         <VStack align="stretch" gap={4}>
           {isLoading ? (
-            <Skeleton height="60px" />
-          ) : error ? (
-            <Alert.Root status="error">
-              <Alert.Description>
-                {error}
-              </Alert.Description>
-            </Alert.Root>
+            <VStack gap={3}>
+              <Skeleton height="80px" />
+              <Skeleton height="80px" />
+            </VStack>
           ) : (
-            <Stat.Root>
-              <Stat.Label color="gray.500">
-                Available to Withdraw
-              </Stat.Label>
-              <Stat.ValueText fontSize="3xl" fontWeight="bold">
-                {balance !== null ? `${balance.toFixed(6)} USDC` : '-- USDC'}
-              </Stat.ValueText>
-            </Stat.Root>
+            <VStack align="stretch" gap={3}>
+              <Stat.Root>
+                <Stat.Label color="gray.500">
+                  USDT Available to Withdraw
+                </Stat.Label>
+                <Stat.ValueText fontSize="3xl" fontWeight="bold">
+                  {balanceUsdt !== null ? `${balanceUsdt.toFixed(6)} USDT` : "-- USDT"}
+                </Stat.ValueText>
+              </Stat.Root>
+              
+              <Stat.Root>
+                <Stat.Label color="gray.500">
+                  USDC Available to Withdraw
+                </Stat.Label>
+                <Stat.ValueText fontSize="3xl" fontWeight="bold">
+                  {balanceUsdc !== null ? `${balanceUsdc.toFixed(6)} USDC` : "-- USDC"}
+                </Stat.ValueText>
+              </Stat.Root>
+            </VStack>
+          )}
+
+          {message && (
+            <Alert.Root status="error">
+              <Alert.Description>{message}</Alert.Description>
+            </Alert.Root>
           )}
 
           <Text fontSize="sm" color="gray.600">
-            This shows the amount you can withdraw from the MoneyFi strategy
+            This shows the amounts you can withdraw from the MoneyFi strategy in both USDT and USDC
           </Text>
         </VStack>
       </Card.Body>

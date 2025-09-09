@@ -150,7 +150,6 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose
 
   const handleWalletConnect = async (walletName: string) => {
     try {
-      console.log(`Attempting to connect to wallet: ${walletName}`);
       await signIn(walletName);
     } catch (error) {
       console.error('Failed to connect wallet:', error);

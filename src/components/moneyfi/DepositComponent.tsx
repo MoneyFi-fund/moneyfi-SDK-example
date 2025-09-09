@@ -48,21 +48,16 @@ export const DepositComponent: React.FC = () => {
         Math.floor(Number(amount) * 1_000_000)
       );
 
-      console.log(user.address, amountInSmallestUnit);
       const payload = await moneyFiAptos.getDepositTxPayload(
         amountInSmallestUnit
       );
-      console.log(JSON.stringify(payload, null, 2));
       const transaction: InputTransactionData = {
         data: {
           function: payload.function as `${string}::${string}::${string}`,
           functionArguments: payload.functionArguments,
         }
       };
-      
-      console.log("Transaction response:", transaction);
       const response = await signAndSubmitTransaction(transaction);
-      console.log(response.hash);
       setMessage(`Deposit successful! Transaction: ${response.hash}`);
       setAmount("");
     } catch (error) {

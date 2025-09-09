@@ -1,41 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   VStack,
   Text,
   Button,
-  Alert
-} from '@chakra-ui/react';
-import { useAuth } from '@/providers/auth-provider';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { getWithdrawTxPayload } from 'moneyfiaptosmockup';
+  Alert,
+} from "@chakra-ui/react";
+import { useAuth } from "@/providers/auth-provider";
+import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+import { MoneyFiAptos } from "moneyfiaptosmockup";
+import {
+  AptosConfig,
+  Network,
+} from "@aptos-labs/ts-sdk";
 
 export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+  const config = new AptosConfig({
+    network: Network.MAINNET,
+  });
+  const moneyFiAptos = new MoneyFiAptos(config);
 
   const handleWithdraw = async () => {
     if (!isAuthenticated || !user) {
-      setMessage('Please connect your wallet first');
+      setMessage("Please connect your wallet first");
       return;
     }
 
     try {
       setIsLoading(true);
-      setMessage('');
+      setMessage("");
 
-      // Get the transaction payload
-      const payload = getWithdrawTxPayload(user.address);
+      const payload = await moneyFiAptos.getWithdrawTxPayload();
+      console.log(JSON.stringify(payload, null, 2));
+      const transaction: InputTransactionData = {
+        data: {
+          function: payload.function as `${string}::${string}::${string}`,
+          functionArguments: payload.functionArguments,
+        }
+      };
       
-      // Submit the transaction
-      const response = await signAndSubmitTransaction(payload);
+      console.log("Transaction response:", transaction);
+      const response = await signAndSubmitTransaction(transaction);
+      console.log(response.hash);
       
       setMessage(`Withdrawal successful! Transaction: ${response.hash}`);
     } catch (error) {
-      console.error('Withdrawal failed:', error);
-      setMessage(error instanceof Error ? error.message : 'Withdrawal failed');
+      console.error("Withdrawal failed:", error);
+      setMessage(error instanceof Error ? error.message : "Withdrawal failed");
     } finally {
       setIsLoading(false);
     }
@@ -79,14 +94,14 @@ export const WithdrawComponent: React.FC = () => {
             variant="outline"
             size="md"
           >
-            {isLoading ? 'Withdrawing...' : 'Withdraw All'}
+            {isLoading ? "Withdrawing..." : "Withdraw All"}
           </Button>
 
           {message && (
-            <Alert.Root status={message.includes('successful') ? 'success' : 'error'}>
-              <Alert.Description>
-                {message}
-              </Alert.Description>
+            <Alert.Root
+              status={message.includes("successful") ? "success" : "error"}
+            >
+              <Alert.Description>{message}</Alert.Description>
             </Alert.Root>
           )}
         </VStack>
