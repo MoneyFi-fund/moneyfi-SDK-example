@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "moneyfi-dapp",
+  "compatibility_date": "2024-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "minify": true,
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "single-page-application",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "kv_namespaces": [
+    {
+      "binding": "VITE_CACHE_WORKERS_KV",
+      "id": "3759577a1a0d4885b80fac128c176551",
+    },
+  ],
+  "alias": {
+    "node-fetch": "./fetch-nolyfill",
+  },
+  "vars": {
+    "hello": "Hello World from the cloudflare context!",
+  },
+  // "main": "./worker/index.ts",
+}

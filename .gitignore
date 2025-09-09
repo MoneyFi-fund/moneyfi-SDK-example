@@ -7,3 +7,14 @@ count.txt
 .env
 .nitro
 .tanstack
+
+# production
+/build
+/dist
+
+# IDE generated files
+/.vscode/
+/.idea/
+
+# Wrangler
+.wrangler
