@@ -20,13 +20,22 @@ export default defineConfig({
     },
   },
   esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    target: 'esnext',
+    keepNames: true
   },
   build: {
     rollupOptions: {
       output: {
-        format: 'es'
+        format: 'es',
+        manualChunks: {
+          'chakra': ['@chakra-ui/react'],
+          'vendor': ['react', 'react-dom']
+        }
       }
     }
+  },
+  optimizeDeps: {
+    include: ['@chakra-ui/react']
   }
 })

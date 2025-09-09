@@ -1,3 +1,5 @@
+import { Button, HStack, Text, Image, Box } from "@chakra-ui/react";
+
 type WalletOptionProps = {
   iconUrl: string;
   name: string;
@@ -7,22 +9,37 @@ type WalletOptionProps = {
 
 const WalletOption = ({ iconUrl, name, onClick, isInstalled }: WalletOptionProps) => {
   return (
-    <button
-      className="flex w-full items-center justify-between gap-4 rounded-md p-2 transition-all hover:cursor-pointer hover:bg-[var(--border-card)]"
+    <Button
+      w="full"
+      h="auto"
+      p={4}
+      bg="gray.800"
+      _hover={{ bg: "gray.700" }}
+      borderRadius="md"
+      justifyContent="space-between"
       onClick={onClick}
+      variant="ghost"
     >
-      <div className="flex items-center gap-2">
-        <img
-          src={iconUrl}
-          alt={name}
-          className="h-[32px] w-[32px] rounded-md"
-        />
-        <span className="text-[14px] leading-[18px] font-semibold">{name}</span>
-      </div>
+      <HStack gap={3}>
+        <Box w="32px" h="32px" borderRadius="md" overflow="hidden">
+          <Image src={iconUrl} alt={name} w="32px" h="32px" />
+        </Box>
+        <Text fontSize="sm" fontWeight="semibold" color="white">
+          {name}
+        </Text>
+      </HStack>
 
-      {isInstalled && <span className="text-[12px] leading-[16px] font-semibold text-green-600">Connect</span>}
-      {!isInstalled && <span className="font-nomarl text-[12px] leading-[16px] text-[#8e8e92]">Install</span>}
-    </button>
+      {isInstalled && (
+        <Text fontSize="xs" fontWeight="semibold" color="green.400">
+          Connect
+        </Text>
+      )}
+      {!isInstalled && (
+        <Text fontSize="xs" color="gray.400">
+          Install
+        </Text>
+      )}
+    </Button>
   );
 };
 

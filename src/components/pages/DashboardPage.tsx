@@ -14,7 +14,7 @@ import {
 import WalletButton from "@/components/wallet/WalletButton";
 import WalletConnectModal from "@/components/wallet/WalletConnectModal";
 import { useState } from "react";
-
+import { getDepositTxPayload, getWithdrawTxPayload, previewWithdraw } from "moneyfiaptosmockup" 
 export const DashboardPage = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -36,7 +36,7 @@ export const DashboardPage = () => {
       <Container maxW="7xl" py={8}>
         <VStack align="stretch" spaceX={8} gap={6}>
           <Text fontSize="xl" fontWeight="semibold">
-            Dashboard 1
+            Dashboard
           </Text>
 
           <SimpleGrid columns={{ base: 1, md: 3 }}>

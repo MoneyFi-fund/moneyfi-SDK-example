@@ -1,4 +1,14 @@
-import { Dialog, useMediaQuery, useTheme } from "@mui/material";
+import {
+  DialogRoot,
+  DialogBackdrop,
+  DialogPositioner,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogCloseTrigger,
+  VStack,
+} from "@chakra-ui/react";
 import { groupAndSortWallets, useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useAuth } from "@/providers/auth-provider";
 import { Platform } from "@/types/common";
@@ -13,8 +23,7 @@ type AptosWalletSelectorProps = {
 };
 
 const AptosWalletSelector = ({ open, onClose, isModal = true }: AptosWalletSelectorProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const { handleLogin } = useAuth();
   const { wallets = [], notDetectedWallets = [] } = useWallet();
   const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
@@ -49,7 +58,7 @@ const AptosWalletSelector = ({ open, onClose, isModal = true }: AptosWalletSelec
   };
 
   const content = (
-    <div className="flex flex-col">
+    <VStack gap={3} alignItems="stretch">
       {uniqWith(availableWallets, isEqual).map((wallet) => (
         <WalletOption
           key={wallet.name}
@@ -68,37 +77,28 @@ const AptosWalletSelector = ({ open, onClose, isModal = true }: AptosWalletSelec
           onClick={() => handleInstallWallet(wallet.name, wallet.url)}
         />
       ))}
-    </div>
+    </VStack>
   );
 
   return (
     <>
       {isModal ? (
-        <Dialog
-          open={open}
-          onClose={onClose}
-          className="!z-[1000]"
-          sx={{
-            backgroundColor: "rgba(0, 0, 0, 0)",
-            backdropFilter: "blur(3px)",
-          }}
-          PaperProps={{
-            style: {
-              backgroundImage: "none",
-              boxShadow: "none",
-            },
-            sx: {
-              margin: "12px !important",
-              width: "100%",
-              maxWidth: "360px",
-              borderRadius: "24px",
-              bgcolor: "#1f2023",
-              padding: "16px",
-            },
-          }}
-        >
-          {content}
-        </Dialog>
+        <DialogRoot open={open} onOpenChange={(details) => !details.open && onClose()}>
+          <DialogBackdrop />
+          <DialogPositioner>
+            <DialogContent maxW="md" mx={4} bg="gray.900" color="white">
+              <DialogHeader>
+                <DialogTitle fontSize="xl" fontWeight="bold">
+                  Select Wallet
+                </DialogTitle>
+                <DialogCloseTrigger />
+              </DialogHeader>
+              <DialogBody pb={6}>
+                {content}
+              </DialogBody>
+            </DialogContent>
+          </DialogPositioner>
+        </DialogRoot>
       ) : (
         content
       )}

@@ -15,6 +15,3 @@ export default function ChakraUIProvider({ children }: ChakraUIProviderProps) {
     </ChakraProvider>
   )
 }
-
-// Named export for easier imports
-export { ChakraUIProvider as ChakraProvider };

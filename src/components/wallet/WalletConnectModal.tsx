@@ -1,26 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  DialogRoot,
-  DialogBackdrop,
-  DialogPositioner,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-  DialogFooter,
-  DialogCloseTrigger,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  Image,
-  Spinner,
-  Box,
-  Flex,
-} from '@chakra-ui/react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useAuth } from '@/providers/auth-provider';
 import { APTOS_WALLET } from '@/constants/wallet';
+import { Box, Button, DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogPositioner, DialogRoot, DialogTitle, Flex, HStack, Image, Spinner, Text, VStack } from '@chakra-ui/react';
 
 interface WalletConnectModalProps {
   isOpen: boolean;

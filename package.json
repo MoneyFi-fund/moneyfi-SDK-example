@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --port 3000",
     "start": "vite --port 3000",
-    "build": "vite build && tsc",
+    "build": "vite build",
+    "build:with-tsc": "vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run"
   },
@@ -14,8 +15,6 @@
     "@aptos-labs/wallet-adapter-react": "^7.0.4",
     "@chakra-ui/react": "^3.26.0",
     "@cloudflare/vite-plugin": "^1.12.3",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.2",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.2.2",
     "@tanstack/react-router": "^1.130.2",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, HStack, Text, MenuRoot, MenuTrigger, MenuContent, MenuItem, Box } from '@chakra-ui/react';
+import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
 import { useAuth } from '@/providers/auth-provider';
 import { truncateAddress } from '@/auth/utils';
 
@@ -34,8 +34,8 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
   // If user is authenticated, show account info with dropdown
   if (isAuthenticated && user) {
     return (
-      <MenuRoot>
-        <MenuTrigger asChild>
+      <Menu.Root>
+        <Menu.Trigger asChild>
           <Button
             variant="outline"
             size="md"
@@ -50,17 +50,21 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
               </Text>
             </HStack>
           </Button>
-        </MenuTrigger>
+        </Menu.Trigger>
         
-        <MenuContent>
-          <MenuItem value="copy" onClick={() => navigator.clipboard.writeText(user.address)}>
-            Copy Address
-          </MenuItem>
-          <MenuItem value="disconnect" onClick={signOut} color="red.500">
-            Disconnect
-          </MenuItem>
-        </MenuContent>
-      </MenuRoot>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content>
+              <Menu.Item value="copy" onClick={() => navigator.clipboard.writeText(user.address)}>
+                Copy Address
+              </Menu.Item>
+              <Menu.Item value="disconnect" onClick={signOut} color="red.500">
+                Disconnect
+              </Menu.Item>
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
+      </Menu.Root>
     );
   }
 
