@@ -1,37 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Toaster, createToaster } from "@chakra-ui/react";
-import { useNotifications } from "@/hooks/useNotifications";
-
-const toaster = createToaster({
-  placement: "top-end",
-  pauseOnPageIdle: true,
-  overlap: true,
-  offsets: "20px",
-  max: 3
-});
+import { Toaster } from "@chakra-ui/react";
+import { toaster } from "../../utils/toast";
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
-  const { notifications } = useNotifications();
-  const displayedNotifications = useRef(new Set<string>());
-
-  useEffect(() => {
-    // Handle new notifications
-    notifications.forEach((notification) => {
-      // Check if this notification has already been displayed
-      if (!displayedNotifications.current.has(notification.id)) {
-        toaster.create({
-          id: notification.id,
-          title: notification.title,
-          description: notification.description,
-          type: notification.type,
-          duration: notification.duration || 5000,
-        });
-        
-        // Mark this notification as displayed
-        displayedNotifications.current.add(notification.id);
-      }
-    });
-  }, [notifications]);
 
   return (
     <>

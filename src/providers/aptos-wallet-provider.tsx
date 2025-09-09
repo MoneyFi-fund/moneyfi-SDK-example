@@ -4,7 +4,6 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 
 interface AptosWalletContextValue {
-  serviceRegistry: typeof globalServiceRegistry;
   isInitialized: boolean;
 }
 
@@ -17,7 +16,6 @@ export const AptosWalletProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (!initializationRef.current) {
       // Initialize transaction service with wallet adapter
-      globalTransactionService.setWalletAdapter(walletAdapter);
       initializationRef.current = true;
     }
   }, [walletAdapter]);
@@ -26,7 +24,6 @@ export const AptosWalletProvider = ({ children }: PropsWithChildren) => {
 
 
   const contextValue: AptosWalletContextValue = {
-    serviceRegistry: globalServiceRegistry,
     isInitialized: initializationRef.current,
   };
 
