@@ -4,15 +4,13 @@ import {
   VStack,
   HStack,
   Text,
-  Card,
-  Stat,
   SimpleGrid,
-  Button,
-  Dialog,
-  Portal,
 } from "@chakra-ui/react";
 import WalletButton from "@/components/wallet/WalletButton";
 import WalletConnectModal from "@/components/wallet/WalletConnectModal";
+import { DepositComponent } from "@/components/moneyfi/DepositComponent";
+import { WithdrawComponent } from "@/components/moneyfi/WithdrawComponent";
+import { BalancePreviewComponent } from "@/components/moneyfi/BalancePreviewComponent";
 import { useState } from "react";
 import { getDepositTxPayload, getWithdrawTxPayload, previewWithdraw } from "moneyfiaptosmockup" 
 export const DashboardPage = () => {
@@ -39,20 +37,10 @@ export const DashboardPage = () => {
             Dashboard
           </Text>
 
-          <SimpleGrid columns={{ base: 1, md: 3 }}>
-            <Card.Root width="320px">
-              <Card.Header>
-                <Text fontSize="md" fontWeight="medium" color="gray.500">
-                  Total Balance
-                </Text>
-              </Card.Header>
-              <Card.Body>
-                <Stat.Root>
-                  <Stat.Label>Unique visitors</Stat.Label>
-                  <Stat.ValueText>192.1k</Stat.ValueText>
-                </Stat.Root>
-              </Card.Body>
-            </Card.Root>
+          <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
+            <BalancePreviewComponent />
+            <DepositComponent />
+            <WithdrawComponent />
           </SimpleGrid>
         </VStack>
       </Container>

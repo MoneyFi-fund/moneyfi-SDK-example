@@ -25,13 +25,16 @@ export default defineConfig({
     keepNames: true
   },
   build: {
+    minify: false,
     rollupOptions: {
       output: {
-        format: 'es',
-        manualChunks: {
-          'chakra': ['@chakra-ui/react'],
-          'vendor': ['react', 'react-dom']
-        }
+        format: 'es'
+      },
+      external: (id) => {
+        // Don't bundle these as they might cause conflicts
+        return id.includes('@aptos-labs/wallet-adapter') || 
+               id.includes('@aptos-connect') ||
+               id.includes('@identity-connect');
       }
     }
   },
