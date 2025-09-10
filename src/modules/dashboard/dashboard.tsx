@@ -5,6 +5,7 @@ import {
   HStack,
   Text,
   SimpleGrid,
+  Image,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import WalletButton from "./components/wallet-button";
@@ -12,6 +13,7 @@ import { BalancePreviewComponent } from "./components/transactions/BalancePrevie
 import { DepositComponent } from "./components/transactions/DepositComponent";
 import { WithdrawComponent } from "./components/transactions/WithdrawComponent";
 import WalletConnectModal from "./components/wallet-connect-modal";
+import moneyFi from "../../../public/logo/logo.svg";
 export const DashboardPage = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -21,9 +23,12 @@ export const DashboardPage = () => {
       <Box bg="white" borderBottom="1px solid" borderColor="border" py={4}>
         <Container maxW="7xl">
           <HStack justify="space-between" align="center">
-            <Text fontSize="2xl" fontWeight="bold" color="black">
-              MoneyFi SDK Demo
-            </Text>
+            <HStack align="center" spaceX={2}>
+              <Image src={moneyFi} alt="MoneyFi Logo" boxSize="40px" />
+              <Text fontSize="2xl" fontWeight="bold" color="black">
+                MoneyFi SDK Demo
+              </Text>
+            </HStack>
             <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
           </HStack>
         </Container>
@@ -35,7 +40,6 @@ export const DashboardPage = () => {
           <Text fontSize="xl" fontWeight="semibold">
             Dashboard
           </Text>
-
 
           <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
             <BalancePreviewComponent />

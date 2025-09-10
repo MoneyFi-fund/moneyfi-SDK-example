@@ -1,64 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { groupAndSortWallets, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useAuth } from '@/provider/auth-provider';
 import { APTOS_WALLET } from '@/constants/wallet';
 import { Box, Button, DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogPositioner, DialogRoot, DialogTitle, Flex, HStack, Image, Spinner, Text, VStack } from '@chakra-ui/react';
+import { isEqual, uniqWith } from 'lodash';
 
 interface WalletConnectModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface WalletInfo {
-  name: string;
-  deepLink: string | null;
-  url: string;
-  isInstalled?: boolean;
-  aptosWalletName?: string; // The actual wallet name used by Aptos adapter
-}
-
 interface WalletOptionProps {
-  wallet: WalletInfo;
+  wallet: {
+    name: string;
+    icon: string;
+    url: string;
+  };
   onConnect: (walletName: string) => void;
-  onInstall: (url: string) => void;
+  onInstall: (walletName: string, walletUrl: string) => void;
   isConnecting: boolean;
+  isInstalled?: boolean;
 }
 
 // Mapping wallet names to their Aptos adapter names
-const WALLET_ADAPTER_NAMES = {
-  'OKX Wallet': 'OKX Wallet',
-  'Petra': 'Petra',
-  'Nightly': 'Nightly',
-  'Pontem': 'Pontem Wallet',
-} as const;
+// const WALLET_ADAPTER_NAMES = {
+//   'OKX Wallet': 'OKX Wallet',
+//   'Petra': 'Petra',
+//   'Nightly': 'Nightly',
+//   'Pontem': 'Pontem Wallet',
+// } as const;
 
 // Wallet icons mapping (you can replace these with actual icon URLs)
-const WALLET_ICONS = {
-  'OKX Wallet': '/wallet-icons/okx.png',
-  'Petra': '/wallet-icons/petra.png',
-  'Nightly': '/wallet-icons/nightly.png',
-  'Pontem': '/wallet-icons/pontem.png',
-} as const;
+// const WALLET_ICONS = {
+//   'OKX Wallet': '/wallet-icons/okx.png',
+//   'Petra': '/wallet-icons/petra.png',
+//   'Nightly': '/wallet-icons/nightly.png',
+//   'Pontem': '/wallet-icons/pontem.png',
+// } as const;
 
 const WalletOption: React.FC<WalletOptionProps> = ({
   wallet,
   onConnect,
   onInstall,
   isConnecting,
+  isInstalled = false,
 }) => {
-  const isInstalled = wallet.isInstalled;
   const [isLocalLoading, setIsLocalLoading] = useState(false);
-
+  
   const handleAction = async () => {
-    if (isInstalled && wallet.aptosWalletName) {
+    if (isInstalled) {
       setIsLocalLoading(true);
       try {
-        await onConnect(wallet.aptosWalletName);
+        await onConnect(wallet.name);
       } finally {
         setIsLocalLoading(false);
       }
     } else {
-      onInstall(wallet.url);
+      onInstall(wallet.name, wallet.url);
     }
   };
 
@@ -71,7 +69,7 @@ const WalletOption: React.FC<WalletOptionProps> = ({
       alignItems="center"
       justifyContent="space-between"
       opacity={isInstalled ? 1 : 0.7}
-      _hover={{ bg: "gray.50" }}
+      _hover={{ bg: "gray.800" }}
       transition="all 0.2s"
     >
       <HStack gap={3}>
@@ -85,9 +83,9 @@ const WalletOption: React.FC<WalletOptionProps> = ({
           justifyContent="center"
           overflow="hidden"
         >
-          {WALLET_ICONS[wallet.name as keyof typeof WALLET_ICONS] ? (
+          {wallet.icon ? (
             <Image
-              src={WALLET_ICONS[wallet.name as keyof typeof WALLET_ICONS]}
+              src={wallet.icon}
               alt={wallet.name}
               w="32px"
               h="32px"
@@ -118,6 +116,7 @@ const WalletOption: React.FC<WalletOptionProps> = ({
         onClick={handleAction}
         loading={isLocalLoading || (isConnecting && isInstalled)}
         minW="80px"
+        _hover={{ opacity: 0.9 }}
       >
         {isLocalLoading || (isConnecting && isInstalled) 
           ? "Connecting..." 
@@ -128,11 +127,10 @@ const WalletOption: React.FC<WalletOptionProps> = ({
       </Button>
     </Flex>
   );
-};
-
-const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose }) => {
+};const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose }) => {
   const { signIn, isConnecting, error, clearError, isAuthenticated } = useAuth();
-  const { wallets } = useWallet();
+  const { wallets = [], notDetectedWallets = [] } = useWallet();
+  const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
 
   // Close modal when authentication succeeds
   useEffect(() => {
@@ -156,34 +154,41 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose
     }
   };
 
-  const handleWalletInstall = (url: string) => {
+  const handleWalletInstall = (walletName: string, walletInstallUrl: string) => {
     // Detect mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
 
-    if (isMobile) {
-      // On mobile, try to use deep links or redirect to app stores
-      window.location.href = url;
-    } else {
-      // On desktop, open in new tab
-      window.open(url, '_blank', 'noopener,noreferrer');
+    if (isMobile && !(window as any).aptos) {
+      if (walletName === APTOS_WALLET.OKX.name) {
+        const host = window.location.host;
+        const dappUrl = `https://${host}`;
+        window.location.href = `${APTOS_WALLET.OKX.url}${encodeURIComponent("okx://wallet/dapp/url?dappUrl=" + encodeURIComponent(dappUrl))}`;
+        return;
+      }
+      if (walletName === APTOS_WALLET.PETRA.name) {
+        const host = window.location.host;
+        const dappUrl = `https://${host}`;
+        window.location.href = `${APTOS_WALLET.PETRA.url}${dappUrl}`;
+        return;
+      }
+      if (walletName === APTOS_WALLET.NIGHTLY.name) {
+        const host = window.location.host;
+        const dappUrl = `https://${host}`;
+        const encodedDappUrl = encodeURIComponent(dappUrl);
+        window.location.href = `${APTOS_WALLET.NIGHTLY.url}${encodedDappUrl}`;
+        return;
+      }
+      if (walletName === APTOS_WALLET.PONTEM.name) {
+        const host = window.location.host;
+        const dappUrl = `https://${host}`;
+        window.location.href = `${APTOS_WALLET.PONTEM.url}${dappUrl}`;
+        return;
+      }
     }
+    window.open(walletInstallUrl, "_blank");
   };
-
-  // Create a map of installed wallet names for quick lookup
-  const installedWalletNames = new Set(wallets?.map(w => w.name) || []);
-  
-  // Prepare wallet list with installation status
-  const walletList = Object.entries(APTOS_WALLET).map(([_, walletConfig]) => {
-    const aptosWalletName = WALLET_ADAPTER_NAMES[walletConfig.name as keyof typeof WALLET_ADAPTER_NAMES];
-    
-    return {
-      ...walletConfig,
-      aptosWalletName,
-      isInstalled: installedWalletNames.has(aptosWalletName),
-    };
-  });
 
   return (
     <DialogRoot open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
@@ -221,13 +226,33 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose
               )}
 
               <VStack gap={3} alignItems="stretch">
-                {walletList.map((wallet) => (
+                {uniqWith(availableWallets, isEqual).map((wallet: any) => (
                   <WalletOption
                     key={wallet.name}
-                    wallet={wallet}
+                    wallet={{
+                      name: wallet.name,
+                      icon: wallet.icon,
+                      url: wallet.url,
+                    }}
                     onConnect={handleWalletConnect}
                     onInstall={handleWalletInstall}
                     isConnecting={isConnecting}
+                    isInstalled={true}
+                  />
+                ))}
+
+                {installableWallets.map((wallet: any) => (
+                  <WalletOption
+                    key={wallet.name}
+                    wallet={{
+                      name: wallet.name,
+                      icon: wallet.icon,
+                      url: wallet.url,
+                    }}
+                    onConnect={handleWalletConnect}
+                    onInstall={handleWalletInstall}
+                    isConnecting={isConnecting}
+                    isInstalled={false}
                   />
                 ))}
               </VStack>
@@ -243,7 +268,7 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose
                 </Flex>
               )}
 
-              {walletList.length === 0 && (
+              {availableWallets.length === 0 && installableWallets.length === 0 && (
                 <Box p={4} textAlign="center">
                   <Text color="gray.500" fontSize="sm">
                     No wallets detected. Please install a wallet extension.
