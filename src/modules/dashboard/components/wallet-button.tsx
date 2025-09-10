@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
-import { useAuth } from '@/providers/auth-provider';
+import { useAuth } from '@/provider/auth-provider';
 import { truncateAddress } from '@/auth/utils';
 
 interface WalletButtonProps {

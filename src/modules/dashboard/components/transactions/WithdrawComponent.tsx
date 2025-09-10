@@ -4,35 +4,23 @@ import {
   VStack,
   Text,
   Button,
-  Input,
   Alert,
 } from "@chakra-ui/react";
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth } from "@/provider/auth-provider";
 import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { MoneyFiAptos } from "moneyfiaptosmockup";
-import {
-  AptosConfig,
-  Network,
-} from "@aptos-labs/ts-sdk";
 
-export const DepositComponent: React.FC = () => {
+
+export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
-  const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const config = new AptosConfig({
-    network: Network.MAINNET,
-  });
-  const moneyFiAptos = new MoneyFiAptos(config);
-  const handleDeposit = async () => {
+  const moneyFiAptos = new MoneyFiAptos();
+
+  const handleWithdraw = async () => {
     if (!isAuthenticated || !user) {
       setMessage("Please connect your wallet first");
-      return;
-    }
-
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setMessage("Please enter a valid amount");
       return;
     }
 
@@ -40,25 +28,23 @@ export const DepositComponent: React.FC = () => {
       setIsLoading(true);
       setMessage("");
 
-      const amountInSmallestUnit = BigInt(
-        Math.floor(Number(amount) * 1_000_000)
-      );
-
-      const payload = await moneyFiAptos.getDepositTxPayload(
-        amountInSmallestUnit
-      );
+      const payload = await moneyFiAptos.getWithdrawTxPayload();
+      console.log(JSON.stringify(payload, null, 2));
       const transaction: InputTransactionData = {
         data: {
           function: payload.function as `${string}::${string}::${string}`,
           functionArguments: payload.functionArguments,
         }
       };
+      
+      console.log("Transaction response:", transaction);
       const response = await signAndSubmitTransaction(transaction);
-      setMessage(`Deposit successful! Transaction: ${response.hash}`);
-      setAmount("");
+      console.log(response.hash);
+      
+      setMessage(`Withdrawal successful! Transaction: ${response.hash}`);
     } catch (error) {
-      console.error("Deposit failed:", error);
-      setMessage(error instanceof Error ? error.message : "Deposit failed");
+      console.error("Withdrawal failed:", error);
+      setMessage(error instanceof Error ? error.message : "Withdrawal failed");
     } finally {
       setIsLoading(false);
     }
@@ -69,12 +55,12 @@ export const DepositComponent: React.FC = () => {
       <Card.Root>
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold">
-            Deposit USDC
+            Withdraw USDC
           </Text>
         </Card.Header>
         <Card.Body>
           <Text color="gray.500">
-            Please connect your wallet to deposit USDC
+            Please connect your wallet to withdraw USDC
           </Text>
         </Card.Body>
       </Card.Root>
@@ -85,33 +71,24 @@ export const DepositComponent: React.FC = () => {
     <Card.Root>
       <Card.Header>
         <Text fontSize="lg" fontWeight="semibold">
-          Deposit USDC
+          Withdraw USDC
         </Text>
       </Card.Header>
       <Card.Body>
         <VStack align="stretch" gap={4}>
-          <VStack align="stretch" gap={2}>
-            <Text fontSize="sm" fontWeight="medium">
-              Amount (USDC)
-            </Text>
-            <Input
-              type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              step="0.000001"
-              min="0"
-            />
-          </VStack>
+          <Text fontSize="sm" color="gray.600">
+            Withdraw all your deposited USDC from the MoneyFi strategy
+          </Text>
 
           <Button
-            onClick={handleDeposit}
+            onClick={handleWithdraw}
             loading={isLoading}
-            disabled={!amount || isLoading}
-            colorScheme="blue"
+            disabled={isLoading}
+            colorScheme="red"
+            variant="outline"
             size="md"
           >
-            {isLoading ? "Depositing..." : "Deposit"}
+            {isLoading ? "Withdrawing..." : "Withdraw All"}
           </Button>
 
           {message && (

@@ -1,5 +1,3 @@
-import { Ed25519PublicKey, KeylessPublicKey, KeylessSignature } from '@aptos-labs/ts-sdk';
-
 /**
  * Generates a random nonce for message signing
  */
@@ -21,9 +19,10 @@ export function createSignMessage(nonce: string, additionalText?: string): strin
 /**
  * Checks if a public key is Ed25519 (standard wallet) vs Keyless (Google OAuth)
  */
-export function isEd25519PublicKey(publicKey: string): boolean {
+export async function isEd25519PublicKey(publicKey: string): Promise<boolean> {
   try {
-    // Try to parse as Ed25519 first
+    // Lazy import to avoid initialization issues
+    const { Ed25519PublicKey } = await import('@aptos-labs/ts-sdk');
     new Ed25519PublicKey(publicKey);
     return true;
   } catch {
@@ -62,7 +61,7 @@ export function isValidAptosAddress(address: string): boolean {
 /**
  * Creates authentication payload for different signature types
  */
-export function createAuthPayload(params: {
+export async function createAuthPayload(params: {
   message: string;
   signature: any;
   publicKey: any;
@@ -72,9 +71,12 @@ export function createAuthPayload(params: {
   const { message, signature, publicKey, address, walletName } = params;
 
   // Check if this is a keyless signature (Google OAuth)
-  const isKeyless = !isEd25519PublicKey(publicKey.toString());
+  const isKeyless = !(await isEd25519PublicKey(publicKey.toString()));
 
   if (isKeyless) {
+    // Lazy import to avoid initialization issues
+    const { KeylessPublicKey, KeylessSignature } = await import('@aptos-labs/ts-sdk');
+    
     // Handle keyless signatures
     const keylessPublicKey = new KeylessPublicKey(
       publicKey.iss,

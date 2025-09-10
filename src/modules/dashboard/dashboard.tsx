@@ -6,13 +6,12 @@ import {
   Text,
   SimpleGrid,
 } from "@chakra-ui/react";
-import WalletButton from "@/components/wallet/WalletButton";
-import WalletConnectModal from "@/components/wallet/WalletConnectModal";
-import { DepositComponent } from "@/components/moneyfi/DepositComponent";
-import { WithdrawComponent } from "@/components/moneyfi/WithdrawComponent";
-import { BalancePreviewComponent } from "@/components/moneyfi/BalancePreviewComponent";
 import { useState } from "react";
-import { getDepositTxPayload, getWithdrawTxPayload, previewWithdraw } from "moneyfiaptosmockup" 
+import WalletButton from "./components/wallet-button";
+import { BalancePreviewComponent } from "./components/transactions/BalancePreviewComponent";
+import { DepositComponent } from "./components/transactions/DepositComponent";
+import { WithdrawComponent } from "./components/transactions/WithdrawComponent";
+import WalletConnectModal from "./components/wallet-connect-modal";
 export const DashboardPage = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 

@@ -6,22 +6,22 @@
   "minify": true,
   "assets": {
     "directory": "./dist/",
-    "not_found_handling": "single-page-application",
+    "not_found_handling": "single-page-application"
   },
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
   "kv_namespaces": [
     {
       "binding": "VITE_CACHE_WORKERS_KV",
-      "id": "3759577a1a0d4885b80fac128c176551",
-    },
+      "id": "3759577a1a0d4885b80fac128c176551"
+    }
   ],
   "alias": {
-    "node-fetch": "./fetch-nolyfill",
+    "node-fetch": "./fetch-nolyfill"
   },
   "vars": {
-    "hello": "Hello World from the cloudflare context!",
-  },
+    "hello": "Hello World from the cloudflare context!"
+  }
   // "main": "./worker/index.ts",
 }

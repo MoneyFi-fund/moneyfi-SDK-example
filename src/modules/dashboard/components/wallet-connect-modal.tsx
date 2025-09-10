@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { useAuth } from '@/providers/auth-provider';
+import { useAuth } from '@/provider/auth-provider';
 import { APTOS_WALLET } from '@/constants/wallet';
 import { Box, Button, DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogPositioner, DialogRoot, DialogTitle, Flex, HStack, Image, Spinner, Text, VStack } from '@chakra-ui/react';
 
@@ -172,7 +172,7 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose
   };
 
   // Create a map of installed wallet names for quick lookup
-  const installedWalletNames = new Set(wallets.map(w => w.name));
+  const installedWalletNames = new Set(wallets?.map(w => w.name) || []);
   
   // Prepare wallet list with installation status
   const walletList = Object.entries(APTOS_WALLET).map(([_, walletConfig]) => {

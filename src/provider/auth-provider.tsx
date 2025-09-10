@@ -1,19 +1,29 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import type { AuthState, AuthContextValue, AuthUser, AuthSession } from '@/auth/types';
-import { 
-  formatAddress,
-  isSessionExpiring,
-  safeJsonParse 
-} from '@/auth/utils';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import type {
+  AuthState,
+  AuthContextValue,
+  AuthUser,
+  AuthSession,
+} from "@/auth/types";
+import { formatAddress, isSessionExpiring, safeJsonParse } from "@/auth/utils";
 
 // Action types for reducer
 type AuthAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_CONNECTING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_AUTH_SUCCESS'; payload: { user: AuthUser; session: AuthSession } }
-  | { type: 'CLEAR_AUTH' };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_CONNECTING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | {
+      type: "SET_AUTH_SUCCESS";
+      payload: { user: AuthUser; session: AuthSession };
+    }
+  | { type: "CLEAR_AUTH" };
 
 // Initial state
 const initialState: AuthState = {
@@ -28,13 +38,18 @@ const initialState: AuthState = {
 // Auth reducer
 function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
-    case 'SET_LOADING':
+    case "SET_LOADING":
       return { ...state, isLoading: action.payload };
-    case 'SET_CONNECTING':
+    case "SET_CONNECTING":
       return { ...state, isConnecting: action.payload, error: null };
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, isConnecting: false, isLoading: false };
-    case 'SET_AUTH_SUCCESS':
+    case "SET_ERROR":
+      return {
+        ...state,
+        error: action.payload,
+        isConnecting: false,
+        isLoading: false,
+      };
+    case "SET_AUTH_SUCCESS":
       return {
         ...state,
         isAuthenticated: true,
@@ -44,7 +59,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         session: action.payload.session,
         error: null,
       };
-    case 'CLEAR_AUTH':
+    case "CLEAR_AUTH":
       return {
         ...initialState,
       };
@@ -55,14 +70,14 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 
 // Storage utilities
 class AuthStorage {
-  private static SESSION_KEY = 'moneyfi_auth_session';
-  private static USER_KEY = 'moneyfi_auth_user';
+  private static SESSION_KEY = "moneyfi_auth_session";
+  private static USER_KEY = "moneyfi_auth_user";
 
   static saveSession(session: AuthSession): void {
     try {
       localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
     } catch (error) {
-      console.warn('Failed to save session to localStorage:', error);
+      console.warn("Failed to save session to localStorage:", error);
     }
   }
 
@@ -70,7 +85,7 @@ class AuthStorage {
     try {
       const sessionData = localStorage.getItem(this.SESSION_KEY);
       if (!sessionData) return null;
-      
+
       const session = safeJsonParse<AuthSession | null>(sessionData, null);
       if (!session) return null;
 
@@ -90,7 +105,7 @@ class AuthStorage {
     try {
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     } catch (error) {
-      console.warn('Failed to save user to localStorage:', error);
+      console.warn("Failed to save user to localStorage:", error);
     }
   }
 
@@ -109,7 +124,7 @@ class AuthStorage {
       localStorage.removeItem(this.SESSION_KEY);
       localStorage.removeItem(this.USER_KEY);
     } catch (error) {
-      console.warn('Failed to clear session from localStorage:', error);
+      console.warn("Failed to clear session from localStorage:", error);
     }
   }
 }
@@ -118,34 +133,36 @@ class AuthStorage {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 // Auth provider component
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const { connect, disconnect, account, connected, wallet } = useWallet();
 
   // Initialize auth state on mount
   useEffect(() => {
     const initializeAuth = () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
+      dispatch({ type: "SET_LOADING", payload: true });
+
       const savedSession = AuthStorage.getSession();
       const savedUser = AuthStorage.getUser();
-      
+
       if (savedSession && savedUser && connected && account) {
         // Check if session is about to expire
         if (isSessionExpiring(new Date(savedSession.expiresAt))) {
           // Session is expiring soon, clear it
           AuthStorage.clearSession();
-          dispatch({ type: 'CLEAR_AUTH' });
+          dispatch({ type: "CLEAR_AUTH" });
         } else {
           // Restore session
           dispatch({
-            type: 'SET_AUTH_SUCCESS',
-            payload: { user: savedUser, session: savedSession }
+            type: "SET_AUTH_SUCCESS",
+            payload: { user: savedUser, session: savedSession },
           });
         }
       }
-      
-      dispatch({ type: 'SET_LOADING', payload: false });
+
+      dispatch({ type: "SET_LOADING", payload: false });
     };
 
     initializeAuth();
@@ -157,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Wallet is connected, create user session automatically
       const user: AuthUser = {
         address: formatAddress(account.address.toString()),
-        publicKey: account.publicKey?.toString() || '',
+        publicKey: account.publicKey?.toString() || "",
         walletName: wallet.name,
       };
 
@@ -177,62 +194,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Update state
       dispatch({
-        type: 'SET_AUTH_SUCCESS',
-        payload: { user, session }
+        type: "SET_AUTH_SUCCESS",
+        payload: { user, session },
       });
 
-      console.log('Wallet connected successfully', { wallet: wallet.name, address: account.address });
+      console.log("Wallet connected successfully", {
+        wallet: wallet.name,
+        address: account.address,
+      });
     } else if (!connected) {
       // Wallet disconnected, clear auth state
       AuthStorage.clearSession();
-      dispatch({ type: 'CLEAR_AUTH' });
+      dispatch({ type: "CLEAR_AUTH" });
     }
   }, [connected, account, wallet]);
 
   // Connect to specific wallet - this will open the wallet popup
-  const signIn = useCallback(async (walletName: string) => {
-    try {
-      dispatch({ type: 'SET_CONNECTING', payload: true });
-      dispatch({ type: 'SET_ERROR', payload: null });
+  const signIn = useCallback(
+    async (walletName: string) => {
+      try {
+        dispatch({ type: "SET_CONNECTING", payload: true });
+        dispatch({ type: "SET_ERROR", payload: null });
 
-      console.log(`Connecting to ${walletName} wallet...`);
-      
-      // This will open the wallet popup directly
-      await connect(walletName);
-      
-      // The useEffect above will handle the success case when wallet connects
-    } catch (error) {
-      console.error('Wallet connection failed:', error);
-      dispatch({ 
-        type: 'SET_ERROR', 
-        payload: error instanceof Error ? error.message : 'Failed to connect wallet' 
-      });
-    } finally {
-      dispatch({ type: 'SET_CONNECTING', payload: false });
-    }
-  }, [connect]);
+        console.log(`Connecting to ${walletName} wallet...`);
+
+        // This will open the wallet popup directly
+        await connect(walletName);
+
+        // The useEffect above will handle the success case when wallet connects
+      } catch (error) {
+        console.error("Wallet connection failed:", error);
+        dispatch({
+          type: "SET_ERROR",
+          payload:
+            error instanceof Error ? error.message : "Failed to connect wallet",
+        });
+      } finally {
+        dispatch({ type: "SET_CONNECTING", payload: false });
+      }
+    },
+    [connect]
+  );
 
   // Sign out function
   const signOut = useCallback(async () => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
+      dispatch({ type: "SET_LOADING", payload: true });
+
       // Disconnect wallet
       await disconnect();
-      
+
       // Clear storage
       AuthStorage.clearSession();
-      
+
       // Update state (will also be handled by useEffect above)
-      dispatch({ type: 'CLEAR_AUTH' });
+      dispatch({ type: "CLEAR_AUTH" });
     } catch (error) {
-      console.error('Sign out failed:', error);
-      dispatch({ 
-        type: 'SET_ERROR', 
-        payload: error instanceof Error ? error.message : 'Sign out failed' 
+      console.error("Sign out failed:", error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: error instanceof Error ? error.message : "Sign out failed",
       });
     } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   }, [disconnect]);
 
@@ -241,23 +265,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (state.session && state.user) {
       const newExpiresAt = new Date();
       newExpiresAt.setHours(newExpiresAt.getHours() + 24);
-      
+
       const updatedSession: AuthSession = {
         ...state.session,
         expiresAt: newExpiresAt,
       };
-      
+
       AuthStorage.saveSession(updatedSession);
       dispatch({
-        type: 'SET_AUTH_SUCCESS',
-        payload: { user: state.user, session: updatedSession }
+        type: "SET_AUTH_SUCCESS",
+        payload: { user: state.user, session: updatedSession },
       });
     }
   }, [state.session, state.user]);
 
   // Clear error function
   const clearError = useCallback(() => {
-    dispatch({ type: 'SET_ERROR', payload: null });
+    dispatch({ type: "SET_ERROR", payload: null });
   }, []);
 
   // Monitor session expiration
@@ -266,7 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const checkSessionExpiration = () => {
       if (isSessionExpiring(new Date(state.session!.expiresAt))) {
-        console.log('Session is expiring, signing out...');
+        console.log("Session is expiring, signing out...");
         signOut();
       }
     };
@@ -284,9 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 
@@ -294,7 +316,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

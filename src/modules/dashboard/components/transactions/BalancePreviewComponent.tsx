@@ -9,12 +9,8 @@ import {
   HStack,
   Skeleton,
 } from "@chakra-ui/react";
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth } from "@/provider/auth-provider";
 import { MoneyFiAptos } from "moneyfiaptosmockup";
-import {
-  AptosConfig,
-  Network,
-} from "@aptos-labs/ts-sdk";
 
 export const BalancePreviewComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -22,10 +18,7 @@ export const BalancePreviewComponent: React.FC = () => {
   const [balanceUsdc, setBalanceUsdc] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const config = new AptosConfig({
-    network: Network.MAINNET,
-  });
-  const moneyFiAptos = new MoneyFiAptos(config);
+  const moneyFiAptos = new MoneyFiAptos();
 
   const fetchBalance = async () => {
     if (!isAuthenticated || !user) {
@@ -48,9 +41,8 @@ export const BalancePreviewComponent: React.FC = () => {
       setBalanceUsdc(balanceInUsdc);
     } catch (error) {
       console.error("Failed to fetch balance:", error);
-      setMessage(error instanceof Error ? error.message : "Failed to fetch balance");
-      setBalanceUsdt(null);
-      setBalanceUsdc(null);
+      setBalanceUsdt(0);
+      setBalanceUsdc(0);
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +101,7 @@ export const BalancePreviewComponent: React.FC = () => {
                   USDT Available to Withdraw
                 </Stat.Label>
                 <Stat.ValueText fontSize="3xl" fontWeight="bold">
-                  {balanceUsdt !== null ? `${balanceUsdt.toFixed(6)} USDT` : "-- USDT"}
+                  {balanceUsdt !== null ? `${balanceUsdt.toFixed(6)} USDT` : "0 USDT"}
                 </Stat.ValueText>
               </Stat.Root>
               
@@ -118,7 +110,7 @@ export const BalancePreviewComponent: React.FC = () => {
                   USDC Available to Withdraw
                 </Stat.Label>
                 <Stat.ValueText fontSize="3xl" fontWeight="bold">
-                  {balanceUsdc !== null ? `${balanceUsdc.toFixed(6)} USDC` : "-- USDC"}
+                  {balanceUsdc !== null ? `${balanceUsdc.toFixed(6)} USDC` : "0 USDC"}
                 </Stat.ValueText>
               </Stat.Root>
             </VStack>
