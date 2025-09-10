@@ -5,6 +5,8 @@ import {
   Text,
   Button,
   Alert,
+  Link,
+  HStack,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
 import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
@@ -16,6 +18,7 @@ export const WithdrawComponent: React.FC = () => {
   const { signAndSubmitTransaction } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
   const moneyFiAptos = new MoneyFiAptos();
 
   const handleWithdraw = async () => {
@@ -41,10 +44,12 @@ export const WithdrawComponent: React.FC = () => {
       const response = await signAndSubmitTransaction(transaction);
       console.log(response.hash);
       
-      setMessage(`Withdrawal successful! Transaction: ${response.hash}`);
+      setMessage("Withdrawal successful!");
+      setTransactionHash(response.hash);
     } catch (error) {
       console.error("Withdrawal failed:", error);
       setMessage(error instanceof Error ? error.message : "Withdrawal failed");
+      setTransactionHash("");
     } finally {
       setIsLoading(false);
     }
@@ -55,12 +60,12 @@ export const WithdrawComponent: React.FC = () => {
       <Card.Root>
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold">
-            Withdraw USDC
+            Withdraw Fund
           </Text>
         </Card.Header>
         <Card.Body>
           <Text color="gray.500">
-            Please connect your wallet to withdraw USDC
+            Please connect your wallet to withdraw funds.
           </Text>
         </Card.Body>
       </Card.Root>
@@ -71,13 +76,13 @@ export const WithdrawComponent: React.FC = () => {
     <Card.Root>
       <Card.Header>
         <Text fontSize="lg" fontWeight="semibold">
-          Withdraw USDC
+          Withdraw Funds
         </Text>
       </Card.Header>
       <Card.Body>
         <VStack align="stretch" gap={4}>
           <Text fontSize="sm" color="gray.600">
-            Withdraw all your deposited USDC from the MoneyFi strategy
+            Withdraw all your deposited funds from the MoneyFi strategy
           </Text>
 
           <Button
@@ -95,7 +100,27 @@ export const WithdrawComponent: React.FC = () => {
             <Alert.Root
               status={message.includes("successful") ? "success" : "error"}
             >
-              <Alert.Description>{message}</Alert.Description>
+              <Alert.Description>
+                <VStack align="stretch" gap={2}>
+                  <Text>{message}</Text>
+                  {transactionHash && (
+                    <HStack>
+                      <Text fontSize="sm">Transaction:</Text>
+                      <Link
+                        href={`https://explorer.aptoslabs.com/txn/${transactionHash}?network=mainnet`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        color="blue.500"
+                        fontSize="sm"
+                        fontFamily="mono"
+                        textDecoration="underline"
+                      >
+                        {transactionHash.slice(0, 8)}...{transactionHash.slice(-8)}
+                      </Link>
+                    </HStack>
+                  )}
+                </VStack>
+              </Alert.Description>
             </Alert.Root>
           )}
         </VStack>

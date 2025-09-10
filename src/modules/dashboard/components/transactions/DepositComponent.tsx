@@ -6,6 +6,8 @@ import {
   Button,
   Input,
   Alert,
+  Link,
+  HStack,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
 import { useWallet, type InputTransactionData } from "@aptos-labs/wallet-adapter-react";
@@ -17,6 +19,7 @@ export const DepositComponent: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
 
   const moneyFiAptos = new MoneyFiAptos();
   const handleDeposit = async () => {
@@ -48,11 +51,13 @@ export const DepositComponent: React.FC = () => {
         }
       };
       const response = await signAndSubmitTransaction(transaction);
-      setMessage(`Deposit successful! Transaction: ${response.hash}`);
+      setMessage("Deposit successful!");
+      setTransactionHash(response.hash);
       setAmount("");
     } catch (error) {
       console.error("Deposit failed:", error);
       setMessage(error instanceof Error ? error.message : "Deposit failed");
+      setTransactionHash("");
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +117,27 @@ export const DepositComponent: React.FC = () => {
             <Alert.Root
               status={message.includes("successful") ? "success" : "error"}
             >
-              <Alert.Description>{message}</Alert.Description>
+              <Alert.Description>
+                <VStack align="stretch" gap={2}>
+                  <Text>{message}</Text>
+                  {transactionHash && (
+                    <HStack>
+                      <Text fontSize="sm">Transaction:</Text>
+                      <Link
+                        href={`https://explorer.aptoslabs.com/txn/${transactionHash}?network=mainnet`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        color="blue.500"
+                        fontSize="sm"
+                        fontFamily="mono"
+                        textDecoration="underline"
+                      >
+                        {transactionHash.slice(0, 8)}...{transactionHash.slice(-8)}
+                      </Link>
+                    </HStack>
+                  )}
+                </VStack>
+              </Alert.Description>
             </Alert.Root>
           )}
         </VStack>

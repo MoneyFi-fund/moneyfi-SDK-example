@@ -40,12 +40,12 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
             variant="outline"
             size="md"
             h="40px"
-            borderColor="gray.200"
-            _hover={{ bg: "gray.50" }}
+            borderColor="gray.900"
+            _hover={{ bg: "gray.200" }}
           >
             <HStack gap={2}>
               <SimpleAvatar name={user.address} size="sm" />
-              <Text fontSize="sm" fontWeight="medium">
+              <Text fontSize="sm" fontWeight="medium" color="gray.700">
                 {truncateAddress(user.address)}
               </Text>
             </HStack>
