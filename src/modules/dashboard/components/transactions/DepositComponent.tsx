@@ -68,12 +68,12 @@ export const DepositComponent: React.FC = () => {
       <Card.Root>
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold">
-            Deposit USDC
+            Deposit Funds
           </Text>
         </Card.Header>
         <Card.Body>
           <Text color="gray.500">
-            Please connect your wallet to deposit USDC
+            Please connect your wallet to deposit funds.
           </Text>
         </Card.Body>
       </Card.Root>
@@ -84,14 +84,14 @@ export const DepositComponent: React.FC = () => {
     <Card.Root>
       <Card.Header>
         <Text fontSize="lg" fontWeight="semibold">
-          Deposit USDC
+          Deposit Funds
         </Text>
       </Card.Header>
       <Card.Body>
         <VStack align="stretch" gap={4}>
           <VStack align="stretch" gap={2}>
             <Text fontSize="sm" fontWeight="medium">
-              Amount (USDC)
+              Amount
             </Text>
             <Input
               type="number"
