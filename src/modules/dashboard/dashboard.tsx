@@ -9,9 +9,9 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import WalletButton from "./components/wallet-button";
-import { BalancePreviewComponent } from "./components/transactions/BalancePreviewComponent";
-import { DepositComponent } from "./components/transactions/DepositComponent";
-import { WithdrawComponent } from "./components/transactions/WithdrawComponent";
+import { BalancePreviewComponent } from "./components/transactions/balance-preview-component";
+import { DepositComponent } from "./components/transactions/deposit-component";
+import { WithdrawComponent } from "./components/transactions/withdraw-component";
 import WalletConnectModal from "./components/wallet-connect-modal";
 import moneyFi from "../../../public/logo/logo.svg";
 export const DashboardPage = () => {
@@ -26,7 +26,7 @@ export const DashboardPage = () => {
             <HStack align="center" spaceX={2}>
               <Image src={moneyFi} alt="MoneyFi Logo" boxSize="40px" />
               <Text fontSize="2xl" fontWeight="bold" color="black">
-                MoneyFi SDK Demo
+                MoneyFi SDK
               </Text>
             </HStack>
             <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />

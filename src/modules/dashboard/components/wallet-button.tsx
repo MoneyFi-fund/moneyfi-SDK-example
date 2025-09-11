@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
+import { Button, HStack, Text, Menu, Portal, Box, Spinner } from '@chakra-ui/react';
 import { useAuth } from '@/provider/auth-provider';
 import { truncateAddress } from '@/auth/utils';
 
@@ -34,13 +34,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
   // If user is authenticated, show account info with dropdown
   if (isAuthenticated && user) {
     return (
-      <Menu.Root>
+      <Menu.Root positioning={{ placement: "bottom-end"}}>
         <Menu.Trigger asChild>
           <Button
             variant="outline"
             size="md"
             h="40px"
-            borderColor="gray.900"
+            borderColor="black"
             _hover={{ bg: "gray.200" }}
           >
             <HStack gap={2}>
@@ -58,7 +58,15 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
               <Menu.Item value="copy" onClick={() => navigator.clipboard.writeText(user.address)}>
                 Copy Address
               </Menu.Item>
-              <Menu.Item value="disconnect" onClick={signOut} color="red.500">
+              <Menu.Item 
+                value="disconnect" 
+                onClick={signOut} 
+                color="red.500"
+                _hover={{ bg: "red.50" }}
+                borderRadius="sm"
+                px={3}
+                py={2}
+              >
                 Disconnect
               </Menu.Item>
             </Menu.Content>
@@ -77,6 +85,9 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
       h="40px"
       colorScheme="blue"
       variant="solid"
+      border="1px solid"
+      transition="background-color 0.2s"
+      _hover={{ bg: "blue.200" }}
     >
       {isConnecting ? "Connecting..." : "Connect Wallet"}
     </Button>
