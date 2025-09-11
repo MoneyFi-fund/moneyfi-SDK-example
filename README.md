@@ -1,290 +1,192 @@
-Welcome to your new TanStack app! 
+# MoneyFi SDK
 
-# Getting Started
+A DeFi application SDK that enables users to interact with the MoneyFi protocol on the Aptos blockchain. MoneyFi is a DeFAI platform that helps non-DeFi users monetize stablecoins across protocols and blockchains through fully automated, AI-powered strategies.
 
-To run this application:
+## Features
 
+- **Aptos Wallet Integration**: Connect with popular Aptos wallets (Petra, OKX, Nightly, Pontem)
+- **USDC Deposit & Withdrawal**: Seamlessly deposit USDC into MoneyFi strategies and withdraw funds
+- **Real-time Balance Tracking**: View your withdrawable balance in both USDT and USDC
+- **Transaction Monitoring**: Track transaction hashes and link to Aptos Explorer
+- **Responsive Design**: Mobile-friendly interface built with modern UI components
+- **Type-safe Development**: Full TypeScript support with comprehensive type definitions
+
+## Technology Stack
+
+- **Frontend Framework**: React 19 with TypeScript
+- **Routing**: TanStack Router with file-based routing
+- **Styling**: Tailwind CSS + Chakra UI v3
+- **Build Tool**: Vite
+- **Blockchain**: Aptos integration via @aptos-labs/wallet-adapter-react
+- **State Management**: Context-based authentication and wallet management
+- **Testing**: Vitest with React Testing Library
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- An Aptos wallet extension (Petra, OKX, etc.)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-pnpm install
-pnpm start
+git clone <repository-url>
+cd moneyfi-sdk
 ```
 
-# Building For Production
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-To build this application for production:
+3. Start the development server:
+```bash
+pnpm dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+VITE_APTOS_CLIENT_API_KEY=your_aptos_api_key_here
+```
+
+## Usage
+
+### Connecting a Wallet
+
+1. Click the "Connect Wallet" button in the header
+2. Select your preferred Aptos wallet from the modal
+3. Approve the connection in your wallet extension
+4. Your wallet address will appear in the header once connected
+
+### Depositing USDC
+
+1. Ensure your wallet is connected
+2. Navigate to the "Deposit USDC" card
+3. Enter the amount you want to deposit
+4. Click "Deposit" and confirm the transaction in your wallet
+5. View the transaction hash and link to explorer upon success
+
+### Viewing Balances
+
+1. The "Withdrawable Balance" card shows your available funds
+2. Displays both USDT and USDC balances
+3. Click "Refresh" to update the latest balance information
+
+### Withdrawing Funds
+
+1. Use the "Withdraw Funds" card to withdraw all deposited funds
+2. Click "Withdraw All" to initiate the withdrawal
+3. Confirm the transaction in your wallet
+4. Track the transaction via the provided hash link
+
+## Project Structure
+
+```
+src/
+├── auth/                    # Authentication types and utilities
+├── config/                  # Application configuration
+├── constants/              # Wallet constants and configurations
+├── modules/
+│   └── dashboard/          # Main dashboard module
+│       ├── components/     # Dashboard components
+│       │   ├── transactions/  # Transaction-related components
+│       │   ├── wallet-button.tsx
+│       │   └── wallet-connect-modal.tsx
+│       └── dashboard.tsx   # Main dashboard page
+├── provider/               # React context providers
+│   ├── auth-provider.tsx   # Authentication management
+│   ├── aptos-wallet-provider.tsx
+│   ├── chakra-provider.tsx # UI theme provider
+│   └── web3-providers.tsx  # Blockchain providers
+├── routes/                 # TanStack Router routes
+├── types/                  # TypeScript type definitions
+└── utils/                  # Utility functions
+```
+
+## Core Components
+
+### WalletButton
+Displays wallet connection status and user address with dropdown menu for copying address and disconnecting.
+
+### DepositComponent
+Handles USDC deposits into MoneyFi strategies with amount input and transaction confirmation.
+
+### WithdrawComponent
+Manages withdrawal of all funds from MoneyFi strategies with single-click operation.
+
+### BalancePreviewComponent
+Shows real-time withdrawable balances in USDT and USDC with refresh capability.
+
+### WalletConnectModal
+Modal interface for selecting and connecting to various Aptos wallets with installation support.
+
+## Development Scripts
+
+```bash
+# Development
+pnpm dev                    # Start development server
+pnpm build                  # Build for production
+pnpm serve                  # Preview production build
+
+# Code Quality
+pnpm lint                   # Run ESLint
+pnpm prettier              # Check Prettier formatting
+pnpm prettier:fix          # Fix Prettier formatting
+pnpm check-types           # TypeScript type checking
+pnpm pre-commit            # Run all checks (lint + prettier + types)
+
+# Testing
+pnpm test                  # Run test suite
+
+# Route Management
+pnpm generate-routes       # Generate route tree
+pnpm watch-routes          # Watch route changes
+
+# Deployment
+pnpm wrangler-deploy       # Deploy to Cloudflare Pages
+```
+
+## Building for Production
 
 ```bash
 pnpm build
 ```
 
-## Testing
+This will create an optimized production build in the `dist/` directory with:
+- Code splitting for optimal loading
+- Separate chunks for the Aptos MoneyFi package
+- TypeScript compilation and type checking
+- Tailwind CSS optimization
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+## Deployment
 
-```bash
-pnpm test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-
-
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
+The project is configured for deployment on Cloudflare Pages:
 
 ```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
+pnpm wrangler-deploy
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+## Contributing
 
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run the pre-commit checks (`pnpm pre-commit`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
-// ...
+## License
 
-const queryClient = new QueryClient();
+This project is private and proprietary to MoneyFi.
 
-// ...
+## Support
 
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-pnpm add @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+For questions and support, please contact the MoneyFi development team.
