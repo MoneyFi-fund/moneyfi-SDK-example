@@ -25,7 +25,7 @@ export const DashboardPage = () => {
           <HStack justify="space-between" align="center">
             <HStack align="center" spaceX={2}>
               <Image src={moneyFi} alt="MoneyFi Logo" boxSize="40px" />
-              <Text fontSize="2xl" fontWeight="bold" color="black">
+              <Text fontSize="2xl" fontWeight="medium" color="black" className="text-xl">
                 MoneyFi SDK
               </Text>
             </HStack>

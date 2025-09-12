@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, HStack, Text, Menu, Portal, Box, Spinner } from '@chakra-ui/react';
+import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
 import { useAuth } from '@/provider/auth-provider';
 import { truncateAddress } from '@/auth/utils';
 
@@ -41,7 +41,20 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
             size="md"
             h="40px"
             borderColor="black"
-            _hover={{ bg: "gray.200" }}
+            border="3px solid black"
+            borderRadius="0"
+            bg="white"
+            boxShadow="5px 5px 0px black"
+            transition="all 0.3s ease"
+            _hover={{ 
+              bg: "gray.50",
+              transform: "translate(2px, 2px)",
+              boxShadow: "3px 3px 0px black"
+            }}
+            _active={{
+              transform: "translate(4px, 4px)",
+              boxShadow: "1px 1px 0px black"
+            }}
           >
             <HStack gap={2}>
               <SimpleAvatar name={user.address} size="sm" />
@@ -83,11 +96,27 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
       loading={isConnecting}
       size="md"
       h="40px"
-      colorScheme="blue"
-      variant="solid"
-      border="1px solid"
-      transition="background-color 0.2s"
-      _hover={{ bg: "blue.200" }}
+      bg="blue.400"
+      color="white"
+      border="3px solid black"
+      borderRadius="0"
+      boxShadow="5px 5px 0px black"
+      transition="all 0.3s ease"
+      fontWeight="bold"
+      _hover={{ 
+        bg: "blue.500",
+        transform: "translate(2px, 2px)",
+        boxShadow: "3px 3px 0px black"
+      }}
+      _active={{
+        transform: "translate(4px, 4px)",
+        boxShadow: "1px 1px 0px black"
+      }}
+      _loading={{
+        bg: "blue.300",
+        transform: "none",
+        boxShadow: "5px 5px 0px black"
+      }}
     >
       {isConnecting ? "Connecting..." : "Connect Wallet"}
     </Button>

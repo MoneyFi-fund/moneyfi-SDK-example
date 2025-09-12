@@ -12,11 +12,14 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
-import { useBalanceQuery, useTransactionConfirmationStatus } from "@/hooks/use-moneyfi-queries";
+import {
+  useBalanceQuery,
+  useTransactionConfirmationStatus,
+} from "@/api/use-moneyfi-queries";
 
 export const BalancePreviewComponent: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  
+
   const {
     data: balanceData,
     isLoading,
@@ -25,21 +28,29 @@ export const BalancePreviewComponent: React.FC = () => {
     refetch,
   } = useBalanceQuery();
 
-  const {
-    isInConfirmationWindow,
-    lastUpdateTime,
-  } = useTransactionConfirmationStatus();
+  const { isInConfirmationWindow, lastUpdateTime } =
+    useTransactionConfirmationStatus();
 
   if (!isAuthenticated) {
     return (
-      <Card.Root>
+      <Card.Root
+        bg="gray.900"
+        border="2px solid white"
+        borderRadius="0"
+        boxShadow="4px 4px 0px white"
+        transition="all 0.3s ease"
+        _hover={{
+          transform: "translate(-1px, -1px)",
+          boxShadow: "5px 5px 0px white",
+        }}
+      >
         <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold">
+          <Text fontSize="lg" fontWeight="semibold" color="white">
             Withdrawable Balance
           </Text>
         </Card.Header>
         <Card.Body>
-          <Text color="gray.500">
+          <Text color="gray.400">
             Please connect your wallet to view your balance
           </Text>
         </Card.Body>
@@ -48,45 +59,76 @@ export const BalancePreviewComponent: React.FC = () => {
   }
 
   return (
-    <Card.Root>
+    <Card.Root
+      bg="black"
+      border="2px solid white"
+      borderRadius="0"
+      boxShadow="4px 4px 0px white"
+      transition="all 0.3s ease"
+      _hover={{
+        transform: "translate(-1px, -1px)",
+        boxShadow: "5px 5px 0px white",
+      }}
+    >
       <Card.Header>
-        <VStack align="baseline" gap={2}>
-          <HStack justify="space-between" align="center">
-            <Text fontSize="lg" fontWeight="semibold">
+        <VStack align="stretch" gap={2}>
+          <HStack justify="space-between" align="center" width="100%">
+            <Text fontSize="lg" fontWeight="semibold" color="white">
               Withdrawable Balance
             </Text>
-            <HStack gap={2}>
-              {isInConfirmationWindow && (
-                <Badge
-                  colorScheme="blue"
-                  variant="subtle"
-                  fontSize="xs"
-                  py={1}
-                  borderRadius="md"
-                >
-                  <HStack gap={1}>
-                    <Spinner size="xs" />
-                    <Text>Updating...</Text>
-                  </HStack>
-                </Badge>
-              )}
-              <Button
-                onClick={() => refetch()}
-                loading={isLoading || isFetching}
-                size="sm"
-                variant="ghost"
-                _hover={{ bg: "gray.700", color: "white" }}
-              >
-                Refresh
-              </Button>
-            </HStack>
+            <Button
+              onClick={() => refetch()}
+              loading={isLoading || isFetching}
+              size="sm"
+              bg="gray.700"
+              color="white"
+              border="2px solid white"
+              borderRadius="0"
+              boxShadow="3px 3px 0px white"
+              transition="all 0.3s ease"
+              fontWeight="bold"
+              fontSize="xs"
+              _hover={{
+                bg: "gray.600",
+                color: "white",
+                transform: "translate(1px, 1px)",
+                boxShadow: "2px 2px 0px white",
+              }}
+              _active={{
+                transform: "translate(2px, 2px)",
+                boxShadow: "1px 1px 0px white",
+              }}
+              _loading={{
+                bg: "gray.600",
+                transform: "none",
+                boxShadow: "3px 3px 0px white",
+              }}
+            >
+              Refresh
+            </Button>
           </HStack>
           
-          {lastUpdateTime && (
-            <Text fontSize="xs" color="gray.500" textAlign="right">
-              Last updated: {lastUpdateTime.toLocaleTimeString()}
-            </Text>
-          )}
+          <HStack justify="space-between" align="center" width="100%">
+            {lastUpdateTime && (
+              <Text fontSize="xs" color="gray.400">
+                Last updated: {lastUpdateTime.toLocaleTimeString()}
+              </Text>
+            )}
+            {isInConfirmationWindow && (
+              <Badge
+                colorScheme="blue"
+                variant="subtle"
+                fontSize="xs"
+                py={1}
+                borderRadius="md"
+              >
+                <HStack gap={1}>
+                  <Spinner size="xs" />
+                  <Text>Updating...</Text>
+                </HStack>
+              </Badge>
+            )}
+          </HStack>
         </VStack>
       </Card.Header>
       <Card.Body>
@@ -99,19 +141,27 @@ export const BalancePreviewComponent: React.FC = () => {
           ) : (
             <VStack align="stretch" gap={3}>
               <Stat.Root>
-                <Stat.Label color="gray.500">
+                <Stat.Label color="gray.400">
                   USDT Available to Withdraw
                 </Stat.Label>
-                <Stat.ValueText fontSize="3xl" fontWeight="bold">
+                <Stat.ValueText
+                  fontSize="3xl"
+                  fontWeight="medium"
+                  color="green.600"
+                >
                   {`${(balanceData?.usdt || 0).toFixed(6)} USDT`}
                 </Stat.ValueText>
               </Stat.Root>
 
               <Stat.Root>
-                <Stat.Label color="gray.500">
+                <Stat.Label color="gray.400">
                   USDC Available to Withdraw
                 </Stat.Label>
-                <Stat.ValueText fontSize="3xl" fontWeight="bold">
+                <Stat.ValueText
+                  fontSize="3xl"
+                  fontWeight="medium"
+                  color="blue.600"
+                >
                   {`${(balanceData?.usdc || 0).toFixed(6)} USDC`}
                 </Stat.ValueText>
               </Stat.Root>
@@ -130,8 +180,9 @@ export const BalancePreviewComponent: React.FC = () => {
 
           <VStack align="stretch" gap={2}>
             {isInConfirmationWindow && (
-              <Text fontSize="xs" color="blue.500" fontStyle="italic">
-                Balance is being updated to reflect recent blockchain confirmations...
+              <Text fontSize="xs" color="blue.300" fontStyle="italic">
+                Balance is being updated to reflect recent blockchain
+                confirmations...
               </Text>
             )}
           </VStack>

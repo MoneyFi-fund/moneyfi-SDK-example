@@ -111,12 +111,39 @@ const WalletOption: React.FC<WalletOptionProps> = ({
 
       <Button
         size="sm"
-        colorScheme={isInstalled ? "green" : "gray"}
-        variant={isInstalled ? "solid" : "outline"}
         onClick={handleAction}
         loading={isLocalLoading || (isConnecting && isInstalled)}
         minW="80px"
-        _hover={{ opacity: 0.9 }}
+        bg={isInstalled ? "green.400" : "gray.100"}
+        color={isInstalled ? "white" : "gray.700"}
+        border="2px solid black"
+        borderRadius="0"
+        boxShadow="3px 3px 0px black"
+        transition="all 0.3s ease"
+        fontWeight="bold"
+        fontSize="xs"
+        _hover={{ 
+          bg: isInstalled ? "green.500" : "gray.200",
+          color: isInstalled ? "white" : "black",
+          transform: "translate(1px, 1px)",
+          boxShadow: "2px 2px 0px black"
+        }}
+        _active={{
+          transform: "translate(2px, 2px)",
+          boxShadow: "1px 1px 0px black"
+        }}
+        _loading={{
+          bg: isInstalled ? "green.300" : "gray.200",
+          transform: "none",
+          boxShadow: "3px 3px 0px black"
+        }}
+        _disabled={{
+          bg: "gray.200",
+          color: "gray.500",
+          cursor: "not-allowed",
+          transform: "none",
+          boxShadow: "3px 3px 0px #666"
+        }}
       >
         {isLocalLoading || (isConnecting && isInstalled) 
           ? "Connecting..." 
@@ -279,7 +306,27 @@ const WalletOption: React.FC<WalletOptionProps> = ({
           </DialogBody>
 
           <DialogFooter>
-            <Button variant="outline" onClick={onClose} w="full">
+            <Button 
+              onClick={onClose} 
+              w="full"
+              bg="white"
+              color="gray.700"
+              border="2px solid black"
+              borderRadius="0"
+              boxShadow="3px 3px 0px black"
+              transition="all 0.3s ease"
+              fontWeight="bold"
+              _hover={{ 
+                bg: "gray.100",
+                color: "black",
+                transform: "translate(1px, 1px)",
+                boxShadow: "2px 2px 0px black"
+              }}
+              _active={{
+                transform: "translate(2px, 2px)",
+                boxShadow: "1px 1px 0px black"
+              }}
+            >
               Cancel
             </Button>
           </DialogFooter>
