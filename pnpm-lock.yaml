@@ -65,6 +65,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.6
         version: 4.1.13
+      testquynx:
+        specifier: 0.0.4
+        version: 0.0.4(got@11.8.6)
       vite-plugin-eslint:
         specifier: ^1.8.1
         version: 1.8.1(eslint@9.35.0(jiti@2.5.1))(vite@6.3.6(@types/node@24.3.1)(jiti@2.5.1)(lightningcss@1.30.1)(sass-embedded@1.92.1)(sass@1.92.1)(tsx@4.20.5))
@@ -4463,6 +4466,10 @@ packages:
   tar@7.4.3:
     resolution: {integrity: sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==}
     engines: {node: '>=18'}
+
+  testquynx@0.0.4:
+    resolution: {integrity: sha512-yr/TP6kQxjVA/jLi1Z08KoO6KGTXsK5032pCP7UYqKFSA53TYWYdVLmjOGHWZhMTIRmlsgItYHjyHeh9caOAUg==}
+    engines: {node: '>=20.0.0'}
 
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
@@ -9932,6 +9939,16 @@ snapshots:
       minizlib: 3.0.2
       mkdirp: 3.0.1
       yallist: 5.0.0
+
+  testquynx@0.0.4(got@11.8.6):
+    dependencies:
+      '@aptos-labs/ts-sdk': 4.0.0(got@11.8.6)
+      form-data: 4.0.4
+      js-base64: 3.7.8
+      jwt-decode: 4.0.0
+      poseidon-lite: 0.2.1
+    transitivePeerDependencies:
+      - got
 
   tiny-invariant@1.3.3: {}
 

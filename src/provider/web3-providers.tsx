@@ -9,7 +9,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   };
   return (
     <AptosWalletAdapterProvider
-      autoConnect={true}
+    autoConnect={true}
       dappConfig={dappConfig}
       onError={(error) => {
         console.log("error", error);

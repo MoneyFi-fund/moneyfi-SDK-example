@@ -10,10 +10,11 @@ import {
 import { useState } from "react";
 import WalletButton from "./components/wallet-button";
 import { BalancePreviewComponent } from "./components/transactions/balance-preview-component";
-import { DepositComponent } from "./components/transactions/deposit-component";
-import { WithdrawComponent } from "./components/transactions/withdraw-component";
+import { DepositComponent } from "./components/transactions/deposit";
+import { WithdrawComponent } from "./components/transactions/withdraw";
 import WalletConnectModal from "./components/wallet-connect-modal";
 import moneyFi from "../../../public/logo/logo.svg";
+import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
 export const DashboardPage = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -35,13 +36,14 @@ export const DashboardPage = () => {
       </Box>
 
       {/* Main Content */}
-      <Container maxW="7xl" py={8}>
-        <VStack align="stretch" spaceX={8} gap={6}>
-          <Text fontSize="xl" fontWeight="semibold">
+      <Container maxW="full" p={8}>
+        <VStack align="stretch" gap={6}>
+          <Text fontSize="2xl" fontWeight="semibold">
             Dashboard
           </Text>
 
-          <SimpleGrid columns={{ base: 1, md: 3 }} gap={6}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
+            <CheckWalletAccount />
             <BalancePreviewComponent />
             <DepositComponent />
             <WithdrawComponent />
