@@ -15,6 +15,9 @@ import { WithdrawComponent } from "./components/transactions/withdraw";
 import WalletConnectModal from "./components/wallet-connect-modal";
 import moneyFi from "../../../public/logo/logo.svg";
 import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
+import { CreatePartnershipComponent } from "./components/account/create-partnership";
+import { CreateUserComponent } from "./components/account/create-user";
+import { InitAccountComponent } from "./components/account/init-account";
 export const DashboardPage = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -41,8 +44,10 @@ export const DashboardPage = () => {
           <Text fontSize="2xl" fontWeight="semibold">
             Dashboard
           </Text>
-
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
+            <CreatePartnershipComponent />
+            <CreateUserComponent />
+            <InitAccountComponent />
             <CheckWalletAccount />
             <BalancePreviewComponent />
             <DepositComponent />
