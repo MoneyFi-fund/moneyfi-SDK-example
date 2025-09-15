@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/provider/auth-provider";
 import { useDepositMutation } from "@/hooks/use-moneyfi-queries";
 import { APTOS_ADDRESS } from "@/constants/address";
+import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
 
 const tokens = createListCollection({
   items: [
@@ -25,6 +26,12 @@ const tokens = createListCollection({
 
 export const DepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
+  console.log(
+    "%c🔑 hasWalletAccount: %c" + hasWalletAccount,
+    "background: #2d3748; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;",
+    "background: #3182ce; color: #fff; padding: 2px 6px; border-radius: 4px;"
+  );
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
@@ -75,6 +82,48 @@ export const DepositComponent: React.FC = () => {
           <Text color="gray.400">
             Please connect your wallet to deposit funds.
           </Text>
+        </Card.Body>
+      </Card.Root>
+    );
+  }
+
+  if (!hasWalletAccount && !isCheckingAccount) {
+    return (
+      <Card.Root
+      bg="black"
+      border="2px solid white"
+      borderRadius="0"
+      boxShadow="4px 4px 0px white"
+      transition="all 0.3s ease"
+      _hover={{
+        transform: "translate(-1px, -1px)",
+        boxShadow: "5px 5px 0px white",
+      }}
+    >
+        <Card.Header>
+          <Text fontSize="lg" fontWeight="semibold" color="white">
+            MoneyFi Account Status
+          </Text>
+        </Card.Header>
+        <Card.Body>
+          <VStack align="stretch" gap={3}>
+            <Alert.Root
+              status="warning"
+              bg="yellow.800"
+              border="2px solid yellow.300"
+              borderRadius="0"
+              boxShadow="3px 3px 0px yellow.300"
+            >
+              <Alert.Description>
+                <Text color="yellow.100" fontWeight="bold">
+                  Account not found
+                </Text>
+                <Text color="yellow.200" fontSize="sm" mt={1}>
+                  You need a MoneyFi account to deposit funds. Please contact support or create an account first.
+                </Text>
+              </Alert.Description>
+            </Alert.Root>
+          </VStack>
         </Card.Body>
       </Card.Root>
     );
@@ -164,8 +213,8 @@ export const DepositComponent: React.FC = () => {
 
           <Button
             onClick={handleDeposit}
-            loading={depositMutation.isPending}
-            disabled={!amount || depositMutation.isPending}
+            loading={depositMutation.isPending || isCheckingAccount}
+            disabled={!amount || depositMutation.isPending || isCheckingAccount || !hasWalletAccount}
             bg="blue.500"
             color="white"
             size="md"
@@ -196,7 +245,7 @@ export const DepositComponent: React.FC = () => {
               boxShadow: "5px 5px 0px gray.400",
             }}
           >
-            {depositMutation.isPending ? "Depositing..." : "Deposit"}
+            {isCheckingAccount ? "Checking Account..." : depositMutation.isPending ? "Depositing..." : "Deposit"}
           </Button>
 
           {successData ? (

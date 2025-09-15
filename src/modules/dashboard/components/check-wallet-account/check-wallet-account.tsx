@@ -12,7 +12,7 @@ import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
 export default function CheckWalletAccount() {
   const { isAuthenticated, user, signIn, signOut, error } = useAuth();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
-
+  
   const handleConnectWallet = async (walletName: string) => {
     try {
       await signIn(walletName);
