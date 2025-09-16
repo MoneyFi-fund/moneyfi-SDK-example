@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Web3Provider } from "@/provider/web3-providers";
 import ChakraUIProvider from "@/provider/chakra-provider";
 import { AuthProvider } from "@/provider/auth-provider";
+import Layout from "@/components/layout/layout";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -12,7 +13,7 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
-        if (error && typeof error === 'object' && 'status' in error) {
+        if (error && typeof error === "object" && "status" in error) {
           const status = error.status as number;
           if (status >= 400 && status < 500) return false;
         }
@@ -32,7 +33,9 @@ export const Route = createRootRoute({
         <ChakraUIProvider>
           <Web3Provider>
             <AuthProvider>
-              <Outlet />
+              <Layout>
+                <Outlet />
+              </Layout>
             </AuthProvider>
           </Web3Provider>
         </ChakraUIProvider>

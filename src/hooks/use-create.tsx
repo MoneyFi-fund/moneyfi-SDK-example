@@ -81,7 +81,6 @@ export const useGetOrCreatePartnershipMutation = () => {
       }
     },
     onSuccess: (data, variables) => {
-      console.log("Partnership created/retrieved successfully:", data);
       
       // Invalidate related queries
       queryClient.invalidateQueries({
@@ -101,7 +100,6 @@ export const useGetTxInitializationAccountMutation = () => {
   const queryClient = useQueryClient();
   const moneyFiAptos = new MoneyFiAptos();
   const userAddress = user?.address;
-  console.log(userAddress);
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
@@ -115,12 +113,13 @@ export const useGetTxInitializationAccountMutation = () => {
 
       try {
         const initializationData = await moneyFiAptos.getTxInitializationWalletAccount(address);
-        console.log("Initialization Data:", initializationData);
         // If this returns transaction data that needs to be signed
         if (initializationData && typeof initializationData === 'object' && 'function' in initializationData) {
           const transaction: InputTransactionData = {
             data: {
+              // @ts-ignore
               function: initializationData.function as `${string}::${string}::${string}`,
+              // @ts-ignore
               functionArguments: initializationData.functionArguments || [],
             },
           };
@@ -136,9 +135,6 @@ export const useGetTxInitializationAccountMutation = () => {
       }
     },
     onSuccess: (data, variables) => {
-      console.log("Account initialization successful:", data);
-      
-      // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: createQueryKeys.initialization(variables.address),
       });

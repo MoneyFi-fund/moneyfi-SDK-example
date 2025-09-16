@@ -2,6 +2,8 @@ import React from 'react';
 import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
 import { useAuth } from '@/provider/auth-provider';
 import { truncateAddress } from '@/auth/utils';
+import { menuItems } from '@/utils/menu';
+import { useNavigate } from '@tanstack/react-router';
 
 interface WalletButtonProps {
   onConnectClick: () => void;
@@ -9,6 +11,7 @@ interface WalletButtonProps {
 
 const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
   const { isAuthenticated, user, isConnecting, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Simple avatar component
   const SimpleAvatar: React.FC<{ name: string; size?: string }> = ({ name, size = "sm" }) => {
@@ -68,6 +71,17 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
         <Portal>
           <Menu.Positioner>
             <Menu.Content>
+              {menuItems.map((item) => (
+                <Menu.Item 
+                  key={item.name} 
+                  value={item.name.toLowerCase()}
+                  onClick={() => navigate({ to: item.path })}
+                  cursor="pointer"
+                >
+                  {item.name}
+                </Menu.Item>
+              ))}
+              <Menu.Separator />
               <Menu.Item value="copy" onClick={() => navigator.clipboard.writeText(user.address)}>
                 Copy Address
               </Menu.Item>

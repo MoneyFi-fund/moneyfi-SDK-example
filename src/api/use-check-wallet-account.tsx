@@ -20,7 +20,6 @@ export const useCheckWalletAccountQuery = () => {
       try {
         const moneyFiAptos = new MoneyFiAptos();
         const hasAccount = await moneyFiAptos.hasWalletAccount(user.address);
-        console.log("Wallet account exists:", hasAccount);
         return hasAccount;
       } catch (error) {
         console.error("Error checking wallet account:", error);

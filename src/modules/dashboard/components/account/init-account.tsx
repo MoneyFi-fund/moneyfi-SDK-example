@@ -5,14 +5,11 @@ import {
   Text,
   Button,
   Alert,
-  HStack,
-  Link,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
 import { useGetTxInitializationAccountMutation } from "@/hooks/use-create";
 import {
   useWallet as useAptosWallet,
-  type InputTransactionData,
 } from "@aptos-labs/wallet-adapter-react";
 import {
   AccountAddress,
@@ -24,7 +21,6 @@ import {
 } from "@aptos-labs/ts-sdk";
 import {
   APTOS_CONFIG,
-  APTOS_CONTRACT_FUNCTION,
   aptosClient,
 } from "@/constants/aptos";
 import { APTOS_ERROR_CODE } from "@/constants/error";
@@ -32,15 +28,15 @@ import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
 
 export const InitAccountComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const [signedTx, setSignedTx] = useState<string | null>(null);
-  const { data: hasWalletAccount, isLoading: isCheckingAccount } =
+  const [_signedTx, setSignedTx] = useState<string | null>(null);
+  const { data: hasWalletAccount, isLoading: _isCheckingAccount } =
     useCheckWalletAccountQuery();
 
   const {
     account: aptosAccount,
     signTransaction: aptosSignTransaction,
     submitTransaction: aptosSubmitTransaction,
-    signAndSubmitTransaction: aptosSignAndSubmitTransaction,
+    signAndSubmitTransaction: _aptosSignAndSubmitTransaction,
   } = useAptosWallet();
   const initAccountMutation = useGetTxInitializationAccountMutation();
 
@@ -48,7 +44,7 @@ export const InitAccountComponent: React.FC = () => {
     if (!user?.address || !aptosAccount?.address) return;
 
     try {
-      const { signed_tx } = await new Promise<{ signed_tx: string }>(
+      const data = await new Promise<any>(
         (resolve, reject) => {
           initAccountMutation.mutate(
             { address: user.address },
@@ -63,6 +59,11 @@ export const InitAccountComponent: React.FC = () => {
           );
         }
       );
+
+      const signed_tx = typeof data === 'object' && data?.signed_tx ? data.signed_tx : null;
+      if (!signed_tx) {
+        throw new Error("No signed transaction returned from initialization");
+      }
 
       setSignedTx(signed_tx);
 
