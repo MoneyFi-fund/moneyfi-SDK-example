@@ -1,9 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  useWallet,
-} from "@aptos-labs/wallet-adapter-react";
-import { MoneyFiAptos } from "testquynx";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { MoneyFiAptos  } from "testquynx";
 import { useAuth } from "@/provider/auth-provider";
 import {
   Deserializer,
@@ -105,15 +103,17 @@ export const useDepositMutation = ({
   amount,
 }: DepositMutationParams) => {
   const { isAuthenticated, user } = useAuth();
-  const {
-    signTransaction,
-    submitTransaction,
-  } = useWallet();
+  const { signTransaction, submitTransaction } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
   const moneyFiAptos = new MoneyFiAptos();
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
+  console.log("useDepositMutation called with:", {
+    tokenAddress,
+    userAddress,
+    amount,
+  });
 
   return useMutation({
     mutationFn: async ({
@@ -143,7 +143,7 @@ export const useDepositMutation = ({
 
       const de = new Deserializer(payload);
       const depositTx = RawTransaction.deserialize(de);
-      const depoistTxSimple = new SimpleTransaction(depositTx)
+      const depoistTxSimple = new SimpleTransaction(depositTx);
 
       const submitTx = await signTransaction({
         transactionOrPayload: depoistTxSimple,
@@ -152,7 +152,7 @@ export const useDepositMutation = ({
         transaction: depoistTxSimple,
         senderAuthenticator: submitTx.authenticator,
       });
-      
+
       return rst;
     },
 
@@ -169,5 +169,103 @@ export const useDepositMutation = ({
       cleanup();
     },
     retry: false,
+  });
+};
+
+export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
+  const { isAuthenticated, user } = useAuth();
+  const { account: aptosAccount } = useWallet();
+  const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
+  const moneyFiAptos = new MoneyFiAptos();
+      const { signTransaction, submitTransaction } = useWallet();
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
+
+  return useMutation({
+    mutationFn: async ({ address, payload }: {
+      address: string;
+      payload: {
+        encoded_signature: string;
+        encoded_pubkey: string;
+        full_message: string;
+      };
+    }) => {
+      if (!isAuthenticated || !user) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      if (!aptosAccount) {
+        throw new Error("Wallet account not connected");
+      }
+
+      // Transform the payload to match ReqWithdrawPayload structure
+      const transformedPayload = {
+        signature: payload.encoded_signature,
+        pubkey: payload.encoded_pubkey,
+        message: payload.full_message,
+      };
+      console.log(JSON.stringify(transformedPayload, null, 2));
+      console.log({ address, payload: transformedPayload });
+
+      // Debug: Check if method exists
+      console.log("SDK instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(moneyFiAptos)));
+
+      const response = await moneyFiAptos.reqWithdraw(address, transformedPayload);
+      console.log(response);
+
+      // Poll for withdraw status until it's done
+      const pollWithdrawStatus = async (): Promise<any> => {
+        while (true) {
+          const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
+          console.log("Withdraw status:", statusResponse);
+
+          if ((statusResponse as any) === "done" || (statusResponse as any)?.status === "done") {
+            console.log(tokenAddress, user.address, amount);
+            const txPayload = await moneyFiAptos.getWithdrawTxPayload(
+              tokenAddress,
+              user.address,
+              amount as bigint
+            );
+
+            return { withdrawResponse: response, txPayload };
+          }
+
+          // Wait 3 seconds before checking again
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      };
+
+      return await pollWithdrawStatus();
+    },
+    onSuccess: async (data) => {
+      console.log("Withdraw request successful:", data);
+      const { txPayload } = data;
+
+      const de = new Deserializer(txPayload);
+      const withdrawTx = RawTransaction.deserialize(de);
+      const withdrawTxSimple = new SimpleTransaction(withdrawTx);
+
+      const submitTx = await signTransaction({
+        transactionOrPayload: withdrawTxSimple,
+      });
+      const rst = await submitTransaction({
+        transaction: withdrawTxSimple,
+        senderAuthenticator: submitTx.authenticator,
+      });
+      console.log("Withdraw transaction submitted:", rst);
+
+      await triggerDelayedRefetch({
+        immediate: true,
+        delayed: true,
+      });
+    },
+    onError: (error) => {
+      console.error("Withdraw transaction failed:", error);
+      cleanup();
+    },
+    retry: false, // Don't retry mutations automatically
   });
 };

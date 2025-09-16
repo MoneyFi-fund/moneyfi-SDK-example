@@ -7,8 +7,9 @@ import {
 } from "@chakra-ui/react";
 import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
 import { CreatePartnershipComponent } from "./components/account/create-partnership";
-import { CreateUserComponent } from "./components/account/create-user";
-import { InitAccountComponent } from "./components/account/init-account";
+import { DepositComponent } from "@/modules/dashboard/components/transaction/deposit";
+import { WithdrawComponent } from "@/modules/dashboard/components/transaction/withdraw";
+import Stats from "../stats/stats";
 export const DashboardPage = () => {
 
   return (
@@ -20,10 +21,11 @@ export const DashboardPage = () => {
           </Text>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6}>
             <CreatePartnershipComponent />
-            <CreateUserComponent />
-            <InitAccountComponent />
             <CheckWalletAccount />
+            <DepositComponent />
+            <WithdrawComponent />
           </SimpleGrid>
+          <Stats />
         </VStack>
       </Container>
     </Box>

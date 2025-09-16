@@ -12,8 +12,10 @@ import {
   Select,
   createListCollection,
 } from "@chakra-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/provider/auth-provider";
-import { useDepositMutation } from "@/hooks/use-moneyfi-queries";
+import { useDepositMutation, moneyFiQueryKeys } from "@/hooks/use-moneyfi-queries";
+import { statsQueryKeys } from "@/hooks/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
 import { useGetOrCreateUserMutation, useGetTxInitializationAccountMutation } from "@/hooks/use-create";
@@ -41,53 +43,40 @@ const tokens = createListCollection({
   ],
 });
 
-// Workflow steps enum
-enum DepositStep {
-  CREATE_USER = 'CREATE_USER',
-  INIT_ACCOUNT = 'INIT_ACCOUNT',
-  DEPOSIT = 'DEPOSIT',
-}
-
 export const DepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
+  const queryClient = useQueryClient();
+  const { data: hasWalletAccount, isLoading: isCheckingAccount, refetch: refetchAccountStatus } = useCheckWalletAccountQuery();
   console.log(
     "%c🔑 hasWalletAccount: %c" + hasWalletAccount,
     "background: #2d3748; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;",
     "background: #3182ce; color: #fff; padding: 2px 6px; border-radius: 4px;"
   );
-
-  // Form state
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
-
-  // Workflow state
-  const [currentStep, setCurrentStep] = useState<DepositStep | null>(null);
-  const [errorState, setErrorState] = useState<{ step: DepositStep; error: string } | null>(null);
+  const [currentStep, setCurrentStep] = useState<'idle' | 'creating-user' | 'initializing-account' | 'depositing'>('idle');
+  const [stepError, setStepError] = useState<string | null>(null);
 
   const tokenAddress =
     selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
   const userAddress = user?.address;
 
-  // Aptos wallet hooks
+  // Hooks
+  const createUserMutation = useGetOrCreateUserMutation();
+  const initAccountMutation = useGetTxInitializationAccountMutation();
   const {
     account: aptosAccount,
     signTransaction: aptosSignTransaction,
     submitTransaction: aptosSubmitTransaction,
   } = useAptosWallet();
-
-  // Mutations
-  const createUserMutation = useGetOrCreateUserMutation();
-  const initAccountMutation = useGetTxInitializationAccountMutation();
   const depositMutation = useDepositMutation({
     tokenAddress,
     sender: userAddress || "",
     amount: BigInt(amount ? Math.floor(Number(amount) * 1_000_000) : 0),
   });
 
-  // Step 2: Initialize Aptos account
-  const executeInitAccount = async () => {
+  const checkOrCreateAptosAccount = async () => {
     if (!user?.address || !aptosAccount?.address) {
       throw new Error("User address or Aptos account not available");
     }
@@ -108,11 +97,13 @@ export const DepositComponent: React.FC = () => {
           );
         }
       );
+      console.log(data);
 
       const signed_tx = typeof data === 'object' && data?.signed_tx ? data.signed_tx : null;
       if (!signed_tx) {
         throw new Error("No signed transaction returned from initialization");
       }
+      console.log(signed_tx);
 
       const txBytes = new Uint8Array(
         atob(signed_tx)
@@ -160,44 +151,32 @@ export const DepositComponent: React.FC = () => {
     }
   };
 
-  // Helper function to get button text based on current step
-  const getButtonText = () => {
-    if (isCheckingAccount) return "Checking Account...";
-
-    switch (currentStep) {
-      case DepositStep.CREATE_USER:
-        return "Creating User...";
-      case DepositStep.INIT_ACCOUNT:
-        return "Initializing Account...";
-      case DepositStep.DEPOSIT:
-        return "Depositing...";
-      default:
-        return "Deposit";
-    }
-  };
-
-  // Check if any step is in progress
-  const isProcessing = currentStep !== null;
-
-  // Main deposit workflow handler
   const handleDeposit = async () => {
-    if (!amount) return;
+    if (!amount || !user?.address) {
+      return;
+    }
 
     setSuccessData(null);
-    setErrorState(null);
+    setStepError(null);
 
     try {
-      // Step 1: Create/Get User
-      setCurrentStep(DepositStep.CREATE_USER);
-      await new Promise<void>((resolve, reject) => {
+      setCurrentStep('creating-user');
+      await new Promise<any>((resolve, reject) => {
         createUserMutation.mutate(
           {
-            address: user?.address || "",
+            address: user.address,
             refBy: undefined
           },
           {
-            onSuccess: () => {
-              resolve();
+            onSuccess: async (data) => {
+              // Invalidate user-related queries after successful user creation
+              await queryClient.invalidateQueries({
+                queryKey: ['user', user.address],
+              });
+              await queryClient.invalidateQueries({
+                queryKey: ['userProfile'],
+              });
+              resolve(data);
             },
             onError: (error) => {
               reject(error);
@@ -205,24 +184,45 @@ export const DepositComponent: React.FC = () => {
           }
         );
       });
-
-      // Step 2: Initialize Account (if needed)
+      console.log("User creation checked/processed.");
       if (!hasWalletAccount) {
-        setCurrentStep(DepositStep.INIT_ACCOUNT);
-        await executeInitAccount();
-      }
+        setCurrentStep('initializing-account');
+        console.log("No wallet account found, initializing...");
+        await checkOrCreateAptosAccount();
 
-      // Step 3: Execute Deposit
-      setCurrentStep(DepositStep.DEPOSIT);
-      await new Promise<void>((resolve, reject) => {
+        // Invalidate wallet account queries after successful account initialization
+        await queryClient.invalidateQueries({
+          queryKey: ['checkWalletAccount'],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['walletAccount', user.address],
+        });
+
+        await refetchAccountStatus();
+      }
+      console.log("Wallet account exists, proceeding to deposit...");
+
+      setCurrentStep('depositing');
+      await new Promise<any>((resolve, reject) => {
+        console.log("Starting deposit mutation...");
         depositMutation.mutate(
           { amount, tokenAddress },
           {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
+              queryClient.invalidateQueries({
+                queryKey: moneyFiQueryKeys.balance(user.address),
+              });
+              queryClient.invalidateQueries({
+                queryKey: ['transactions', user.address],
+              });
+              queryClient.invalidateQueries({
+                queryKey: statsQueryKeys.user(user.address),
+              });
+
               setAmount("");
               setSuccessData({ hash: data.hash });
-              setCurrentStep(null);
-              resolve();
+              setCurrentStep('idle');
+              resolve(data);
             },
             onError: (error) => {
               reject(error);
@@ -230,15 +230,10 @@ export const DepositComponent: React.FC = () => {
           }
         );
       });
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      setErrorState({
-        step: currentStep || DepositStep.CREATE_USER,
-        error: errorMessage
-      });
-      setCurrentStep(null);
-      console.error("Deposit workflow failed:", error);
+      console.error('Deposit process failed:', error);
+      setStepError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setCurrentStep('idle');
     }
   };
 
@@ -264,6 +259,48 @@ export const DepositComponent: React.FC = () => {
           <Text color="gray.400">
             Please connect your wallet to deposit funds.
           </Text>
+        </Card.Body>
+      </Card.Root>
+    );
+  }
+
+  if (!hasWalletAccount && !isCheckingAccount) {
+    return (
+      <Card.Root
+      bg="black"
+      border="2px solid white"
+      borderRadius="0"
+      boxShadow="4px 4px 0px white"
+      transition="all 0.3s ease"
+      _hover={{
+        transform: "translate(-1px, -1px)",
+        boxShadow: "5px 5px 0px white",
+      }}
+    >
+        <Card.Header>
+          <Text fontSize="lg" fontWeight="semibold" color="white">
+            MoneyFi Account Status
+          </Text>
+        </Card.Header>
+        <Card.Body>
+          <VStack align="stretch" gap={3}>
+            <Alert.Root
+              status="warning"
+              bg="yellow.800"
+              border="2px solid yellow.300"
+              borderRadius="0"
+              boxShadow="3px 3px 0px yellow.300"
+            >
+              <Alert.Description>
+                <Text color="yellow.100" fontWeight="bold">
+                  Account not found
+                </Text>
+                <Text color="yellow.200" fontSize="sm" mt={1}>
+                  You need a MoneyFi account to deposit funds. Please contact support or create an account first.
+                </Text>
+              </Alert.Description>
+            </Alert.Root>
+          </VStack>
         </Card.Body>
       </Card.Root>
     );
@@ -353,8 +390,8 @@ export const DepositComponent: React.FC = () => {
 
           <Button
             onClick={handleDeposit}
-            loading={isProcessing || isCheckingAccount}
-            disabled={!amount || isProcessing || isCheckingAccount}
+            loading={currentStep !== 'idle' || isCheckingAccount}
+            disabled={!amount || currentStep !== 'idle' || isCheckingAccount}
             bg="blue.500"
             color="white"
             size="md"
@@ -385,7 +422,16 @@ export const DepositComponent: React.FC = () => {
               boxShadow: "5px 5px 0px gray.400",
             }}
           >
-            {getButtonText()}
+            {isCheckingAccount
+              ? "Checking Account..."
+              : currentStep === 'creating-user'
+              ? "Creating User..."
+              : currentStep === 'initializing-account'
+              ? "Initializing Account..."
+              : currentStep === 'depositing'
+              ? "Depositing..."
+              : "Deposit"
+            }
           </Button>
 
           {successData ? (
@@ -424,7 +470,7 @@ export const DepositComponent: React.FC = () => {
             </Alert.Root>
           ) : null}
 
-          {errorState && (
+          {(stepError || depositMutation.isError || createUserMutation.isError || initAccountMutation.isError) && (
             <Alert.Root
               status="error"
               bg="red.900"
@@ -433,16 +479,20 @@ export const DepositComponent: React.FC = () => {
               boxShadow="4px 4px 0px red.400"
             >
               <Alert.Description>
-                <VStack align="stretch" gap={1}>
-                  <Text color="red.100" fontWeight="bold">
-                    {errorState.step === DepositStep.CREATE_USER && "User Creation Failed"}
-                    {errorState.step === DepositStep.INIT_ACCOUNT && "Account Initialization Failed"}
-                    {errorState.step === DepositStep.DEPOSIT && "Deposit Failed"}
-                  </Text>
-                  <Text color="red.200" fontSize="sm">
-                    {errorState.error}
-                  </Text>
-                </VStack>
+                <Text color="red.100" fontWeight="bold">
+                  {stepError ||
+                    (depositMutation.error instanceof Error
+                      ? depositMutation.error.message
+                      : depositMutation.isError
+                      ? "Deposit failed"
+                      : createUserMutation.error instanceof Error
+                      ? createUserMutation.error.message
+                      : createUserMutation.isError
+                      ? "User creation failed"
+                      : initAccountMutation.error instanceof Error
+                      ? initAccountMutation.error.message
+                      : "Account initialization failed")}
+                </Text>
               </Alert.Description>
             </Alert.Root>
           )}
