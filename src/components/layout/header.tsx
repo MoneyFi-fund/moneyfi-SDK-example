@@ -4,14 +4,23 @@ import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import moneyFi from "../../../public/logo/logo.svg";
 import WalletConnectModal from "@/modules/dashboard/components/wallet-connect-modal";
+import { CompactThemeToggle } from "@/components/theme-toggle";
+import { useThemeColors } from "@/provider/theme-provider";
 import { menuItems } from "@/utils/menu";
 
 export default function Header() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const location = useLocation();
+  const { colors, cardColors } = useThemeColors();
 
   return (
-    <Box bg="white" borderBottom="1px solid" borderColor="border" py={4}>
+    <Box 
+      bg={colors.surfaceBg} 
+      borderBottom="1px solid" 
+      borderColor={cardColors.border} 
+      py={4}
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+    >
       <Container maxW="7xl">
         <HStack justify="space-between" align="center">
           <HStack align="center" gap={2}>
@@ -19,7 +28,7 @@ export default function Header() {
             <Text
               fontSize="2xl"
               fontWeight="medium"
-              color="black"
+              color={colors.onSurface}
               className="text-xl"
             >
               MoneyFi SDK
@@ -33,9 +42,9 @@ export default function Header() {
                 to={item.path}
               >
                 <ChakraLink
-                  color={location.pathname === item.path ? "blue.500" : "gray.600"}
+                  color={location.pathname === item.path ? "primary.500" : colors.onSurfaceVariant}
                   fontWeight={location.pathname === item.path ? "semibold" : "medium"}
-                  _hover={{ color: "blue.500" }}
+                  _hover={{ color: "primary.500" }}
                   transition="color 0.2s"
                 >
                   {item.name}
@@ -44,7 +53,10 @@ export default function Header() {
             ))}
           </HStack>
 
-          <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
+          <HStack gap={3}>
+            <CompactThemeToggle />
+            <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
+          </HStack>
 
           <WalletConnectModal
             isOpen={isWalletModalOpen}

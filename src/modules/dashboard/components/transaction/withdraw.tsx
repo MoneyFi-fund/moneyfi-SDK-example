@@ -12,9 +12,11 @@ import {
   Select,
   createListCollection,
 } from "@chakra-ui/react";
+import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useAuth } from "@/provider/auth-provider";
+import { useThemeColors } from "@/provider/theme-provider";
 import { useWithdrawMutation } from "@/hooks/use-moneyfi-queries";
-import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
+import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -36,6 +38,7 @@ type CreateWithdrawRequestPayload = {
 
 export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { cardColors, buttonColors } = useThemeColors();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } =
     useCheckWalletAccountQuery();
   const { data: userStats, isLoading: isLoadingStats } =
@@ -50,12 +53,30 @@ export const WithdrawComponent: React.FC = () => {
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
 
-  const tokenAddress = selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
-  const amountInSmallestUnit = amount ? BigInt(Math.floor(parseFloat(amount) * 1_000_000)) : BigInt(0);
-  const withdrawMutation = useWithdrawMutation(tokenAddress, amountInSmallestUnit);
+  const tokenAddress =
+    selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
+  const amountInSmallestUnit = amount
+    ? BigInt(Math.floor(parseFloat(amount) * 1_000_000))
+    : BigInt(0);
+  const withdrawMutation = useWithdrawMutation(
+    tokenAddress,
+    amountInSmallestUnit
+  );
+
+  // Validation logic
+  const maxWithdrawAmount = userStats?.total_value ? Number(userStats.total_value) : 0;
+  const currentAmount = amount ? parseFloat(amount) : 0;
+  const isAmountExceeded = currentAmount > maxWithdrawAmount;
+  const isAmountValid = currentAmount > 0 && !isAmountExceeded;
+
+  const handleMaxAmount = () => {
+    if (userStats?.total_value) {
+      setAmount(userStats.total_value.toString());
+    }
+  };
 
   const handleWithdraw = async () => {
-    if (!isAuthenticated || !user || !amount) {
+    if (!isAuthenticated || !user || !amount || !isAmountValid) {
       return;
     }
     const amountNum = parseFloat(amount.toString());
@@ -63,7 +84,8 @@ export const WithdrawComponent: React.FC = () => {
     const message = {
       amount: amountNum,
       target_chain_id: -1,
-      token_address: selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT
+      token_address:
+        selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT,
     };
     console.log(message);
 
@@ -76,7 +98,7 @@ export const WithdrawComponent: React.FC = () => {
       encoded_signature: withdrawSignature.signature.toString(),
       // @ts-ignore
       encoded_pubkey: aptosAccount.publicKey.toString(),
-      full_message: withdrawSignature.fullMessage.toString()
+      full_message: withdrawSignature.fullMessage.toString(),
     };
     // @ts-ignore
     const isWalletFromEd25519 = isEd25519(aptosAccount?.publicKey.toString());
@@ -93,24 +115,28 @@ export const WithdrawComponent: React.FC = () => {
       payload = {
         encoded_signature: encodedKeylessSignature.toString(),
         encoded_pubkey: encodedKeylessPubkey.toString(),
-        full_message: withdrawSignature.fullMessage.toString()
+        full_message: withdrawSignature.fullMessage.toString(),
       };
     } else {
       payload = {
         encoded_signature: withdrawSignature.signature.toString(),
         // @ts-ignore
         encoded_pubkey: aptosAccount.publicKey.toString(),
-        full_message: withdrawSignature.fullMessage.toString()
+        full_message: withdrawSignature.fullMessage.toString(),
       };
     }
-    console.log(payload.encoded_signature, payload.encoded_pubkey, withdrawSignature.fullMessage);
+    console.log(
+      payload.encoded_signature,
+      payload.encoded_pubkey,
+      withdrawSignature.fullMessage
+    );
 
     setSuccessData(null);
 
     try {
       const result = await withdrawMutation.mutateAsync({
         address: user.address,
-        payload
+        payload,
       });
       console.log(result);
       setAmount("");
@@ -122,23 +148,32 @@ export const WithdrawComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg="gray.900"
-        border="2px solid white"
-        borderRadius="0"
-        boxShadow="4px 4px 0px white"
-        transition="all 0.3s ease"
+        bg={cardColors.background}
+        borderRadius={materialDesign3Theme.borderRadius.md}
+        boxShadow={materialDesign3Theme.elevation.level1}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translate(-1px, -1px)",
-          boxShadow: "5px 5px 0px white",
+          boxShadow: materialDesign3Theme.elevation.level2,
         }}
+        border="1px solid"
+        borderColor={cardColors.border}
       >
-        <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold" color="white">
+        <Card.Header p={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+            fontWeight="medium"
+            color={cardColors.text}
+          >
             Withdraw Funds
           </Text>
         </Card.Header>
-        <Card.Body>
-          <Text color="gray.400">
+        <Card.Body px={6} pb={6}>
+          <Text
+            color={cardColors.textSecondary}
+            fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+            lineHeight={materialDesign3Theme.typography.bodyMedium.lineHeight}
+          >
             Please connect your wallet to withdraw funds.
           </Text>
         </Card.Body>
@@ -149,35 +184,49 @@ export const WithdrawComponent: React.FC = () => {
   if (!hasWalletAccount && !isCheckingAccount) {
     return (
       <Card.Root
-        bg="black"
-        border="2px solid white"
-        borderRadius="0"
-        boxShadow="4px 4px 0px white"
-        transition="all 0.3s ease"
+        bg={cardColors.background}
+        borderRadius={materialDesign3Theme.borderRadius.md}
+        boxShadow={materialDesign3Theme.elevation.level1}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translate(-1px, -1px)",
-          boxShadow: "5px 5px 0px white",
+          boxShadow: materialDesign3Theme.elevation.level2,
         }}
+        border="1px solid"
+        borderColor={cardColors.border}
       >
-        <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold" color="white">
+        <Card.Header p={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+            fontWeight="medium"
+            color={cardColors.text}
+          >
             MoneyFi Account Status
           </Text>
         </Card.Header>
-        <Card.Body>
-          <VStack align="stretch" gap={3}>
+        <Card.Body px={6} pb={6}>
+          <VStack align="stretch" gap={4}>
             <Alert.Root
               status="warning"
-              bg="yellow.800"
-              border="2px solid yellow.300"
-              borderRadius="0"
-              boxShadow="3px 3px 0px yellow.300"
+              bg="warning.50"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              border="1px solid"
+              borderColor="warning.200"
+              p={4}
             >
               <Alert.Description>
-                <Text color="yellow.100" fontWeight="bold">
+                <Text
+                  color="warning.800"
+                  fontWeight="medium"
+                  fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                >
                   Account not found
                 </Text>
-                <Text color="yellow.200" fontSize="sm" mt={1}>
+                <Text
+                  color="warning.700"
+                  fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  mt={2}
+                >
                   You need a MoneyFi account to withdraw funds. Please contact
                   support or create an account first.
                 </Text>
@@ -191,40 +240,54 @@ export const WithdrawComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg="black"
-      border="2px solid white"
-      borderRadius="0"
-      boxShadow="4px 4px 0px white"
-      transition="all 0.3s ease"
+      bg={cardColors.background}
+      borderRadius={materialDesign3Theme.borderRadius.md}
+      boxShadow={materialDesign3Theme.elevation.level1}
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        transform: "translate(-1px, -1px)",
-        boxShadow: "5px 5px 0px white",
+        boxShadow: materialDesign3Theme.elevation.level2,
       }}
+      border="1px solid"
+      borderColor={cardColors.border}
     >
-      <Card.Header>
-        <Text fontSize="lg" fontWeight="semibold" color="white">
+      <Card.Header p={6}>
+        <Text
+          fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+          lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+          fontWeight="medium"
+          color={cardColors.text}
+        >
           Withdraw Funds
         </Text>
       </Card.Header>
-      <Card.Body>
-        <VStack align="stretch" gap={4}>
+      <Card.Body px={6} pb={6}>
+        <VStack align="stretch" gap={6}>
           {userStats && (
             <Card.Root
-              bg="gray.800"
-              border="2px solid gray.400"
-              borderRadius="0"
-              boxShadow="3px 3px 0px gray.400"
+              bg={cardColors.background}
+              border="1px solid"
+              borderColor={cardColors.border}
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              boxShadow={materialDesign3Theme.elevation.level1}
             >
-              <Card.Body>
+              <Card.Body p={4}>
                 <VStack align="stretch" gap={2}>
-                  <Text fontSize="sm" fontWeight="medium" color="gray.300">
+                  <Text
+                    fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                    fontWeight="medium"
+                    color={cardColors.textSecondary}
+                  >
                     Total Portfolio Value
                   </Text>
-                  <Text fontSize="xl" fontWeight="bold" color="white">
+                  <Text
+                    fontSize={materialDesign3Theme.typography.headlineSmall.fontSize}
+                    fontWeight="bold"
+                    color={cardColors.text}
+                  >
                     $
-                    {userStats.total_value
+                    {(userStats.total_value
                       ? Number(userStats.total_value).toLocaleString()
-                      : "0"}
+                      : "0")}
                   </Text>
                 </VStack>
               </Card.Body>
@@ -232,7 +295,11 @@ export const WithdrawComponent: React.FC = () => {
           )}
 
           <VStack align="stretch" gap={2}>
-            <Text fontSize="sm" fontWeight="medium" color="white">
+            <Text
+              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+              fontWeight="medium"
+              color={cardColors.textSecondary}
+            >
               Token
             </Text>
             <Select.Root
@@ -245,18 +312,22 @@ export const WithdrawComponent: React.FC = () => {
               <Select.HiddenSelect />
               <Select.Control>
                 <Select.Trigger
-                  border="3px solid white"
-                  borderRadius="0"
-                  color="white"
-                  bg="black"
-                  transition="all 0.3s ease"
+                  border="1px solid"
+                  borderColor={cardColors.border}
+                  borderRadius={materialDesign3Theme.borderRadius.sm}
+                  color={cardColors.text}
+                  bg={cardColors.background}
+                  minH="48px"
+                  px={4}
+                  transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                   _hover={{
-                    transform: "translate(2px, 2px)",
-                    boxShadow: "3px 3px 0px white",
+                    borderColor: cardColors.border,
+                    boxShadow: materialDesign3Theme.elevation.level1,
                   }}
                   _focus={{
-                    borderColor: "red.400",
-                    boxShadow: "5px 5px 0px red.400",
+                    borderColor: "primary.500",
+                    boxShadow: `0 0 0 2px primary.200`,
+                    outline: "none",
                   }}
                 >
                   <Select.ValueText placeholder="Select token" />
@@ -267,9 +338,22 @@ export const WithdrawComponent: React.FC = () => {
               </Select.Control>
               <Portal>
                 <Select.Positioner>
-                  <Select.Content bg="black" border="2px solid white">
+                  <Select.Content
+                    bg={cardColors.background}
+                    border="1px solid"
+                    borderColor="neutral.200"
+                    borderRadius={materialDesign3Theme.borderRadius.sm}
+                    boxShadow={materialDesign3Theme.elevation.level3}
+                  >
                     {tokens.items.map((token) => (
-                      <Select.Item item={token} key={token.value} color="white">
+                      <Select.Item
+                        item={token}
+                        key={token.value}
+                        color="neutral.100"
+                        _hover={{ bg: "neutral.100" }}
+                        px={4}
+                        py={3}
+                      >
                         {token.label}
                         <Select.ItemIndicator />
                       </Select.Item>
@@ -281,9 +365,28 @@ export const WithdrawComponent: React.FC = () => {
           </VStack>
 
           <VStack align="stretch" gap={2}>
-            <Text fontSize="sm" fontWeight="medium" color="white">
-              Amount
-            </Text>
+            <HStack justify="space-between">
+              <Text
+                fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                fontWeight="medium"
+                color={cardColors.textSecondary}
+              >
+                Amount
+              </Text>
+              {userStats?.total_value && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMaxAmount}
+                  color="primary.600"
+                  fontSize={materialDesign3Theme.typography.labelSmall.fontSize}
+                  fontWeight="medium"
+                  _hover={{ bg: "primary.50" }}
+                >
+                  MAX
+                </Button>
+              )}
+            </HStack>
             <Input
               type="number"
               placeholder="0.00"
@@ -291,16 +394,34 @@ export const WithdrawComponent: React.FC = () => {
               onChange={(e) => setAmount(e.target.value)}
               step="0.000001"
               min="0"
-              border="2px solid white"
-              borderRadius="0"
-              color="white"
-              bg="black"
-              _placeholder={{ color: "gray.400" }}
+              border="1px solid"
+              borderColor={isAmountExceeded ? "error.500" : cardColors.border}
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              minH="48px"
+              px={4}
+              bg={cardColors.background}
+              color={cardColors.text}
+              _placeholder={{ color: cardColors.textSecondary }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              _hover={{
+                borderColor: isAmountExceeded ? "error.500" : cardColors.border,
+              }}
               _focus={{
-                borderColor: "red.400",
-                boxShadow: "5px 5px 0px red.400",
+                borderColor: isAmountExceeded ? "error.500" : "primary.500",
+                boxShadow: isAmountExceeded 
+                  ? `0 0 0 2px error.200` 
+                  : `0 0 0 2px primary.200`,
+                outline: "none",
               }}
             />
+            {isAmountExceeded && (
+              <Text
+                color="error.600"
+                fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+              >
+                Amount cannot exceed your total portfolio value of ${maxWithdrawAmount.toLocaleString()}
+              </Text>
+            )}
           </VStack>
 
           <Button
@@ -310,41 +431,37 @@ export const WithdrawComponent: React.FC = () => {
             }
             disabled={
               !amount ||
+              !isAmountValid ||
               withdrawMutation.isPending ||
               isCheckingAccount ||
               !hasWalletAccount ||
               isLoadingStats
             }
-            bg="red.600"
-            color="white"
-            size="md"
-            border="3px solid white"
-            borderRadius="0"
-            boxShadow="5px 5px 0px white"
-            transition="all 0.3s ease"
-            fontWeight="bold"
+            bg={buttonColors.error.background}
+            color={buttonColors.error.text}
+            minH="48px"
+            px={6}
+            borderRadius="sm"
+            fontWeight="medium"
+            fontSize="label-lg"
+            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            boxShadow="sm"
             _hover={{
-              bg: "red.500",
-              color: "white",
-              transform: "translate(2px, 2px)",
-              boxShadow: "3px 3px 0px white",
+              bg: buttonColors.error.hover,
+              boxShadow: "md",
             }}
             _active={{
-              transform: "translate(4px, 4px)",
-              boxShadow: "1px 1px 0px white",
+              bg: buttonColors.error.active,
+              boxShadow: "sm",
             }}
             _loading={{
-              bg: "red.500",
-              color: "white",
-              transform: "none",
-              boxShadow: "5px 5px 0px white",
+              bg: buttonColors.error.disabled,
             }}
             _disabled={{
-              bg: "gray.600",
-              color: "gray.300",
+              bg: buttonColors.error.disabled,
+              color: cardColors.textSecondary,
               cursor: "not-allowed",
-              transform: "none",
-              boxShadow: "5px 5px 0px gray.400",
+              boxShadow: "none",
             }}
           >
             {isCheckingAccount
@@ -359,29 +476,43 @@ export const WithdrawComponent: React.FC = () => {
           {successData ? (
             <Alert.Root
               status="success"
-              bg="green.900"
-              border="2px solid green.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px green.400"
+              bg="success.50"
+              border="1px solid"
+              borderColor="success.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
                 <VStack align="stretch" gap={2}>
-                  <Text color="green.100" fontWeight="bold">
+                  <Text
+                    color="success.800"
+                    fontWeight="medium"
+                    fontSize={
+                      materialDesign3Theme.typography.labelLarge.fontSize
+                    }
+                  >
                     Withdrawal successful!
                   </Text>
                   <HStack>
-                    <Text fontSize="sm" color="green.200">
+                    <Text
+                      fontSize={
+                        materialDesign3Theme.typography.bodySmall.fontSize
+                      }
+                      color="success.700"
+                    >
                       Transaction:
                     </Text>
                     <Link
                       href={`https://explorer.aptoslabs.com/txn/${successData.hash}?network=mainnet`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      color="green.300"
-                      fontSize="sm"
+                      color="primary.600"
+                      fontSize={
+                        materialDesign3Theme.typography.bodySmall.fontSize
+                      }
                       fontFamily="mono"
                       textDecoration="underline"
-                      _hover={{ color: "green.100" }}
+                      _hover={{ color: "primary.700" }}
                     >
                       {successData.hash.slice(0, 8)}...
                       {successData.hash.slice(-8)}
@@ -395,13 +526,18 @@ export const WithdrawComponent: React.FC = () => {
           {withdrawMutation.isError && (
             <Alert.Root
               status="error"
-              bg="red.900"
-              border="2px solid red.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px red.400"
+              bg="error.50"
+              border="1px solid"
+              borderColor="error.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
-                <Text color="red.100" fontWeight="bold">
+                <Text
+                  color="error.800"
+                  fontWeight="medium"
+                  fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                >
                   {withdrawMutation.error instanceof Error
                     ? withdrawMutation.error.message
                     : "Withdrawal failed"}

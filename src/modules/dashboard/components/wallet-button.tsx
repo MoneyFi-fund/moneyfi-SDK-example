@@ -4,6 +4,8 @@ import { useAuth } from '@/provider/auth-provider';
 import { truncateAddress } from '@/auth/utils';
 import { menuItems } from '@/utils/menu';
 import { useNavigate } from '@tanstack/react-router';
+import { materialDesign3Theme } from '@/theme/material-design-3';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface WalletButtonProps {
   onConnectClick: () => void;
@@ -11,6 +13,7 @@ interface WalletButtonProps {
 
 const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
   const { isAuthenticated, user, isConnecting, signOut } = useAuth();
+  const { menuColors, buttonColors } = useThemeColors();
   const navigate = useNavigate();
 
   // Simple avatar component
@@ -21,13 +24,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
         w={displaySize}
         h={displaySize}
         borderRadius="full"
-        bg="blue.500"
+        bg="purple.400"
         color="white"
         display="flex"
         alignItems="center"
         justifyContent="center"
-        fontSize="sm"
-        fontWeight="bold"
+        fontSize={materialDesign3Theme.typography.labelMedium.fontSize}
+        fontWeight="medium"
       >
         {name.slice(2, 4).toUpperCase()}
       </Box>
@@ -41,27 +44,31 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
         <Menu.Trigger asChild>
           <Button
             variant="outline"
-            size="md"
-            h="40px"
-            borderColor="black"
-            border="3px solid black"
-            borderRadius="0"
-            bg="white"
-            boxShadow="5px 5px 0px black"
-            transition="all 0.3s ease"
-            _hover={{ 
-              bg: "gray.50",
-              transform: "translate(2px, 2px)",
-              boxShadow: "3px 3px 0px black"
+            minH="40px"
+            px={4}
+            borderColor="neutral.300"
+            border="1px solid"
+            borderRadius="sm"
+            bg="surface.50"
+            boxShadow="sm"
+            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            _hover={{
+              bg: "neutral.100",
+              borderColor: "neutral.400",
+              boxShadow: "md",
             }}
             _active={{
-              transform: "translate(4px, 4px)",
-              boxShadow: "1px 1px 0px black"
+              bg: "neutral.200",
+              boxShadow: "sm",
             }}
           >
             <HStack gap={2}>
               <SimpleAvatar name={user.address} size="sm" />
-              <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              <Text
+                fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                fontWeight="medium"
+                color="black"
+              >
                 {truncateAddress(user.address)}
               </Text>
             </HStack>
@@ -70,29 +77,61 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
         
         <Portal>
           <Menu.Positioner>
-            <Menu.Content>
+            <Menu.Content
+              bg={menuColors.background}
+              border="1px solid"
+              borderColor={menuColors.border}
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              boxShadow={materialDesign3Theme.elevation.level3}
+              minW="200px"
+            >
               {menuItems.map((item) => (
-                <Menu.Item 
-                  key={item.name} 
+                <Menu.Item
+                  key={item.name}
                   value={item.name.toLowerCase()}
                   onClick={() => navigate({ to: item.path })}
                   cursor="pointer"
+                  px={4}
+                  py={3}
+                  borderRadius={materialDesign3Theme.borderRadius.xs}
+                  fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                  color={menuColors.text}
+                  _hover={{ 
+                    bg: menuColors.hover,
+                    color: menuColors.text
+                  }}
+                  transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                 >
                   {item.name}
                 </Menu.Item>
               ))}
-              <Menu.Separator />
-              <Menu.Item value="copy" onClick={() => navigator.clipboard.writeText(user.address)}>
+              <Menu.Separator borderColor={menuColors.separator} />
+              <Menu.Item
+                value="copy"
+                onClick={() => navigator.clipboard.writeText(user.address)}
+                px={4}
+                py={3}
+                borderRadius={materialDesign3Theme.borderRadius.xs}
+                fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                color={menuColors.text}
+                _hover={{ 
+                  bg: menuColors.hover,
+                  color: menuColors.text
+                }}
+                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
                 Copy Address
               </Menu.Item>
-              <Menu.Item 
-                value="disconnect" 
-                onClick={signOut} 
-                color="red.500"
-                _hover={{ bg: "red.50" }}
-                borderRadius="sm"
-                px={3}
-                py={2}
+              <Menu.Item
+                value="disconnect"
+                onClick={signOut}
+                color="error.600"
+                px={4}
+                py={3}
+                borderRadius={materialDesign3Theme.borderRadius.xs}
+                fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                _hover={{ bg: "error.50", color: "error.700" }}
+                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               >
                 Disconnect
               </Menu.Item>
@@ -108,28 +147,25 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
     <Button
       onClick={onConnectClick}
       loading={isConnecting}
-      size="md"
-      h="40px"
-      bg="blue.400"
-      color="white"
-      border="3px solid black"
-      borderRadius="0"
-      boxShadow="5px 5px 0px black"
-      transition="all 0.3s ease"
-      fontWeight="bold"
-      _hover={{ 
-        bg: "blue.500",
-        transform: "translate(2px, 2px)",
-        boxShadow: "3px 3px 0px black"
+      minH="40px"
+      px={6}
+      bg={buttonColors.primary.background}
+      color={buttonColors.primary.text}
+      borderRadius="sm"
+      boxShadow="sm"
+      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+      fontWeight="medium"
+      fontSize="label-lg"
+      _hover={{
+        bg: buttonColors.primary.hover,
+        boxShadow: "md",
       }}
       _active={{
-        transform: "translate(4px, 4px)",
-        boxShadow: "1px 1px 0px black"
+        bg: buttonColors.primary.active,
+        boxShadow: "sm",
       }}
       _loading={{
-        bg: "blue.300",
-        transform: "none",
-        boxShadow: "5px 5px 0px black"
+        bg: buttonColors.primary.disabled,
       }}
     >
       {isConnecting ? "Connecting..." : "Connect Wallet"}

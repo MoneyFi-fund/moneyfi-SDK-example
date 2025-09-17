@@ -1,0 +1,123 @@
+/* Global theme variables for dynamic color switching */
+:root {
+  /* CSS custom properties will be dynamically updated by JavaScript */
+  --theme-background: #FFFFFF;
+  --theme-on-background: #1A1C1E;
+  --theme-surface: #FFFFFF;
+  --theme-on-surface: #1A1C1E;
+  --theme-surface-variant: #F2F2F2;
+  --theme-on-surface-variant: #49454F;
+  --theme-outline: #79757F;
+  --theme-outline-variant: #CAC4D0;
+  --theme-primary: #4CAF50;
+  --theme-secondary: #9C27B0;
+  --theme-tertiary: #42A5F5;
+  --theme-error: #F44336;
+  --theme-success: #4CAF50;
+  --theme-warning: #FF9800;
+}
+
+/* Light mode (default) */
+.light {
+  --theme-background: #FFFFFF;
+  --theme-on-background: #1A1C1E;
+  --theme-surface: #FFFFFF;
+  --theme-on-surface: #1A1C1E;
+  --theme-surface-variant: #F2F2F2;
+  --theme-on-surface-variant: #49454F;
+  --theme-outline: #79757F;
+  --theme-outline-variant: #CAC4D0;
+  --theme-primary: #4CAF50;
+  --theme-secondary: #9C27B0;
+  --theme-tertiary: #42A5F5;
+  --theme-error: #F44336;
+  --theme-success: #4CAF50;
+  --theme-warning: #FF9800;
+}
+
+/* Dark mode */
+.dark {
+  --theme-background: #0F0F0F;
+  --theme-on-background: #E6E0E9;
+  --theme-surface: #161618;
+  --theme-on-surface: #E6E0E9;
+  --theme-surface-variant: #2B2930;
+  --theme-on-surface-variant: #CAC4D0;
+  --theme-outline: #938F99;
+  --theme-outline-variant: #49454F;
+  --theme-primary: #66BB6A;
+  --theme-secondary: #AB47BC;
+  --theme-tertiary: #5CB5F3;
+  --theme-error: #EF5350;
+  --theme-success: #66BB6A;
+  --theme-warning: #FFA726;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure proper text contrast in all modes */
+body {
+  background-color: var(--theme-background);
+  color: var(--theme-on-background);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar styling for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-surface-variant);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-outline);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary);
+}
+
+/* Dark mode specific adjustments */
+.dark ::-webkit-scrollbar-track {
+  background: var(--theme-surface);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--theme-outline);
+}
+
+/* Selection colors */
+::selection {
+  background-color: var(--theme-primary);
+  color: var(--theme-on-background);
+}
+
+/* Focus ring styling */
+:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+/* Smooth theme toggle animation */
+@keyframes themeTransition {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.theme-transition {
+  animation: themeTransition 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

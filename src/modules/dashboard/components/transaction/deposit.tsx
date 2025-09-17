@@ -12,16 +12,22 @@ import {
   Select,
   createListCollection,
 } from "@chakra-ui/react";
+import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/provider/auth-provider";
-import { useDepositMutation, moneyFiQueryKeys } from "@/hooks/use-moneyfi-queries";
+import { useThemeColors } from "@/provider/theme-provider";
+import {
+  useDepositMutation,
+  moneyFiQueryKeys,
+} from "@/hooks/use-moneyfi-queries";
 import { statsQueryKeys } from "@/hooks/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
-import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
-import { useGetOrCreateUserMutation, useGetTxInitializationAccountMutation } from "@/hooks/use-create";
+import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import {
-  useWallet as useAptosWallet,
-} from "@aptos-labs/wallet-adapter-react";
+  useGetOrCreateUserMutation,
+  useGetTxInitializationAccountMutation,
+} from "@/hooks/use-create";
+import { useWallet as useAptosWallet } from "@aptos-labs/wallet-adapter-react";
 import {
   AccountAddress,
   AccountAuthenticator,
@@ -30,10 +36,7 @@ import {
   SignedTransaction,
   TransactionAuthenticatorMultiAgent,
 } from "@aptos-labs/ts-sdk";
-import {
-  APTOS_CONFIG,
-  aptosClient,
-} from "@/constants/aptos";
+import { APTOS_CONFIG, aptosClient } from "@/constants/aptos";
 import { APTOS_ERROR_CODE } from "@/constants/error";
 
 const tokens = createListCollection({
@@ -45,8 +48,13 @@ const tokens = createListCollection({
 
 export const DepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { cardColors, buttonColors } = useThemeColors();
   const queryClient = useQueryClient();
-  const { data: hasWalletAccount, isLoading: isCheckingAccount, refetch: refetchAccountStatus } = useCheckWalletAccountQuery();
+  const {
+    data: hasWalletAccount,
+    isLoading: isCheckingAccount,
+    refetch: refetchAccountStatus,
+  } = useCheckWalletAccountQuery();
   console.log(
     "%c🔑 hasWalletAccount: %c" + hasWalletAccount,
     "background: #2d3748; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;",
@@ -55,7 +63,9 @@ export const DepositComponent: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
-  const [currentStep, setCurrentStep] = useState<'idle' | 'creating-user' | 'initializing-account' | 'depositing'>('idle');
+  const [currentStep, setCurrentStep] = useState<
+    "idle" | "creating-user" | "initializing-account" | "depositing"
+  >("idle");
   const [stepError, setStepError] = useState<string | null>(null);
 
   const tokenAddress =
@@ -82,24 +92,23 @@ export const DepositComponent: React.FC = () => {
     }
 
     try {
-      const data = await new Promise<any>(
-        (resolve, reject) => {
-          initAccountMutation.mutate(
-            { address: user.address },
-            {
-              onSuccess: (data) => {
-                resolve(data);
-              },
-              onError: (error) => {
-                reject(error);
-              },
-            }
-          );
-        }
-      );
+      const data = await new Promise<any>((resolve, reject) => {
+        initAccountMutation.mutate(
+          { address: user.address },
+          {
+            onSuccess: (data) => {
+              resolve(data);
+            },
+            onError: (error) => {
+              reject(error);
+            },
+          }
+        );
+      });
       console.log(data);
 
-      const signed_tx = typeof data === 'object' && data?.signed_tx ? data.signed_tx : null;
+      const signed_tx =
+        typeof data === "object" && data?.signed_tx ? data.signed_tx : null;
       if (!signed_tx) {
         throw new Error("No signed transaction returned from initialization");
       }
@@ -160,21 +169,21 @@ export const DepositComponent: React.FC = () => {
     setStepError(null);
 
     try {
-      setCurrentStep('creating-user');
+      setCurrentStep("creating-user");
       await new Promise<any>((resolve, reject) => {
         createUserMutation.mutate(
           {
             address: user.address,
-            refBy: undefined
+            refBy: undefined,
           },
           {
             onSuccess: async (data) => {
               // Invalidate user-related queries after successful user creation
               await queryClient.invalidateQueries({
-                queryKey: ['user', user.address],
+                queryKey: ["user", user.address],
               });
               await queryClient.invalidateQueries({
-                queryKey: ['userProfile'],
+                queryKey: ["userProfile"],
               });
               resolve(data);
             },
@@ -186,23 +195,23 @@ export const DepositComponent: React.FC = () => {
       });
       console.log("User creation checked/processed.");
       if (!hasWalletAccount) {
-        setCurrentStep('initializing-account');
+        setCurrentStep("initializing-account");
         console.log("No wallet account found, initializing...");
         await checkOrCreateAptosAccount();
 
         // Invalidate wallet account queries after successful account initialization
         await queryClient.invalidateQueries({
-          queryKey: ['checkWalletAccount'],
+          queryKey: ["checkWalletAccount"],
         });
         await queryClient.invalidateQueries({
-          queryKey: ['walletAccount', user.address],
+          queryKey: ["walletAccount", user.address],
         });
 
         await refetchAccountStatus();
       }
       console.log("Wallet account exists, proceeding to deposit...");
 
-      setCurrentStep('depositing');
+      setCurrentStep("depositing");
       await new Promise<any>((resolve, reject) => {
         console.log("Starting deposit mutation...");
         depositMutation.mutate(
@@ -213,7 +222,7 @@ export const DepositComponent: React.FC = () => {
                 queryKey: moneyFiQueryKeys.balance(user.address),
               });
               queryClient.invalidateQueries({
-                queryKey: ['transactions', user.address],
+                queryKey: ["transactions", user.address],
               });
               queryClient.invalidateQueries({
                 queryKey: statsQueryKeys.user(user.address),
@@ -221,7 +230,7 @@ export const DepositComponent: React.FC = () => {
 
               setAmount("");
               setSuccessData({ hash: data.hash });
-              setCurrentStep('idle');
+              setCurrentStep("idle");
               resolve(data);
             },
             onError: (error) => {
@@ -231,32 +240,43 @@ export const DepositComponent: React.FC = () => {
         );
       });
     } catch (error) {
-      console.error('Deposit process failed:', error);
-      setStepError(error instanceof Error ? error.message : 'An unknown error occurred');
-      setCurrentStep('idle');
+      console.error("Deposit process failed:", error);
+      setStepError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      setCurrentStep("idle");
     }
   };
 
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg="gray.900"
-        border="2px solid white"
-        borderRadius="0"
-        boxShadow="4px 4px 0px white"
-        transition="all 0.3s ease"
+        bg={cardColors.background}
+        borderRadius={materialDesign3Theme.borderRadius.md}
+        boxShadow={materialDesign3Theme.elevation.level1}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translate(-1px, -1px)",
-          boxShadow: "5px 5px 0px white",
+          boxShadow: materialDesign3Theme.elevation.level2,
         }}
+        border="1px solid"
+        borderColor={cardColors.border}
       >
-        <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold" color="white">
+        <Card.Header p={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+            fontWeight="medium"
+            color={cardColors.text}
+          >
             Deposit Funds
           </Text>
         </Card.Header>
-        <Card.Body>
-          <Text color="gray.400">
+        <Card.Body px={6} pb={6}>
+          <Text
+            color={cardColors.textSecondary}
+            fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+            lineHeight={materialDesign3Theme.typography.bodyMedium.lineHeight}
+          >
             Please connect your wallet to deposit funds.
           </Text>
         </Card.Body>
@@ -267,36 +287,51 @@ export const DepositComponent: React.FC = () => {
   if (!hasWalletAccount && !isCheckingAccount) {
     return (
       <Card.Root
-      bg="black"
-      border="2px solid white"
-      borderRadius="0"
-      boxShadow="4px 4px 0px white"
-      transition="all 0.3s ease"
-      _hover={{
-        transform: "translate(-1px, -1px)",
-        boxShadow: "5px 5px 0px white",
-      }}
-    >
-        <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold" color="white">
+        bg={cardColors.background}
+        borderRadius={materialDesign3Theme.borderRadius.md}
+        boxShadow={materialDesign3Theme.elevation.level1}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        _hover={{
+          boxShadow: materialDesign3Theme.elevation.level2,
+        }}
+        border="1px solid"
+        borderColor={cardColors.border}
+      >
+        <Card.Header p={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+            fontWeight="medium"
+            color={cardColors.text}
+          >
             MoneyFi Account Status
           </Text>
         </Card.Header>
-        <Card.Body>
-          <VStack align="stretch" gap={3}>
+        <Card.Body px={6} pb={6}>
+          <VStack align="stretch" gap={4}>
             <Alert.Root
               status="warning"
-              bg="yellow.800"
-              border="2px solid yellow.300"
-              borderRadius="0"
-              boxShadow="3px 3px 0px yellow.300"
+              bg="warning.50"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              border="1px solid"
+              borderColor="warning.200"
+              p={4}
             >
               <Alert.Description>
-                <Text color="yellow.100" fontWeight="bold">
+                <Text
+                  color="warning.800"
+                  fontWeight="medium"
+                  fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                >
                   Account not found
                 </Text>
-                <Text color="yellow.200" fontSize="sm" mt={1}>
-                  You need a MoneyFi account to deposit funds. Please contact support or create an account first.
+                <Text
+                  color="warning.700"
+                  fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  mt={2}
+                >
+                  You need a MoneyFi account to deposit funds. Please contact
+                  support or create an account first.
                 </Text>
               </Alert.Description>
             </Alert.Root>
@@ -308,25 +343,34 @@ export const DepositComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg="black"
-      border="2px solid white"
-      borderRadius="0"
-      boxShadow="4px 4px 0px white"
-      transition="all 0.3s ease"
+      bg={cardColors.background}
+      borderRadius={materialDesign3Theme.borderRadius.md}
+      boxShadow={materialDesign3Theme.elevation.level1}
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        transform: "translate(-1px, -1px)",
-        boxShadow: "5px 5px 0px white",
+        boxShadow: materialDesign3Theme.elevation.level2,
       }}
+      border="1px solid"
+      borderColor={cardColors.border}
     >
-      <Card.Header>
-        <Text fontSize="lg" fontWeight="semibold" color="white">
+      <Card.Header p={6}>
+        <Text
+          fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+          lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+          fontWeight="medium"
+          color={cardColors.text}
+        >
           Deposit Funds
         </Text>
       </Card.Header>
-      <Card.Body>
-        <VStack align="stretch" gap={4}>
+      <Card.Body px={6} pb={6}>
+        <VStack align="stretch" gap={6}>
           <VStack align="stretch" gap={2}>
-            <Text fontSize="sm" fontWeight="medium" color="white">
+            <Text
+              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+              fontWeight="medium"
+              color={cardColors.textSecondary}
+            >
               Token
             </Text>
             <Select.Root
@@ -339,18 +383,22 @@ export const DepositComponent: React.FC = () => {
               <Select.HiddenSelect />
               <Select.Control>
                 <Select.Trigger
-                  border="3px solid white"
-                  borderRadius="0"
-                  color="white"
-                  bg="black"
-                  transition="all 0.3s ease"
+                  border="1px solid"
+                  borderColor={cardColors.border}
+                  borderRadius={materialDesign3Theme.borderRadius.sm}
+                  color={cardColors.text}
+                  bg={cardColors.background}
+                  minH="48px"
+                  px={4}
+                  transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                   _hover={{
-                    transform: "translate(2px, 2px)",
-                    boxShadow: "3px 3px 0px white",
+                    borderColor: cardColors.border,
+                    boxShadow: materialDesign3Theme.elevation.level1,
                   }}
                   _focus={{
-                    borderColor: "blue.400",
-                    boxShadow: "5px 5px 0px blue.400",
+                    borderColor: "primary.500",
+                    boxShadow: `0 0 0 2px primary.200`,
+                    outline: "none",
                   }}
                 >
                   <Select.ValueText placeholder="Select token" />
@@ -361,9 +409,22 @@ export const DepositComponent: React.FC = () => {
               </Select.Control>
               <Portal>
                 <Select.Positioner>
-                  <Select.Content bg="black" border="2px solid white">
+                  <Select.Content
+                    bg={cardColors.background}
+                    border="1px solid"
+                    borderColor={cardColors.border}
+                    borderRadius={materialDesign3Theme.borderRadius.sm}
+                    boxShadow={materialDesign3Theme.elevation.level3}
+                  >
                     {tokens.items.map((token) => (
-                      <Select.Item item={token} key={token.value} color="white">
+                      <Select.Item
+                        item={token}
+                        key={token.value}
+                        color={cardColors.text}
+                        _hover={{ bg: "neutral.100" }}
+                        px={4}
+                        py={3}
+                      >
                         {token.label}
                         <Select.ItemIndicator />
                       </Select.Item>
@@ -374,7 +435,11 @@ export const DepositComponent: React.FC = () => {
             </Select.Root>
           </VStack>
           <VStack align="stretch" gap={2}>
-            <Text fontSize="sm" fontWeight="medium" color="white">
+            <Text
+              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+              fontWeight="medium"
+              color={cardColors.textSecondary}
+            >
               Amount
             </Text>
             <Input
@@ -384,82 +449,110 @@ export const DepositComponent: React.FC = () => {
               onChange={(e) => setAmount(e.target.value)}
               step="0.000001"
               min="0"
-              border={"2px solid white"}
+              border="1px solid"
+              borderColor={cardColors.border}
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              minH="48px"
+              px={4}
+              bg={cardColors.background}
+              color={cardColors.text}
+              _placeholder={{ color: cardColors.textSecondary }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              _hover={{
+                borderColor: cardColors.border,
+              }}
+              _focus={{
+                borderColor: "primary.500",
+                boxShadow: `0 0 0 2px primary.200`,
+                outline: "none",
+              }}
             />
           </VStack>
 
           <Button
             onClick={handleDeposit}
-            loading={currentStep !== 'idle' || isCheckingAccount}
-            disabled={!amount || currentStep !== 'idle' || isCheckingAccount}
-            bg="blue.500"
-            color="white"
-            size="md"
-            border="3px solid white"
-            borderRadius="0"
-            boxShadow="5px 5px 0px white"
-            transition="all 0.3s ease"
-            fontWeight="bold"
+            loading={currentStep !== "idle" || isCheckingAccount}
+            disabled={!amount || currentStep !== "idle" || isCheckingAccount}
+            bg={buttonColors.primary.background}
+            color={buttonColors.primary.text}
+            minH="48px"
+            px={6}
+            borderRadius="sm"
+            fontWeight="medium"
+            fontSize="label-lg"
+            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            boxShadow="sm"
             _hover={{
-              bg: "blue.400",
-              transform: "translate(2px, 2px)",
-              boxShadow: "3px 3px 0px white",
+              bg: buttonColors.primary.hover,
+              boxShadow: "md",
             }}
             _active={{
-              transform: "translate(4px, 4px)",
-              boxShadow: "1px 1px 0px white",
+              bg: buttonColors.primary.active,
+              boxShadow: "sm",
             }}
             _loading={{
-              bg: "blue.400",
-              transform: "none",
-              boxShadow: "5px 5px 0px white",
+              bg: buttonColors.primary.disabled,
             }}
             _disabled={{
-              bg: "gray.600",
-              color: "gray.300",
+              bg: buttonColors.primary.disabled,
+              color: cardColors.textSecondary,
               cursor: "not-allowed",
-              transform: "none",
-              boxShadow: "5px 5px 0px gray.400",
+              boxShadow: "none",
             }}
           >
-            {isCheckingAccount
-              ? "Checking Account..."
-              : currentStep === 'creating-user'
-              ? "Creating User..."
-              : currentStep === 'initializing-account'
-              ? "Initializing Account..."
-              : currentStep === 'depositing'
-              ? "Depositing..."
-              : "Deposit"
-            }
+            <span>
+              {isCheckingAccount
+                ? "Checking Account..."
+                : currentStep === "creating-user"
+                ? "Creating User..."
+                : currentStep === "initializing-account"
+                ? "Initializing Account..."
+                : currentStep === "depositing"
+                ? "Depositing..."
+                : "Deposit"}
+            </span>
           </Button>
 
           {successData ? (
             <Alert.Root
               status="success"
-              bg="green.900"
-              border="2px solid green.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px green.400"
+              bg="success.50"
+              border="1px solid"
+              borderColor="success.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
                 <VStack align="stretch" gap={2}>
-                  <Text color="green.100" fontWeight="bold">
+                  <Text
+                    color="success.800"
+                    fontWeight="medium"
+                    fontSize={
+                      materialDesign3Theme.typography.labelLarge.fontSize
+                    }
+                  >
                     Deposit successful!
                   </Text>
                   <HStack>
-                    <Text fontSize="sm" color="green.200">
+                    <Text
+                      fontSize={
+                        materialDesign3Theme.typography.bodySmall.fontSize
+                      }
+                      color="success.700"
+                    >
                       Transaction:
                     </Text>
                     <Link
                       href={`https://explorer.aptoslabs.com/txn/${successData.hash}?network=mainnet`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      color="green.300"
-                      fontSize="sm"
+                      color="primary.600"
+                      fontSize={
+                        materialDesign3Theme.typography.bodySmall.fontSize
+                      }
                       fontFamily="mono"
                       textDecoration="underline"
-                      _hover={{ color: "green.100" }}
+                      _hover={{ color: "primary.700" }}
                     >
                       {successData.hash.slice(0, 8)}...
                       {successData.hash.slice(-8)}
@@ -470,16 +563,24 @@ export const DepositComponent: React.FC = () => {
             </Alert.Root>
           ) : null}
 
-          {(stepError || depositMutation.isError || createUserMutation.isError || initAccountMutation.isError) && (
+          {(stepError ||
+            depositMutation.isError ||
+            createUserMutation.isError ||
+            initAccountMutation.isError) && (
             <Alert.Root
               status="error"
-              bg="red.900"
-              border="2px solid red.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px red.400"
+              bg="error.50"
+              border="1px solid"
+              borderColor="error.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
-                <Text color="red.100" fontWeight="bold">
+                <Text
+                  color="error.800"
+                  fontWeight="medium"
+                  fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                >
                   {stepError ||
                     (depositMutation.error instanceof Error
                       ? depositMutation.error.message

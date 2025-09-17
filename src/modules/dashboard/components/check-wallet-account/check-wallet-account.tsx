@@ -8,18 +8,14 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
-import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
+import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
+import { useThemeColors } from "@/provider/theme-provider";
+import { materialDesign3Theme } from "@/theme/material-design-3";
+
 export default function CheckWalletAccount() {
-  const { isAuthenticated, user, signIn, signOut, error } = useAuth();
+  const { isAuthenticated, user, signOut, error } = useAuth();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
-  
-  const handleConnectWallet = async (walletName: string) => {
-    try {
-      await signIn(walletName);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-    }
-  };
+  const { cardColors, colors, buttonColors } = useThemeColors();
 
   const handleDisconnectWallet = async () => {
     try {
@@ -31,20 +27,20 @@ export default function CheckWalletAccount() {
 
   return (
     <Card.Root
-      bg="black"
-      border="2px solid white"
-      borderRadius="0"
-      boxShadow="4px 4px 0px white"
-      transition="all 0.3s ease"
+      bg={cardColors.background}
+      border="1px solid"
+      borderColor={cardColors.border}
+      borderRadius={materialDesign3Theme.borderRadius.md}
+      boxShadow={materialDesign3Theme.elevation.level1}
+      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        transform: "translate(-1px, -1px)",
-        boxShadow: "5px 5px 0px white",
+        boxShadow: materialDesign3Theme.elevation.level2,
       }}
     >
       <Card.Header>
         <VStack align="stretch" gap={2}>
           <HStack justify="space-between" align="center" width="100%">
-            <Text fontSize="lg" fontWeight="semibold" color="white">
+            <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
               Wallet Connection
             </Text>
             {isAuthenticated && (
@@ -72,7 +68,7 @@ export default function CheckWalletAccount() {
                 </Alert.Description>
               </Alert.Root>
               
-              <Text fontSize="sm" color="gray.400" textAlign="center">
+              <Text fontSize="sm" color={cardColors.textSecondary} textAlign="center">
                 Supported wallets: Petra, Martian, Pontem, Fewcha
               </Text>
               
@@ -94,24 +90,24 @@ export default function CheckWalletAccount() {
               
               {user && (
                 <VStack align="stretch" gap={2}>
-                  <Text fontSize="sm" color="gray.400">
+                  <Text fontSize="sm" color={cardColors.textSecondary}>
                     Connected Wallet:
                   </Text>
-                  <Text fontSize="md" fontWeight="medium" color="white" fontFamily="mono">
+                  <Text fontSize="md" fontWeight="medium" color={cardColors.text} fontFamily="mono">
                     {user.address.slice(0, 6)}...{user.address.slice(-4)}
                   </Text>
                   {user.walletName && (
-                    <Text fontSize="sm" color="gray.400">
+                    <Text fontSize="sm" color={cardColors.textSecondary}>
                       Wallet: {user.walletName}
                     </Text>
                   )}
                   
                   <VStack align="stretch" gap={1} mt={2}>
-                    <Text fontSize="sm" color="gray.400">
+                    <Text fontSize="sm" color={cardColors.textSecondary}>
                       MoneyFi Account Status:
                     </Text>
                     {isCheckingAccount ? (
-                      <Text fontSize="sm" color="yellow.400">
+                      <Text fontSize="sm" color="warning.400">
                         Checking account...
                       </Text>
                     ) : (
@@ -134,23 +130,28 @@ export default function CheckWalletAccount() {
               
               <Button
                 onClick={handleDisconnectWallet}
-                size="md"
-                bg="red.600"
-                color="white"
-                border="2px solid white"
-                borderRadius="0"
-                boxShadow="3px 3px 0px white"
-                transition="all 0.3s ease"
-                fontWeight="bold"
+                bg={buttonColors.error.background}
+                color={buttonColors.error.text}
+                minH="48px"
+                px={6}
+                borderRadius="sm"
+                fontWeight="medium"
+                fontSize="label-lg"
+                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                boxShadow="sm"
                 _hover={{
-                  bg: "red.500",
-                  color: "white",
-                  transform: "translate(-1px, -1px)",
-                  boxShadow: "4px 4px 0px white",
+                  bg: buttonColors.error.hover,
+                  boxShadow: "md",
                 }}
                 _active={{
-                  transform: "translate(1px, 1px)",
-                  boxShadow: "2px 2px 0px white",
+                  bg: buttonColors.error.active,
+                  boxShadow: "sm",
+                }}
+                _disabled={{
+                  bg: buttonColors.error.disabled,
+                  color: colors.onSurfaceVariant,
+                  boxShadow: "none",
+                  cursor: "not-allowed",
                 }}
               >
                 Disconnect Wallet

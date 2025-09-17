@@ -11,6 +11,7 @@ import {
   HStack,
   Icon,
 } from "@chakra-ui/react";
+import { materialDesign3Theme } from "@/theme/material-design-3";
 import {
   BiRefresh,
   BiTrendingUp,
@@ -23,6 +24,7 @@ import {
 } from "react-icons/bi";
 import { RiPercentLine } from "react-icons/ri";
 import { useAuth } from "@/provider/auth-provider";
+import { useThemeColors } from "@/provider/theme-provider";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
 
 // Utility function to format currency values
@@ -49,69 +51,78 @@ const statsConfig = [
     label: "Total Portfolio Value",
     icon: BiDollar,
     formatter: formatCurrency,
-    color: "green.500",
-    bgGradient: "linear(to-br, green.50, green.100)",
+    color: "success.600",
+    bgColor: "success.50",
+    borderColor: "success.200",
   },
   {
     key: "idle_asset_value",
     label: "Idle Assets",
     icon: BiWallet,
     formatter: formatCurrency,
-    color: "gray.500",
-    bgGradient: "linear(to-br, gray.50, gray.100)",
+    color: "neutral.600",
+    bgColor: "neutral.50",
+    borderColor: "neutral.200",
   },
   {
     key: "total_deposited_liquidity",
     label: "Total Deposited",
     icon: BiDownArrowCircle,
     formatter: formatCurrency,
-    color: "blue.500",
-    bgGradient: "linear(to-br, blue.50, blue.100)",
+    color: "primary.600",
+    bgColor: "primary.50",
+    borderColor: "primary.200",
   },
   {
     key: "cumulative_yield_profits",
     label: "Cumulative Profits",
     icon: BiTrendingUp,
     formatter: formatCurrency,
-    color: "green.600",
-    bgGradient: "linear(to-br, green.50, green.100)",
+    color: "success.700",
+    bgColor: "success.50",
+    borderColor: "success.200",
   },
   {
     key: "total_monetized_balance",
     label: "Monetized Balance",
     icon: BiTargetLock,
     formatter: formatCurrency,
-    color: "purple.500",
-    bgGradient: "linear(to-br, purple.50, purple.100)",
+    color: "secondary.600",
+    bgColor: "secondary.50",
+    borderColor: "secondary.200",
   },
   {
     key: "pending_yield_earnings",
     label: "Pending Earnings",
     icon: BiAward,
     formatter: formatCurrency,
-    color: "orange.500",
-    bgGradient: "linear(to-br, orange.50, orange.100)",
+    color: "warning.600",
+    bgColor: "warning.50",
+    borderColor: "warning.200",
   },
   {
     key: "total_withdrawn_liquidity",
     label: "Total Withdrawn",
     icon: BiUpArrowCircle,
     formatter: formatCurrency,
-    color: "red.500",
-    bgGradient: "linear(to-br, red.50, red.100)",
+    color: "error.600",
+    bgColor: "error.50",
+    borderColor: "error.200",
   },
   {
     key: "apr_avg",
     label: "Average APR",
     icon: RiPercentLine,
     formatter: formatPercentage,
-    color: "teal.500",
-    bgGradient: "linear(to-br, teal.50, teal.100)",
+    color: "tertiary.600",
+    bgColor: "tertiary.50",
+    borderColor: "tertiary.200",
   },
 ];
 
 export default function Stats() {
   const { isAuthenticated, user } = useAuth();
+  const { cardColors, colors, buttonColors } = useThemeColors();
   const getUserStatsQuery = useGetUserStatisticsQuery(user?.address);
 
   const handleRefreshStats = () => {
@@ -120,15 +131,31 @@ export default function Stats() {
 
   if (!isAuthenticated) {
     return (
-      <Box>
+      <Box minH="100vh" bg={colors.background}>
         <Container maxW="full" p={8}>
           <VStack align="stretch" gap={6}>
-            <Text fontSize="2xl" fontWeight="semibold">
+            <Text
+              fontSize={materialDesign3Theme.typography.headlineMedium.fontSize}
+              fontWeight="medium"
+              color={colors.onBackground}
+            >
               Statistics
             </Text>
-            <Alert.Root status="warning">
+            <Alert.Root
+              status="warning"
+              bg="warning.50"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              border="1px solid"
+              borderColor="warning.200"
+              p={4}
+            >
               <Alert.Description>
-                Please connect your wallet to view your statistics.
+                <Text
+                  color="warning.800"
+                  fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                >
+                  Please connect your wallet to view your statistics.
+                </Text>
               </Alert.Description>
             </Alert.Root>
           </VStack>
@@ -138,7 +165,7 @@ export default function Stats() {
   }
 
   return (
-    <Box>
+    <Box minH="100vh" bg={colors.background}>
       <Container maxW="full" p={6}>
         <VStack align="stretch" gap={6}>
           {/* Refresh Button */}
@@ -146,37 +173,34 @@ export default function Stats() {
             onClick={handleRefreshStats}
             loading={getUserStatsQuery.isFetching}
             disabled={getUserStatsQuery.isFetching}
-            bg="blue.500"
-            color="white"
-            size="md"
-            border="3px solid black"
-            borderRadius="0"
-            boxShadow="5px 5px 0px black"
-            transition="all 0.2s ease"
-            fontWeight="bold"
+            bg={buttonColors.primary.background}
+            color={buttonColors.primary.text}
+            minH="48px"
+            px={6}
+            borderRadius="sm"
+            boxShadow="sm"
+            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            fontWeight="medium"
+            fontSize="label-lg"
             display="flex"
             justifyItems="end"
             width="200px"
             _hover={{
-              bg: "blue.400",
-              transform: "translate(-2px, -2px)",
-              boxShadow: "7px 7px 0px black",
+              bg: buttonColors.primary.hover,
+              boxShadow: "md",
             }}
             _active={{
-              transform: "translate(2px, 2px)",
-              boxShadow: "3px 3px 0px black",
+              bg: buttonColors.primary.active,
+              boxShadow: "sm",
             }}
             _loading={{
-              bg: "blue.400",
-              transform: "none",
-              boxShadow: "5px 5px 0px black",
+              bg: buttonColors.primary.disabled,
             }}
             _disabled={{
-              bg: "gray.400",
-              color: "gray.200",
+              bg: buttonColors.primary.disabled,
+              color: colors.onSurfaceVariant,
               cursor: "not-allowed",
-              transform: "none",
-              boxShadow: "5px 5px 0px gray.600",
+              boxShadow: "none",
             }}
           >
             <Icon as={BiRefresh} />
@@ -191,37 +215,51 @@ export default function Stats() {
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
-              p={6}
-              bg="gray.50"
-              border="3px solid black"
-              borderRadius="0"
+              p={8}
+              bg={cardColors.background}
+              border="1px solid"
+              borderColor={cardColors.border}
+              borderRadius={materialDesign3Theme.borderRadius.md}
             >
-              <Spinner size="xl" color="blue.500" borderWidth="4px" />
-              <Text mt={4} fontSize="lg" fontWeight="bold" color="gray.700">
+              <Spinner size="xl" color="primary.500" borderWidth="4px" />
+              <Text
+                mt={4}
+                fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
+                fontWeight="medium"
+                color={cardColors.textSecondary}
+              >
                 Loading your statistics...
               </Text>
             </Box>
           )}
 
           {getUserStatsQuery.isError && (
-            <Alert.Root status="error">
+            <Alert.Root
+              status="error"
+              bg="error.50"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              border="1px solid"
+              borderColor="error.200"
+              p={4}
+            >
               <Alert.Description>
-                <Box
-                  bg="red.50"
-                  border="3px solid red.500"
-                  borderRadius="0"
-                  p={6}
-                  boxShadow="4px 4px 0px red.200"
-                >
-                  <Text color="red.700" fontWeight="bold" fontSize="lg">
+                <VStack align="stretch" gap={2}>
+                  <Text
+                    color="error.800"
+                    fontWeight="medium"
+                    fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                  >
                     Failed to Load Statistics
                   </Text>
-                  <Text color="red.600" mt={2}>
+                  <Text
+                    color="error.700"
+                    fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                  >
                     {getUserStatsQuery.error instanceof Error
                       ? getUserStatsQuery.error.message
                       : "Unable to fetch your statistics. Please try again."}
                   </Text>
-                </Box>
+                </VStack>
               </Alert.Description>
             </Alert.Root>
           )}
@@ -240,29 +278,29 @@ export default function Stats() {
                 return (
                   <Card.Root
                     key={stat.key}
-                    bg="white"
-                    border="3px solid black"
-                    borderRadius="0"
-                    boxShadow="5px 5px 0px black"
-                    transition="all 0.2s ease"
+                    bg="surface.50"
+                    border="1px solid"
+                    borderColor={stat.borderColor}
+                    borderRadius={materialDesign3Theme.borderRadius.md}
+                    boxShadow={materialDesign3Theme.elevation.level1}
+                    transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     _hover={{
-                      transform: "translate(-2px, -2px)",
-                      boxShadow: "7px 7px 0px black",
+                      boxShadow: materialDesign3Theme.elevation.level2,
                     }}
                     overflow="hidden"
                   >
                     {/* Card Header with Icon and Color */}
                     <Box
-                      bg={stat.bgGradient}
-                      borderBottom="3px solid black"
+                      bg={stat.bgColor}
+                      borderBottom="1px solid"
+                      borderBottomColor={stat.borderColor}
                       p={4}
                     >
-                      <HStack spaceX={3}>
+                      <HStack gap={3}>
                         <Box
                           bg={stat.color}
                           p={2}
-                          border="2px solid black"
-                          borderRadius="0"
+                          borderRadius={materialDesign3Theme.borderRadius.xs}
                         >
                           <Icon
                             as={IconComponent}
@@ -271,9 +309,9 @@ export default function Stats() {
                           />
                         </Box>
                         <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color="gray.700"
+                          fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                          fontWeight="medium"
+                          color="neutral.700"
                           lineHeight="1.2"
                         >
                           {stat.label}
@@ -284,17 +322,21 @@ export default function Stats() {
                     {/* Card Body with Value */}
                     <Card.Body p={6}>
                       <Text
-                        fontSize="2xl"
-                        fontWeight="black"
+                        fontSize={materialDesign3Theme.typography.headlineMedium.fontSize}
+                        fontWeight="bold"
                         color={stat.color}
-                        lineHeight="1"
+                        lineHeight="1.1"
                         letterSpacing="-0.02em"
                       >
                         {formattedValue}
                       </Text>
 
                       {/* Value Change Indicator (placeholder for future enhancement) */}
-                      <Text fontSize="xs" color="gray.500" mt={2}>
+                      <Text
+                        fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                        color="neutral.500"
+                        mt={2}
+                      >
                         Current value
                       </Text>
                     </Card.Body>
@@ -309,14 +351,23 @@ export default function Stats() {
             <Box
               textAlign="center"
               p={12}
-              bg="gray.50"
-              border="3px solid black"
-              borderRadius="0"
+              bg="surface.50"
+              border="1px solid"
+              borderColor="neutral.200"
+              borderRadius={materialDesign3Theme.borderRadius.md}
             >
-              <Text fontSize="xl" fontWeight="bold" color="gray.700" mb={2}>
+              <Text
+                fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+                fontWeight="medium"
+                color="neutral.700"
+                mb={2}
+              >
                 No Statistics Available
               </Text>
-              <Text color="gray.600">
+              <Text
+                color="neutral.600"
+                fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+              >
                 Click "Refresh Statistics" to load your statistics.
               </Text>
             </Box>

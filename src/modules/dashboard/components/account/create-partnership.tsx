@@ -8,15 +8,18 @@ import {
   HStack,
   IconButton,
 } from "@chakra-ui/react";
+import { materialDesign3Theme } from "@/theme/material-design-3";
 import { MdContentCopy, MdCheck } from "react-icons/md";
 import { useAuth } from "@/provider/auth-provider";
+import { useThemeColors } from "@/provider/theme-provider";
 import { useGetOrCreatePartnershipMutation } from "@/hooks/use-create";
 
 export const CreatePartnershipComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { cardColors, buttonColors } = useThemeColors();
   const [successData, setSuccessData] = useState<any | null>(null);
   const [copied, setCopied] = useState(false);
-  
+
   const createPartnershipMutation = useGetOrCreatePartnershipMutation();
 
   const handleCreatePartnership = async () => {
@@ -42,7 +45,7 @@ export const CreatePartnershipComponent: React.FC = () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error('Failed to copy:', err);
+        console.error("Failed to copy:", err);
       }
     }
   };
@@ -50,23 +53,32 @@ export const CreatePartnershipComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg="gray.900"
-        border="2px solid white"
-        borderRadius="0"
-        boxShadow="4px 4px 0px white"
-        transition="all 0.3s ease"
+        bg={cardColors.background}
+        borderRadius={materialDesign3Theme.borderRadius.md}
+        boxShadow={materialDesign3Theme.elevation.level1}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translate(-1px, -1px)",
-          boxShadow: "5px 5px 0px white",
+          boxShadow: materialDesign3Theme.elevation.level2,
         }}
+        border="1px solid"
+        borderColor={cardColors.border}
       >
-        <Card.Header>
-          <Text fontSize="lg" fontWeight="semibold" color="white">
+        <Card.Header p={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+            fontWeight="medium"
+            color={cardColors.text}
+          >
             Create Partnership
           </Text>
         </Card.Header>
-        <Card.Body>
-          <Text color="gray.400">
+        <Card.Body px={6} pb={6}>
+          <Text
+            color={cardColors.textSecondary}
+            fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+            lineHeight={materialDesign3Theme.typography.bodyMedium.lineHeight}
+          >
             Please connect your wallet to create a partnership.
           </Text>
         </Card.Body>
@@ -76,24 +88,33 @@ export const CreatePartnershipComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg="black"
-      border="2px solid white"
-      borderRadius="0"
-      boxShadow="4px 4px 0px white"
-      transition="all 0.3s ease"
+      bg={cardColors.background}
+      borderRadius={materialDesign3Theme.borderRadius.md}
+      boxShadow={materialDesign3Theme.elevation.level1}
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        transform: "translate(-1px, -1px)",
-        boxShadow: "5px 5px 0px white",
+        boxShadow: materialDesign3Theme.elevation.level2,
       }}
+      border="1px solid"
+      borderColor={cardColors.border}
     >
-      <Card.Header>
-        <Text fontSize="lg" fontWeight="semibold" color="white">
+      <Card.Header p={6}>
+        <Text
+          fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+          lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+          fontWeight="medium"
+          color={cardColors.text}
+        >
           Create Partnership
         </Text>
       </Card.Header>
-      <Card.Body>
-        <VStack align="stretch" gap={4}>
-          <Text fontSize="sm" color="gray.300">
+      <Card.Body px={6} pb={6}>
+        <VStack align="stretch" gap={6}>
+          <Text
+            fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+            color={cardColors.textSecondary}
+            lineHeight={materialDesign3Theme.typography.bodyMedium.lineHeight}
+          >
             Create or retrieve your partnership account on MoneyFi.
           </Text>
 
@@ -101,54 +122,61 @@ export const CreatePartnershipComponent: React.FC = () => {
             onClick={handleCreatePartnership}
             loading={createPartnershipMutation.isPending}
             disabled={createPartnershipMutation.isPending}
-            bg="purple.500"
-            color="white"
-            size="md"
-            border="3px solid white"
-            borderRadius="0"
-            boxShadow="5px 5px 0px white"
-            transition="all 0.3s ease"
-            fontWeight="bold"
+            bg={buttonColors.secondary.background}
+            color={buttonColors.secondary.text}
+            minH="48px"
+            px={6}
+            borderRadius="sm"
+            fontWeight="medium"
+            fontSize="label-lg"
+            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            boxShadow="sm"
             _hover={{
-              bg: "purple.400",
-              transform: "translate(2px, 2px)",
-              boxShadow: "3px 3px 0px white",
+              bg: buttonColors.secondary.hover,
+              boxShadow: "md",
             }}
             _active={{
-              transform: "translate(4px, 4px)",
-              boxShadow: "1px 1px 0px white",
+              bg: buttonColors.secondary.active,
+              boxShadow: "sm",
             }}
             _loading={{
-              bg: "purple.400",
-              transform: "none",
-              boxShadow: "5px 5px 0px white",
+              bg: buttonColors.secondary.disabled,
             }}
             _disabled={{
-              bg: "gray.600",
-              color: "gray.300",
+              bg: buttonColors.secondary.disabled,
+              color: cardColors.textSecondary,
               cursor: "not-allowed",
-              transform: "none",
-              boxShadow: "5px 5px 0px gray.400",
+              boxShadow: "none",
             }}
           >
-            {createPartnershipMutation.isPending ? "Creating Partnership..." : "Create Partnership"}
+            {createPartnershipMutation.isPending
+              ? "Creating Partnership..."
+              : "Create Partnership"}
           </Button>
 
           {successData ? (
             <Alert.Root
               status="success"
-              bg="green.900"
-              border="2px solid green.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px green.400"
+              borderColor="success.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
-                <VStack align="stretch" gap={2}>
-                  <Text color="green.100" fontWeight="bold">
+                <VStack align="stretch" gap={3}>
+                  <Text
+                    fontWeight="medium"
+                    fontSize={
+                      materialDesign3Theme.typography.labelLarge.fontSize
+                    }
+                  >
                     Partnership created successfully!
                   </Text>
                   <HStack justify="space-between" align="center">
-                    <Text fontSize="sm" color="green.200">
+                    <Text
+                      fontSize={
+                        materialDesign3Theme.typography.bodySmall.fontSize
+                      }
+                    >
                       Partnership ID: {successData.ref_code || "N/A"}
                     </Text>
                     {successData?.ref_code && (
@@ -156,15 +184,18 @@ export const CreatePartnershipComponent: React.FC = () => {
                         onClick={handleCopy}
                         size="sm"
                         variant="ghost"
-                        color="green.300"
-                        _hover={{ color: "green.100", bg: "green.800" }}
+                        color="success.600"
+                        borderRadius={materialDesign3Theme.borderRadius.xs}
+                        _hover={{
+                          color: "success.700",
+                          bg: "success.100",
+                        }}
                         aria-label="Copy partnership ID"
                       >
                         {copied ? <MdCheck /> : <MdContentCopy />}
                       </IconButton>
                     )}
                   </HStack>
-                  
                 </VStack>
               </Alert.Description>
             </Alert.Root>
@@ -173,13 +204,17 @@ export const CreatePartnershipComponent: React.FC = () => {
           {createPartnershipMutation.isError && (
             <Alert.Root
               status="error"
-              bg="red.900"
-              border="2px solid red.400"
-              borderRadius="0"
-              boxShadow="4px 4px 0px red.400"
+              bg="error.50"
+              borderColor="error.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
             >
               <Alert.Description>
-                <Text color="red.100" fontWeight="bold">
+                <Text
+                  color="error.800"
+                  fontWeight="medium"
+                  fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                >
                   {createPartnershipMutation.error instanceof Error
                     ? createPartnershipMutation.error.message
                     : "Partnership creation failed"}

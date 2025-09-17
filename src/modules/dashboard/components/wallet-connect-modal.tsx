@@ -4,6 +4,8 @@ import { useAuth } from '@/provider/auth-provider';
 import { APTOS_WALLET } from '@/constants/wallet';
 import { Box, Button, DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogPositioner, DialogRoot, DialogTitle, Flex, HStack, Image, Spinner, Text, VStack } from '@chakra-ui/react';
 import { isEqual, uniqWith } from 'lodash';
+import { materialDesign3Theme } from '@/theme/material-design-3';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface WalletConnectModalProps {
   isOpen: boolean;
@@ -46,6 +48,7 @@ const WalletOption: React.FC<WalletOptionProps> = ({
   isInstalled = false,
 }) => {
   const [isLocalLoading, setIsLocalLoading] = useState(false);
+  const { cardColors, buttonColors } = useThemeColors();
   
   const handleAction = async () => {
     if (isInstalled) {
@@ -64,20 +67,21 @@ const WalletOption: React.FC<WalletOptionProps> = ({
     <Flex
       p={4}
       borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="lg"
+      borderColor={cardColors.border}
+      borderRadius={materialDesign3Theme.borderRadius.sm}
       alignItems="center"
       justifyContent="space-between"
       opacity={isInstalled ? 1 : 0.7}
-      _hover={{ bg: "gray.800" }}
-      transition="all 0.2s"
+      _hover={{ bg: cardColors.background }}
+      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+      bg={cardColors.background}
     >
       <HStack gap={3}>
         <Box
           w="40px"
           h="40px"
-          borderRadius="lg"
-          bg="gray.100"
+          borderRadius={materialDesign3Theme.borderRadius.sm}
+          bg="neutral.100"
           display="flex"
           alignItems="center"
           justifyContent="center"
@@ -91,18 +95,29 @@ const WalletOption: React.FC<WalletOptionProps> = ({
               h="32px"
             />
           ) : (
-            <Text fontSize="sm" fontWeight="bold" color="gray.600">
+            <Text
+              fontSize={materialDesign3Theme.typography.labelMedium.fontSize}
+              fontWeight="medium"
+              color="neutral.600"
+            >
               {wallet.name[0]}
             </Text>
           )}
         </Box>
         
         <VStack alignItems="flex-start" gap={0}>
-          <Text fontWeight="medium" fontSize="md">
+          <Text
+            fontWeight="medium"
+            fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+            color={cardColors.text}
+          >
             {wallet.name}
           </Text>
           {!isInstalled && (
-            <Text fontSize="sm" color="gray.500">
+            <Text
+              fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+              color={cardColors.textSecondary}
+            >
               Not installed
             </Text>
           )}
@@ -114,35 +129,31 @@ const WalletOption: React.FC<WalletOptionProps> = ({
         onClick={handleAction}
         loading={isLocalLoading || (isConnecting && isInstalled)}
         minW="80px"
-        bg={isInstalled ? "green.400" : "gray.100"}
-        color={isInstalled ? "white" : "gray.700"}
-        border="2px solid black"
-        borderRadius="0"
-        boxShadow="3px 3px 0px black"
-        transition="all 0.3s ease"
-        fontWeight="bold"
-        fontSize="xs"
-        _hover={{ 
-          bg: isInstalled ? "green.500" : "gray.200",
-          color: isInstalled ? "white" : "black",
-          transform: "translate(1px, 1px)",
-          boxShadow: "2px 2px 0px black"
+        minH="36px"
+        bg={isInstalled ? buttonColors.primary.background : cardColors.background}
+        color={isInstalled ? buttonColors.primary.text : cardColors.textSecondary}
+        borderRadius="xs"
+        boxShadow={isInstalled ? "sm" : "none"}
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+        fontWeight="medium"
+        fontSize="label-sm"
+        _hover={{
+          bg: isInstalled ? buttonColors.primary.hover : cardColors.border,
+          color: isInstalled ? buttonColors.primary.text : cardColors.text,
+          boxShadow: isInstalled ? "md" : "sm",
         }}
         _active={{
-          transform: "translate(2px, 2px)",
-          boxShadow: "1px 1px 0px black"
+          bg: isInstalled ? buttonColors.primary.active : cardColors.border,
+          boxShadow: isInstalled ? "sm" : "none",
         }}
         _loading={{
-          bg: isInstalled ? "green.300" : "gray.200",
-          transform: "none",
-          boxShadow: "3px 3px 0px black"
+          bg: isInstalled ? buttonColors.primary.disabled : cardColors.border,
         }}
         _disabled={{
-          bg: "gray.200",
-          color: "gray.500",
+          bg: cardColors.border,
+          color: cardColors.textSecondary,
           cursor: "not-allowed",
-          transform: "none",
-          boxShadow: "3px 3px 0px #666"
+          boxShadow: "none",
         }}
       >
         {isLocalLoading || (isConnecting && isInstalled) 
@@ -156,6 +167,7 @@ const WalletOption: React.FC<WalletOptionProps> = ({
   );
 };const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose }) => {
   const { signIn, isConnecting, error, clearError, isAuthenticated } = useAuth();
+  const { cardColors } = useThemeColors();
   const { wallets = [], notDetectedWallets = [] } = useWallet();
   const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
 
@@ -221,32 +233,56 @@ const WalletOption: React.FC<WalletOptionProps> = ({
     <DialogRoot open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
       <DialogBackdrop />
       <DialogPositioner>
-        <DialogContent maxW="md" mx={4}>
-          <DialogHeader>
-            <DialogTitle fontSize="xl" fontWeight="bold">
+        <DialogContent
+        maxW="md"
+        mx={4}
+        borderRadius={materialDesign3Theme.borderRadius.lg}
+        boxShadow={materialDesign3Theme.elevation.level5}
+        bg={cardColors.background}
+      >
+          <DialogHeader p={6}>
+            <DialogTitle
+              fontSize={materialDesign3Theme.typography.headlineSmall.fontSize}
+              fontWeight="medium"
+              color={cardColors.text}
+            >
               Select Chain for MoneyFi
             </DialogTitle>
-            <DialogCloseTrigger />
+            <DialogCloseTrigger
+              borderRadius={materialDesign3Theme.borderRadius.xs}
+              _hover={{ bg: cardColors.border }}
+            />
           </DialogHeader>
 
-          <DialogBody pb={6}>
+          <DialogBody px={6} pb={4}>
             <VStack gap={4} alignItems="stretch">
-              <Text color="gray.600" fontSize="sm">
+              <Text
+                color={cardColors.textSecondary}
+                fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                lineHeight={materialDesign3Theme.typography.bodyMedium.lineHeight}
+              >
                 Select which chain to connect to your multi chain wallet
               </Text>
 
               {error && (
                 <Box
                   p={4}
-                  borderRadius="md"
-                  bg="red.50"
-                  borderColor="red.200"
+                  borderRadius={materialDesign3Theme.borderRadius.sm}
+                  bg="error.50"
+                  borderColor="error.200"
                   borderWidth="1px"
                 >
-                  <Text color="red.700" fontSize="sm" fontWeight="medium">
+                  <Text
+                    color="error.700"
+                    fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                    fontWeight="medium"
+                  >
                     Connection Failed
                   </Text>
-                  <Text color="red.600" fontSize="sm">
+                  <Text
+                    color="error.600"
+                    fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  >
                     {error}
                   </Text>
                 </Box>
@@ -287,8 +323,11 @@ const WalletOption: React.FC<WalletOptionProps> = ({
               {isConnecting && (
                 <Flex alignItems="center" justifyContent="center" p={4}>
                   <HStack gap={3}>
-                    <Spinner size="sm" color="blue.500" />
-                    <Text fontSize="sm" color="gray.600">
+                    <Spinner size="sm" color="primary.500" />
+                    <Text
+                      fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                      color="neutral.600"
+                    >
                       Opening wallet popup...
                     </Text>
                   </HStack>
@@ -297,7 +336,10 @@ const WalletOption: React.FC<WalletOptionProps> = ({
 
               {availableWallets.length === 0 && installableWallets.length === 0 && (
                 <Box p={4} textAlign="center">
-                  <Text color="gray.500" fontSize="sm">
+                  <Text
+                    color="neutral.500"
+                    fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  >
                     No wallets detected. Please install a wallet extension.
                   </Text>
                 </Box>
@@ -305,26 +347,25 @@ const WalletOption: React.FC<WalletOptionProps> = ({
             </VStack>
           </DialogBody>
 
-          <DialogFooter>
-            <Button 
-              onClick={onClose} 
+          <DialogFooter p={6}>
+            <Button
+              onClick={onClose}
               w="full"
-              bg="white"
-              color="gray.700"
-              border="2px solid black"
-              borderRadius="0"
-              boxShadow="3px 3px 0px black"
-              transition="all 0.3s ease"
-              fontWeight="bold"
-              _hover={{ 
-                bg: "gray.100",
-                color: "black",
-                transform: "translate(1px, 1px)",
-                boxShadow: "2px 2px 0px black"
+              bg="neutral.100"
+              color="neutral.700"
+              border="1px solid"
+              borderColor="neutral.300"
+              borderRadius="sm"
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              fontWeight="medium"
+              fontSize="label-lg"
+              minH="40px"
+              _hover={{
+                bg: "neutral.200",
+                borderColor: "neutral.400",
               }}
               _active={{
-                transform: "translate(2px, 2px)",
-                boxShadow: "1px 1px 0px black"
+                bg: "neutral.300",
               }}
             >
               Cancel

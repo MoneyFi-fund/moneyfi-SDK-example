@@ -24,7 +24,7 @@ import {
   aptosClient,
 } from "@/constants/aptos";
 import { APTOS_ERROR_CODE } from "@/constants/error";
-import { useCheckWalletAccountQuery } from "@/api/use-check-wallet-account";
+import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 
 export const InitAccountComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
