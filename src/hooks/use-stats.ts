@@ -1,6 +1,6 @@
 import { useAuth } from "@/provider/auth-provider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoneyFiAptos } from "testquynx";
+import { MoneyFiAptos } from "moneyfi-ts-sdk";
 
 export const statsQueryKeys = {
   all: ["stats"] as const,

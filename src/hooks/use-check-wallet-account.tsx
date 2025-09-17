@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MoneyFiAptos } from "testquynx";
+import { MoneyFiAptos } from "moneyfi-ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 
 export const checkWalletAccountQueryKeys = {
