@@ -43,7 +43,6 @@ export const useGetOrCreateUserMutation = () => {
       }
     },
     onSuccess: (data, variables) => {
-      console.log("User created/retrieved successfully:", data);
       
       // Invalidate related queries
       queryClient.invalidateQueries({
@@ -111,7 +110,6 @@ export const useGetTxInitializationAccountMutation = () => {
 
       try {
         const initializationData = await moneyFiAptos.getTxInitializationWalletAccount(address);
-        console.log(initializationData)
         if (initializationData && typeof initializationData === 'object' && 'function' in initializationData) {
           const transaction: InputTransactionData = {
             data: {

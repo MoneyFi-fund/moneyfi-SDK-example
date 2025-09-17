@@ -27,7 +27,7 @@ export const DashboardPage = () => {
           >
             Dashboard
           </Text>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
+          <SimpleGrid columns={{ base: 1, md: 1, lg: 3 }} gap={6}>
             <CheckWalletAccount />
             <DepositComponent />
             <WithdrawComponent />

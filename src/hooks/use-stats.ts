@@ -24,7 +24,6 @@ export const useGetUserStatisticsQuery = (address?: string) => {
 
       try {
         const stats = await moneyFiAptos.getUserStatistic(address);
-        console.log("User statistics retrieved successfully:", stats);
         return stats;
       } catch (error) {
         console.error("Error fetching user statistics:", error);

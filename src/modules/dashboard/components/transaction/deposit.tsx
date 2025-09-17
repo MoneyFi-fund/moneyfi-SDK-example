@@ -55,11 +55,7 @@ export const DepositComponent: React.FC = () => {
     isLoading: isCheckingAccount,
     refetch: refetchAccountStatus,
   } = useCheckWalletAccountQuery();
-  console.log(
-    "%c🔑 hasWalletAccount: %c" + hasWalletAccount,
-    "background: #2d3748; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;",
-    "background: #3182ce; color: #fff; padding: 2px 6px; border-radius: 4px;"
-  );
+
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
@@ -105,14 +101,12 @@ export const DepositComponent: React.FC = () => {
           }
         );
       });
-      console.log(data);
 
       const signed_tx =
         typeof data === "object" && data?.signed_tx ? data.signed_tx : null;
       if (!signed_tx) {
         throw new Error("No signed transaction returned from initialization");
       }
-      console.log(signed_tx);
 
       const txBytes = new Uint8Array(
         atob(signed_tx)
@@ -193,10 +187,8 @@ export const DepositComponent: React.FC = () => {
           }
         );
       });
-      console.log("User creation checked/processed.");
       if (!hasWalletAccount) {
         setCurrentStep("initializing-account");
-        console.log("No wallet account found, initializing...");
         await checkOrCreateAptosAccount();
 
         // Invalidate wallet account queries after successful account initialization
@@ -209,11 +201,9 @@ export const DepositComponent: React.FC = () => {
 
         await refetchAccountStatus();
       }
-      console.log("Wallet account exists, proceeding to deposit...");
 
       setCurrentStep("depositing");
       await new Promise<any>((resolve, reject) => {
-        console.log("Starting deposit mutation...");
         depositMutation.mutate(
           { amount, tokenAddress },
           {

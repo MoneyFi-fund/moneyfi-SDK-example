@@ -59,9 +59,6 @@ export const useDelayedBalanceRefetch = () => {
         if (options.delayed) {
           timeoutRef.current = setTimeout(async () => {
             try {
-              console.log(
-                "Executing delayed balance refetch for blockchain confirmation..."
-              );
               await queryClient.refetchQueries({
                 queryKey,
                 type: "active",
@@ -109,11 +106,7 @@ export const useDepositMutation = ({
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
-  console.log("useDepositMutation called with:", {
-    tokenAddress,
-    userAddress,
-    amount,
-  });
+
 
   return useMutation({
     mutationFn: async ({
@@ -157,7 +150,6 @@ export const useDepositMutation = ({
     },
 
     onSuccess: async (data) => {
-      console.log("Deposit transaction successful:", data);
 
       await triggerDelayedRefetch({
         immediate: true,
@@ -207,23 +199,14 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         pubkey: payload.encoded_pubkey,
         message: payload.full_message,
       };
-      console.log(JSON.stringify(transformedPayload, null, 2));
-      console.log({ address, payload: transformedPayload });
-
-      // Debug: Check if method exists
-      console.log("SDK instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(moneyFiAptos)));
-
       const response = await moneyFiAptos.reqWithdraw(address, transformedPayload);
-      console.log(response);
 
       // Poll for withdraw status until it's done
       const pollWithdrawStatus = async (): Promise<any> => {
         while (true) {
           const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
-          console.log("Withdraw status:", statusResponse);
 
           if ((statusResponse as any) === "done" || (statusResponse as any)?.status === "done") {
-            console.log(tokenAddress, user.address, amount);
             const txPayload = await moneyFiAptos.getWithdrawTxPayload(
               tokenAddress,
               user.address,
@@ -241,7 +224,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       return await pollWithdrawStatus();
     },
     onSuccess: async (data) => {
-      console.log("Withdraw request successful:", data);
       const { txPayload } = data;
 
       const de = new Deserializer(txPayload);
@@ -255,7 +237,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         transaction: withdrawTxSimple,
         senderAuthenticator: submitTx.authenticator,
       });
-      console.log("Withdraw transaction submitted:", rst);
 
       await triggerDelayedRefetch({
         immediate: true,

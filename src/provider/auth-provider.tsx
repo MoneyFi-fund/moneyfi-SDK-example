@@ -198,10 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         payload: { user, session },
       });
 
-      console.log("Wallet connected successfully", {
-        wallet: wallet.name,
-        address: account.address,
-      });
+
     } else if (!connected) {
       // Wallet disconnected, clear auth state
       AuthStorage.clearSession();
@@ -216,7 +213,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         dispatch({ type: "SET_CONNECTING", payload: true });
         dispatch({ type: "SET_ERROR", payload: null });
 
-        console.log(`Connecting to ${walletName} wallet...`);
 
         // This will open the wallet popup directly
         await connect(walletName);
@@ -290,7 +286,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const checkSessionExpiration = () => {
       if (isSessionExpiring(new Date(state.session!.expiresAt))) {
-        console.log("Session is expiring, signing out...");
         signOut();
       }
     };

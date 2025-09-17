@@ -64,7 +64,9 @@ export const WithdrawComponent: React.FC = () => {
   );
 
   // Validation logic
-  const maxWithdrawAmount = userStats?.total_value ? Number(userStats.total_value) : 0;
+  const maxWithdrawAmount = userStats?.total_value
+    ? Number(userStats.total_value)
+    : 0;
   const currentAmount = amount ? parseFloat(amount) : 0;
   const isAmountExceeded = currentAmount > maxWithdrawAmount;
   const isAmountValid = currentAmount > 0 && !isAmountExceeded;
@@ -87,7 +89,6 @@ export const WithdrawComponent: React.FC = () => {
       token_address:
         selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT,
     };
-    console.log(message);
 
     const messageSerialized = JSON.stringify(message);
     const withdrawSignature = await aptosSignMessage({
@@ -125,11 +126,6 @@ export const WithdrawComponent: React.FC = () => {
         full_message: withdrawSignature.fullMessage.toString(),
       };
     }
-    console.log(
-      payload.encoded_signature,
-      payload.encoded_pubkey,
-      withdrawSignature.fullMessage
-    );
 
     setSuccessData(null);
 
@@ -138,7 +134,6 @@ export const WithdrawComponent: React.FC = () => {
         address: user.address,
         payload,
       });
-      console.log(result);
       setAmount("");
     } catch (error) {
       console.error("Withdrawal failed:", error);
@@ -273,21 +268,25 @@ export const WithdrawComponent: React.FC = () => {
               <Card.Body p={4}>
                 <VStack align="stretch" gap={2}>
                   <Text
-                    fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                    fontSize={
+                      materialDesign3Theme.typography.labelLarge.fontSize
+                    }
                     fontWeight="medium"
                     color={cardColors.textSecondary}
                   >
                     Total Portfolio Value
                   </Text>
                   <Text
-                    fontSize={materialDesign3Theme.typography.headlineSmall.fontSize}
+                    fontSize={
+                      materialDesign3Theme.typography.headlineSmall.fontSize
+                    }
                     fontWeight="bold"
                     color={cardColors.text}
                   >
                     $
-                    {(userStats.total_value
+                    {userStats.total_value
                       ? Number(userStats.total_value).toLocaleString()
-                      : "0")}
+                      : "0"}
                   </Text>
                 </VStack>
               </Card.Body>
@@ -373,7 +372,7 @@ export const WithdrawComponent: React.FC = () => {
               >
                 Amount
               </Text>
-              {userStats?.total_value && (
+              {userStats && Number(userStats.total_value) > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -408,8 +407,8 @@ export const WithdrawComponent: React.FC = () => {
               }}
               _focus={{
                 borderColor: isAmountExceeded ? "error.500" : "primary.500",
-                boxShadow: isAmountExceeded 
-                  ? `0 0 0 2px error.200` 
+                boxShadow: isAmountExceeded
+                  ? `0 0 0 2px error.200`
                   : `0 0 0 2px primary.200`,
                 outline: "none",
               }}
@@ -419,7 +418,8 @@ export const WithdrawComponent: React.FC = () => {
                 color="error.600"
                 fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
               >
-                Amount cannot exceed your total portfolio value of ${maxWithdrawAmount.toLocaleString()}
+                Amount cannot exceed your total portfolio value of $
+                {maxWithdrawAmount.toLocaleString()}
               </Text>
             )}
           </VStack>
