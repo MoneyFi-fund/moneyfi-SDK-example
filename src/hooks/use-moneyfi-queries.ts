@@ -277,6 +277,8 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         immediate: true,
         delayed: true,
       });
+
+      return rst;
     },
     onError: (error) => {
       console.error("Withdraw transaction failed:", error);

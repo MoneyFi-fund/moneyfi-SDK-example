@@ -138,6 +138,54 @@ export const useGetOrCreatePartnershipMutation = () => {
   });
 };
 
+export const useInitializationAccountMutation = () => {
+  const { isAuthenticated, user } = useAuth();
+  const queryClient = useQueryClient();
+  const moneyFiAptos = new MoneyFi([
+    {
+      chain_id: -1,
+      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+    },
+  ]);
+
+  return useMutation({
+    mutationFn: async ({ address }: { address: string }) => {
+      if (!isAuthenticated || !user) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      if (!address) {
+        throw new Error("Address is required");
+      }
+
+      try {
+        const createUserPayload = {
+          user_address: { Aptos: address },
+          ref_by: null,
+          is_partnership: false,
+        };
+        const result = await moneyFiAptos.createUser(createUserPayload);
+        return result;
+      } catch (error) {
+        console.error("Error creating user for initialization:", error);
+        throw error;
+      }
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: createQueryKeys.user(variables.address),
+      });
+      queryClient.invalidateQueries({
+        queryKey: createQueryKeys.initialization(variables.address),
+      });
+    },
+    onError: (error) => {
+      console.error("User creation for initialization failed:", error);
+    },
+    retry: false,
+  });
+};
+
 export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
