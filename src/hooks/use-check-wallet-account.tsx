@@ -1,25 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
-import { MoneyFiAptos } from "@moneyfi/ts-sdk";
+// import { MoneyFiAptos } from "@moneyfi/ts-sdk";
+import { MoneyFi } from "moneyfi-ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 
 export const checkWalletAccountQueryKeys = {
   all: ["checkWalletAccount"] as const,
-  account: (address?: string) => [...checkWalletAccountQueryKeys.all, "account", address] as const,
+  account: (address?: string) =>
+    [...checkWalletAccountQueryKeys.all, "account", address] as const,
 };
 
 export const useCheckWalletAccountQuery = () => {
   const { isAuthenticated, user } = useAuth();
-  
+
   return useQuery({
     queryKey: checkWalletAccountQueryKeys.account(user?.address),
     queryFn: async () => {
       if (!user?.address) {
         return false;
       }
-      
+
       try {
-        const moneyFiAptos = new MoneyFiAptos();
-        const hasAccount = await moneyFiAptos.hasWalletAccount(user.address);
+        const moneyFiAptos = new MoneyFi([
+          {
+            chain_id: -1,
+            custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+          },
+        ]);
+        const hasAccount = await moneyFiAptos.hasWalletAccount({
+          sender: user.address.startsWith('0x') ? user.address : `0x${user.address}`
+        });
         return hasAccount;
       } catch (error) {
         console.error("Error checking wallet account:", error);
@@ -32,4 +41,3 @@ export const useCheckWalletAccountQuery = () => {
     retry: 1,
   });
 };
-

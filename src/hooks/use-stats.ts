@@ -1,6 +1,7 @@
 import { useAuth } from "@/provider/auth-provider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoneyFiAptos } from "@moneyfi/ts-sdk";
+// import { MoneyFiAptos } from "@moneyfi/ts-sdk";
+import { MoneyFi } from "moneyfi-ts-sdk";
 
 export const statsQueryKeys = {
   all: ["stats"] as const,
@@ -9,7 +10,14 @@ export const statsQueryKeys = {
 
 export const useGetUserStatisticsQuery = (address?: string) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFiAptos();
+  const moneyFiAptos = new MoneyFi(
+    [
+      {
+        chain_id: -1,
+        custom_rpc_url: "https://aptos-mainnet.public.blastapi.io"
+      }
+    ]
+  );
 
   return useQuery({
     queryKey: statsQueryKeys.user(address),
@@ -23,7 +31,7 @@ export const useGetUserStatisticsQuery = (address?: string) => {
       }
 
       try {
-        const stats = await moneyFiAptos.getUserStatistic(address);
+        const stats = await moneyFiAptos.getUserStatistic({address, chain_id: -1});
         return stats;
       } catch (error) {
         console.error("Error fetching user statistics:", error);
