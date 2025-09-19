@@ -1,7 +1,8 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFiAptos  } from "@moneyfi/ts-sdk";
+// import { MoneyFiAptos } from "@moneyfi/ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import {
   Deserializer,
@@ -102,11 +103,15 @@ export const useDepositMutation = ({
   const { isAuthenticated, user } = useAuth();
   const { signTransaction, submitTransaction } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  const moneyFiAptos = new MoneyFiAptos();
+  const moneyFiAptos = new MoneyFi([
+    {
+      chain_id: -1,
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
+    },
+  ]);
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
-
 
   return useMutation({
     mutationFn: async ({
@@ -128,16 +133,23 @@ export const useDepositMutation = ({
         Math.floor(Number(amount) * 1_000_000)
       );
 
-      const payload = await moneyFiAptos.getDepositTxPayload(
-        tokenAddress,
-        userAddress,
-        amountInSmallestUnit
-      );
+      const payload = await moneyFiAptos.getDepositTxPayload({
+        sender: userAddress,
+        chain_id: -1,
+        token_address: tokenAddress,
+        amount: amountInSmallestUnit,
+      });
 
-      const de = new Deserializer(payload);
+      // Decode base64 string to bytes
+      const binaryString = atob(payload.tx);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const de = new Deserializer(bytes);
       const depositTx = RawTransaction.deserialize(de);
       const depoistTxSimple = new SimpleTransaction(depositTx);
-
       const submitTx = await signTransaction({
         transactionOrPayload: depoistTxSimple,
       });
@@ -150,7 +162,6 @@ export const useDepositMutation = ({
     },
 
     onSuccess: async (data) => {
-
       await triggerDelayedRefetch({
         immediate: true,
         delayed: true,
@@ -168,8 +179,13 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { isAuthenticated, user } = useAuth();
   const { account: aptosAccount } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  const moneyFiAptos = new MoneyFiAptos();
-      const { signTransaction, submitTransaction } = useWallet();
+  const moneyFiAptos = new MoneyFi([
+    {
+      chain_id: -1,
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
+    },
+  ]);
+  const { signTransaction, submitTransaction } = useWallet();
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -177,7 +193,10 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   }, [cleanup]);
 
   return useMutation({
-    mutationFn: async ({ address, payload }: {
+    mutationFn: async ({
+      address,
+      payload,
+    }: {
       address: string;
       payload: {
         encoded_signature: string;
@@ -199,25 +218,34 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         pubkey: payload.encoded_pubkey,
         message: payload.full_message,
       };
-      const response = await moneyFiAptos.reqWithdraw(address, transformedPayload);
+      const response = await moneyFiAptos.reqWithdraw(
+        address,
+        transformedPayload
+      );
 
       // Poll for withdraw status until it's done
       const pollWithdrawStatus = async (): Promise<any> => {
         while (true) {
-          const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
+          const statusResponse = await moneyFiAptos.getWithdrawStatus(
+            user.address
+          );
 
-          if ((statusResponse as any) === "done" || (statusResponse as any)?.status === "done") {
-            const txPayload = await moneyFiAptos.getWithdrawTxPayload(
-              tokenAddress,
-              user.address,
-              amount as bigint
-            );
+          if (
+            (statusResponse as any) === "done" ||
+            (statusResponse as any)?.status === "done"
+          ) {
+            const txPayload = await moneyFiAptos.getWithdrawTxPayload({
+              sender: user.address,
+              chain_id: -1,
+              token_address: tokenAddress,
+              amount: amount as bigint,
+            });
 
             return { withdrawResponse: response, txPayload };
           }
 
           // Wait 3 seconds before checking again
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 3000));
         }
       };
 
@@ -226,7 +254,14 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
     onSuccess: async (data) => {
       const { txPayload } = data;
 
-      const de = new Deserializer(txPayload);
+      // Decode base64 string to bytes
+      const binaryString = atob(txPayload.tx);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const de = new Deserializer(bytes);
       const withdrawTx = RawTransaction.deserialize(de);
       const withdrawTxSimple = new SimpleTransaction(withdrawTx);
 
@@ -242,6 +277,8 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         immediate: true,
         delayed: true,
       });
+
+      return rst;
     },
     onError: (error) => {
       console.error("Withdraw transaction failed:", error);

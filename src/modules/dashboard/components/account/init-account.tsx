@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   VStack,
@@ -7,106 +7,33 @@ import {
   Alert,
 } from "@chakra-ui/react";
 import { useAuth } from "@/provider/auth-provider";
-import { useGetTxInitializationAccountMutation } from "@/hooks/use-create";
-import {
-  useWallet as useAptosWallet,
-} from "@aptos-labs/wallet-adapter-react";
-import {
-  AccountAddress,
-  AccountAuthenticator,
-  Deserializer,
-  MultiAgentTransaction,
-  SignedTransaction,
-  TransactionAuthenticatorMultiAgent,
-} from "@aptos-labs/ts-sdk";
-import {
-  APTOS_CONFIG,
-  aptosClient,
-} from "@/constants/aptos";
-import { APTOS_ERROR_CODE } from "@/constants/error";
+import { useInitializationAccountMutation } from "@/hooks/use-create";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 
 export const InitAccountComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const [_signedTx, setSignedTx] = useState<string | null>(null);
   const { data: hasWalletAccount, isLoading: _isCheckingAccount } =
     useCheckWalletAccountQuery();
-
-  const {
-    account: aptosAccount,
-    signTransaction: aptosSignTransaction,
-    submitTransaction: aptosSubmitTransaction,
-    signAndSubmitTransaction: _aptosSignAndSubmitTransaction,
-  } = useAptosWallet();
-  const initAccountMutation = useGetTxInitializationAccountMutation();
+  const initAccountMutation = useInitializationAccountMutation();
 
   const checkOrCreateAptosAccount = async () => {
-    if (!user?.address || !aptosAccount?.address) return;
+    if (!user?.address) return;
 
     try {
-      const data = await new Promise<any>(
-        (resolve, reject) => {
-          initAccountMutation.mutate(
-            { address: user.address },
-            {
-              onSuccess: (data) => {
-                resolve(data);
-              },
-              onError: (error) => {
-                reject(error);
-              },
-            }
-          );
-        }
-      );
-
-      const signed_tx = typeof data === 'object' && data?.signed_tx ? data.signed_tx : null;
-      if (!signed_tx) {
-        throw new Error("No signed transaction returned from initialization");
-      }
-
-      setSignedTx(signed_tx);
-
-      const txBytes = new Uint8Array(
-        atob(signed_tx)
-          .split("")
-          .map((c) => c.charCodeAt(0))
-      );
-      const de = new Deserializer(txBytes);
-      const tx = SignedTransaction.deserialize(de);
-      const operatorAuth = (
-        tx.authenticator as TransactionAuthenticatorMultiAgent
-      ).sender.bcsToBytes();
-      const operatorAddress = new AccountAddress(
-        new Uint8Array(
-          APTOS_CONFIG.OPERATOR_ADDRESS.match(/.{1,2}/g)?.map((byte) =>
-            parseInt(byte, 16)
-          ) || []
-        )
-      );
-      const multiAgentTx = new MultiAgentTransaction(tx.raw_txn, [
-        operatorAddress,
-      ]);
-
-      const feepayerAuthenticator = await aptosSignTransaction({
-        transactionOrPayload: multiAgentTx,
+      await new Promise<any>((resolve, reject) => {
+        initAccountMutation.mutate(
+          { address: user.address },
+          {
+            onSuccess: (data) => {
+              console.log("User created successfully:", data);
+              resolve(data);
+            },
+            onError: (error) => {
+              reject(error);
+            },
+          }
+        );
       });
-
-      const submitTx = await aptosSubmitTransaction({
-        transaction: multiAgentTx,
-        senderAuthenticator: feepayerAuthenticator.authenticator,
-        additionalSignersAuthenticators: [
-          AccountAuthenticator.deserialize(new Deserializer(operatorAuth)),
-        ],
-      });
-
-      const response = await aptosClient.waitForTransaction({
-        transactionHash: submitTx.hash,
-      });
-
-      if (!response.success) {
-        throw new Error(APTOS_ERROR_CODE.CREATE_ACCOUNT_FAILED);
-      }
     } catch (error) {
       console.error("Account initialization failed:", error);
       throw error;

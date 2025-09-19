@@ -6,12 +6,13 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
-import { CreatePartnershipComponent } from "./components/account/create-partnership";
 import { DepositComponent } from "@/modules/dashboard/components/transaction/deposit";
 import { WithdrawComponent } from "@/modules/dashboard/components/transaction/withdraw";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import Stats from "../stats/stats";
+import { CreatePartnershipComponent } from "./components/account/create-partnership";
+import { InitAccountComponent } from "./components/account/init-account";
 
 export const DashboardPage = () => {
   const { colors } = useThemeColors();
@@ -28,6 +29,7 @@ export const DashboardPage = () => {
             Dashboard
           </Text>
           <SimpleGrid columns={{ base: 1, md: 1, lg: 3 }} gap={6}>
+            {/* <InitAccountComponent /> */}
             <CheckWalletAccount />
             <DepositComponent />
             <WithdrawComponent />
