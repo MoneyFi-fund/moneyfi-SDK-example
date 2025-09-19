@@ -41,6 +41,6 @@ export const useGetUserStatisticsQuery = (address?: string) => {
     enabled: !!(isAuthenticated && user && address),
     staleTime: 60_000, // 60 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
+    retry: 10,
   });
 };
