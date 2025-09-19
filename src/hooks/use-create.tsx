@@ -23,7 +23,7 @@ export const useGetOrCreateUserMutation = () => {
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
 
@@ -87,7 +87,7 @@ export const useGetOrCreatePartnershipMutation = () => {
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
 
@@ -144,7 +144,7 @@ export const useInitializationAccountMutation = () => {
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
 
@@ -193,7 +193,7 @@ export const useGetTxInitializationAccountMutation = () => {
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
 

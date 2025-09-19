@@ -23,7 +23,7 @@ export const useCheckWalletAccountQuery = () => {
         const moneyFiAptos = new MoneyFi([
           {
             chain_id: -1,
-            custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+            custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
           },
         ]);
         const hasAccount = await moneyFiAptos.hasWalletAccount({

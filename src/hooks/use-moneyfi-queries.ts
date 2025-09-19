@@ -106,7 +106,7 @@ export const useDepositMutation = ({
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
   React.useEffect(() => {
@@ -182,7 +182,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const moneyFiAptos = new MoneyFi([
     {
       chain_id: -1,
-      custom_rpc_url: "https://aptos-mainnet.public.blastapi.io",
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
     },
   ]);
   const { signTransaction, submitTransaction } = useWallet();
