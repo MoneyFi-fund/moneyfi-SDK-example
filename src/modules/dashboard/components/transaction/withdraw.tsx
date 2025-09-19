@@ -52,7 +52,6 @@ export const WithdrawComponent: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
-  console.log(successData);
 
   const tokenAddress =
     selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
@@ -136,7 +135,6 @@ export const WithdrawComponent: React.FC = () => {
         payload,
       });
       setAmount("");
-      setSuccessData({ hash: result.hash });
     } catch (error) {
       console.error("Withdrawal failed:", error);
     }
