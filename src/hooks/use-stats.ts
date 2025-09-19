@@ -1,7 +1,7 @@
 import { useAuth } from "@/provider/auth-provider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 // import { MoneyFiAptos } from "@moneyfi/ts-sdk";
-import { MoneyFi } from "moneyfi-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 
 export const statsQueryKeys = {
   all: ["stats"] as const,
@@ -39,7 +39,7 @@ export const useGetUserStatisticsQuery = (address?: string) => {
       }
     },
     enabled: !!(isAuthenticated && user && address),
-    staleTime: 30_000, // 30 seconds
+    staleTime: 60_000, // 60 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });

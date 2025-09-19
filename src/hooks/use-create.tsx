@@ -4,7 +4,7 @@ import {
   type InputTransactionData,
 } from "@aptos-labs/wallet-adapter-react";
 // import { MoneyFiAptos } from "@moneyfi/ts-sdk";
-import { MoneyFi } from "moneyfi-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 
 export const createQueryKeys = {
