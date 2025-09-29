@@ -137,7 +137,7 @@ type DepositState = "idle" | "creating-user" | "initializing-account" | "deposit
 #### Workflow Execution Sequence
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[User Input] --> B{Amount Valid?}
     B -->|No| A
     B -->|Yes| C[Creating User Phase]
@@ -154,7 +154,7 @@ flowchart TD
     L --> M[Blockchain Submission]
     M --> N[Query Invalidation]
     N --> O[Success State]
-    
+
     style A fill:#e1f5fe
     style C fill:#fff3e0
     style F fill:#fce4ec
@@ -330,7 +330,7 @@ The `WithdrawComponent` implements a sophisticated cryptographic signature syste
 #### Withdrawal Process Flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[User Input] --> B[Portfolio Validation]
     B --> C[Amount Validation]
     C --> D[Message Construction]
@@ -349,7 +349,7 @@ flowchart TD
     N --> O[Transaction Signing]
     O --> P[Blockchain Submission]
     P --> Q[Success State]
-    
+
     style A fill:#e1f5fe
     style D fill:#fff3e0
     style F fill:#fce4ec
@@ -557,7 +557,7 @@ const formatPercentage = (value: number): string => {
 #### Statistics Refresh Flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[User Clicks Refresh] --> B[getUserStatsQuery.refetch]
     B --> C[Loading State]
     C --> D[MoneyFi SDK Call]
@@ -568,7 +568,7 @@ flowchart TD
     G --> I[Reset Loading State]
     H --> J[Retry Option]
     J --> B
-    
+
     style A fill:#e1f5fe
     style C fill:#fff3e0
     style G fill:#e8f5e8
