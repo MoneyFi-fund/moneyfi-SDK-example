@@ -137,36 +137,76 @@ type DepositState = "idle" | "creating-user" | "initializing-account" | "deposit
 #### Workflow Execution Sequence
 
 ```mermaid
-flowchart LR
-    %% First line: left to right
+flowchart TB
+    %% Row 1: Left to Right
     A[User Input] --> B{Amount Valid?}
-    B -->|No| A
     B -->|Yes| C[Creating User Phase]
     C --> D[useGetOrCreateUserMutation]
+
+    %% Connect to Row 2
     D --> E{Has Wallet Account?}
 
-    %% Second line: right to left (snake pattern)
+    %% Row 2: Right to Left (snake pattern)
     E -->|No| F[Initializing Account Phase]
     F --> G[checkOrCreateAptosAccount]
     G --> H[Multi-Agent Transaction]
     H --> I[Depositing Phase]
     E -->|Yes| I
 
-    %% Third line: left to right
+    %% Connect to Row 3
     I --> J[useDepositMutation]
+
+    %% Row 3: Left to Right
     J --> K[SDK Payload Generation]
     K --> L[Transaction Signing]
     L --> M[Blockchain Submission]
 
-    %% Fourth line: right to left
+    %% Connect to Row 4
     M --> N[Query Invalidation]
     N --> O[Success State]
 
-    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
-    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
-    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:2px
-    style I fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
-    style O fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
+    %% Back loop
+    B -->|No| A
+
+    %% Positioning for snake pattern
+    subgraph row1 ["Row 1"]
+        A
+        B
+        C
+        D
+    end
+
+    subgraph row2 ["Row 2"]
+        E
+        F
+        G
+        H
+        I
+    end
+
+    subgraph row3 ["Row 3"]
+        J
+        K
+        L
+        M
+    end
+
+    subgraph row4 ["Row 4"]
+        N
+        O
+    end
+
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style I fill:#e8f5e8,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style O fill:#e8f5e8,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+
+    %% Hide subgraph borders
+    style row1 fill:none,stroke:none
+    style row2 fill:none,stroke:none
+    style row3 fill:none,stroke:none
+    style row4 fill:none,stroke:none
 ```
 
 #### 1. User Input Validation
@@ -337,38 +377,80 @@ The `WithdrawComponent` implements a sophisticated cryptographic signature syste
 #### Withdrawal Process Flow
 
 ```mermaid
-flowchart LR
-    %% First line: left to right
+flowchart TB
+    %% Row 1: Left to Right
     A[User Input] --> B[Portfolio Validation]
     B --> C[Amount Validation]
     C --> D[Message Construction]
     D --> E[Signature Creation]
 
-    %% Second line: right to left (snake pattern)
+    %% Connect to Row 2
     E --> F{Signature Type?}
+
+    %% Row 2: Branching and merging
     F -->|Ed25519| G[Ed25519 Signature]
     F -->|Keyless| H[Keyless Signature]
     G --> I[Payload Transformation]
     H --> I
 
-    %% Third line: left to right
+    %% Connect to Row 3
     I --> J[SDK reqWithdraw]
+
+    %% Row 3: Left to Right with polling loop
     J --> K[Status Polling Loop]
     K --> L{Status Done?}
     L -->|No| M[Wait 3s]
     M --> K
 
-    %% Fourth line: right to left
+    %% Connect to Row 4
     L -->|Yes| N[Transaction Payload Generation]
+
+    %% Row 4: Right to Left (snake pattern)
     N --> O[Transaction Signing]
     O --> P[Blockchain Submission]
     P --> Q[Success State]
 
-    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
-    style D fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
-    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:2px
-    style K fill:#ffeb3b,color:#000,stroke:#333,stroke-width:2px
-    style Q fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
+    %% Positioning for snake pattern
+    subgraph row1 ["Validation Phase"]
+        A
+        B
+        C
+        D
+        E
+    end
+
+    subgraph row2 ["Signature Phase"]
+        F
+        G
+        H
+        I
+    end
+
+    subgraph row3 ["Processing Phase"]
+        J
+        K
+        L
+        M
+    end
+
+    subgraph row4 ["Execution Phase"]
+        N
+        O
+        P
+        Q
+    end
+
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style D fill:#fff3e0,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style K fill:#ffeb3b,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style Q fill:#e8f5e8,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+
+    %% Hide subgraph borders
+    style row1 fill:none,stroke:none
+    style row2 fill:none,stroke:none
+    style row3 fill:none,stroke:none
+    style row4 fill:none,stroke:none
 ```
 
 #### 1. Portfolio Validation System
@@ -571,27 +653,57 @@ const formatPercentage = (value: number): string => {
 #### Statistics Refresh Flow
 
 ```mermaid
-flowchart LR
-    %% First line: left to right
+flowchart TB
+    %% Row 1: Left to Right
     A[User Clicks Refresh] --> B[getUserStatsQuery.refetch]
     B --> C[Loading State]
     C --> D[MoneyFi SDK Call]
     D --> E[getUserStatistic API]
 
-    %% Second line: right to left (snake pattern)
+    %% Connect to Row 2
     E --> F{Response Success?}
+
+    %% Row 2: Branching paths
     F -->|Yes| G[Update Statistics Grid]
     F -->|No| H[Error State Display]
+
+    %% Connect to Row 3
     G --> I[Reset Loading State]
 
-    %% Third line: left to right (retry loop)
+    %% Row 3: Error handling and retry
     H --> J[Retry Option]
     J --> B
 
-    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
-    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
-    style G fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
-    style H fill:#ffcdd2,color:#000,stroke:#333,stroke-width:2px
+    %% Positioning for snake pattern
+    subgraph row1 ["Initiation Phase"]
+        A
+        B
+        C
+        D
+        E
+    end
+
+    subgraph row2 ["Decision Phase"]
+        F
+        G
+        H
+    end
+
+    subgraph row3 ["Completion Phase"]
+        I
+        J
+    end
+
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style G fill:#e8f5e8,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style H fill:#ffcdd2,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+    style I fill:#e8f5e8,color:#000,stroke:#333,stroke-width:3px,font-size:14px
+
+    %% Hide subgraph borders
+    style row1 fill:none,stroke:none
+    style row2 fill:none,stroke:none
+    style row3 fill:none,stroke:none
 ```
 
 #### Real-Time Statistics Display
