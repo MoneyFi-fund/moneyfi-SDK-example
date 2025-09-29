@@ -138,28 +138,35 @@ type DepositState = "idle" | "creating-user" | "initializing-account" | "deposit
 
 ```mermaid
 flowchart LR
+    %% First line: left to right
     A[User Input] --> B{Amount Valid?}
     B -->|No| A
     B -->|Yes| C[Creating User Phase]
     C --> D[useGetOrCreateUserMutation]
     D --> E{Has Wallet Account?}
+
+    %% Second line: right to left (snake pattern)
     E -->|No| F[Initializing Account Phase]
-    E -->|Yes| I[Depositing Phase]
     F --> G[checkOrCreateAptosAccount]
     G --> H[Multi-Agent Transaction]
-    H --> I
+    H --> I[Depositing Phase]
+    E -->|Yes| I
+
+    %% Third line: left to right
     I --> J[useDepositMutation]
     J --> K[SDK Payload Generation]
     K --> L[Transaction Signing]
     L --> M[Blockchain Submission]
+
+    %% Fourth line: right to left
     M --> N[Query Invalidation]
     N --> O[Success State]
 
-    style A fill:#e1f5fe
-    style C fill:#fff3e0
-    style F fill:#fce4ec
-    style I fill:#e8f5e8
-    style O fill:#e8f5e8
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
+    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
+    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:2px
+    style I fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
+    style O fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
 ```
 
 #### 1. User Input Validation
@@ -331,30 +338,37 @@ The `WithdrawComponent` implements a sophisticated cryptographic signature syste
 
 ```mermaid
 flowchart LR
+    %% First line: left to right
     A[User Input] --> B[Portfolio Validation]
     B --> C[Amount Validation]
     C --> D[Message Construction]
     D --> E[Signature Creation]
+
+    %% Second line: right to left (snake pattern)
     E --> F{Signature Type?}
     F -->|Ed25519| G[Ed25519 Signature]
     F -->|Keyless| H[Keyless Signature]
     G --> I[Payload Transformation]
     H --> I
+
+    %% Third line: left to right
     I --> J[SDK reqWithdraw]
     J --> K[Status Polling Loop]
     K --> L{Status Done?}
     L -->|No| M[Wait 3s]
     M --> K
+
+    %% Fourth line: right to left
     L -->|Yes| N[Transaction Payload Generation]
     N --> O[Transaction Signing]
     O --> P[Blockchain Submission]
     P --> Q[Success State]
 
-    style A fill:#e1f5fe
-    style D fill:#fff3e0
-    style F fill:#fce4ec
-    style K fill:#ffeb3b
-    style Q fill:#e8f5e8
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
+    style D fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
+    style F fill:#fce4ec,color:#000,stroke:#333,stroke-width:2px
+    style K fill:#ffeb3b,color:#000,stroke:#333,stroke-width:2px
+    style Q fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
 ```
 
 #### 1. Portfolio Validation System
@@ -558,21 +572,26 @@ const formatPercentage = (value: number): string => {
 
 ```mermaid
 flowchart LR
+    %% First line: left to right
     A[User Clicks Refresh] --> B[getUserStatsQuery.refetch]
     B --> C[Loading State]
     C --> D[MoneyFi SDK Call]
     D --> E[getUserStatistic API]
+
+    %% Second line: right to left (snake pattern)
     E --> F{Response Success?}
     F -->|Yes| G[Update Statistics Grid]
     F -->|No| H[Error State Display]
     G --> I[Reset Loading State]
+
+    %% Third line: left to right (retry loop)
     H --> J[Retry Option]
     J --> B
 
-    style A fill:#e1f5fe
-    style C fill:#fff3e0
-    style G fill:#e8f5e8
-    style H fill:#ffcdd2
+    style A fill:#e1f5fe,color:#000,stroke:#333,stroke-width:2px
+    style C fill:#fff3e0,color:#000,stroke:#333,stroke-width:2px
+    style G fill:#e8f5e8,color:#000,stroke:#333,stroke-width:2px
+    style H fill:#ffcdd2,color:#000,stroke:#333,stroke-width:2px
 ```
 
 #### Real-Time Statistics Display
