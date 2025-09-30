@@ -9,15 +9,61 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 - [Usage](#usage)
 - [Transaction Flow Documentation](#transaction-flow-documentation)
   - [Account Initialization Flow Deep Dive](#account-initialization-flow-deep-dive)
+    - [Direct Transaction Initialization Architecture](#direct-transaction-initialization-architecture)
+    - [Account Initialization Process Flow](#account-initialization-process-flow)
+    - [1. Authentication and Validation Phase](#1-authentication-and-validation-phase)
+    - [2. SDK Initialization Request](#2-sdk-initialization-request)
+    - [3. Transaction Data Processing and Validation](#3-transaction-data-processing-and-validation)
+    - [4. Direct Transaction Execution](#4-direct-transaction-execution)
+    - [Error Handling and Cache Management](#error-handling-and-cache-management)
+    - [Key Differences from Deposit Flow](#key-differences-from-deposit-flow)
   - [Deposit Flow Deep Dive](#deposit-flow-deep-dive)
-  - [Withdraw Flow Deep Dive](#withdraw-flow-deep-dive)
+    - [Multi-Step Deposit Workflow Architecture](#multi-step-deposit-workflow-architecture)
+    - [Workflow Execution Sequence](#workflow-execution-sequence)
+    - [1. User Input Validation](#1-user-input-validation)
+    - [2. Creating User Phase](#2-creating-user-phase)
+    - [3. Smart Account Management System](#3-smart-account-management-system)
+    - [4. Deposit Execution Phase](#4-deposit-execution-phase)
+    - [Error Handling and Recovery Mechanisms](#error-handling-and-recovery-mechanisms)
+  - [Withdraw Component Deep Dive](#withdraw-component-deep-dive)
+    - [Signature-Based Withdrawal Architecture](#signature-based-withdrawal-architecture)
+    - [Withdrawal Process Flow](#withdrawal-process-flow)
+    - [1. Portfolio Validation System](#1-portfolio-validation-system)
+    - [2. Message Construction and Serialization](#2-message-construction-and-serialization)
+    - [3. Multi-Signature Support System](#3-multi-signature-support-system)
+    - [4. Asynchronous Status Polling](#4-asynchronous-status-polling)
+    - [Dynamic UI Feedback](#dynamic-ui-feedback)
   - [Statistics Flow Deep Dive](#statistics-flow-deep-dive)
+    - [Portfolio Analytics Architecture](#portfolio-analytics-architecture)
+    - [Statistics Configuration System](#statistics-configuration-system)
+    - [Data Formatting Utilities](#data-formatting-utilities)
+    - [Statistics Refresh Flow](#statistics-refresh-flow)
+    - [Real-Time Statistics Display](#real-time-statistics-display)
+    - [Loading and Error States](#loading-and-error-states)
+    - [Manual Refresh Functionality](#manual-refresh-functionality)
 - [Hook Architecture Documentation](#hook-architecture-documentation)
+  - [useDelayedBalanceRefetch Pattern](#usedelayedbalancerefetch-pattern)
   - [useGetTxInitializationAccountMutation Implementation](#usegettxinitializationaccountmutation-implementation)
   - [useDepositMutation Implementation](#usedepositmutation-implementation)
   - [useWithdrawMutation Implementation](#usewithdrawmutation-implementation)
   - [useGetUserStatisticsQuery Implementation](#usegetuserstatisticsquery-implementation)
 - [SDK Integration Patterns](#sdk-integration-patterns)
+  - [MoneyFi SDK Instantiation](#moneyfi-sdk-instantiation)
+  - [Transaction Lifecycle Patterns](#transaction-lifecycle-patterns)
+    - [1. Deposit Transaction Flow](#1-deposit-transaction-flow)
+    - [2. Withdrawal Transaction Flow](#2-withdrawal-transaction-flow)
+  - [Query Management and Caching Strategy](#query-management-and-caching-strategy)
+    - [Query Key Patterns](#query-key-patterns)
+    - [Cache Invalidation Strategy](#cache-invalidation-strategy)
+  - [Error Handling Patterns](#error-handling-patterns)
+    - [Centralized Error Management](#centralized-error-management)
+    - [User-Friendly Error Messages](#user-friendly-error-messages)
+  - [Performance Optimization Patterns](#performance-optimization-patterns)
+    - [Optimistic Updates](#optimistic-updates)
+    - [Memory Management](#memory-management)
+  - [Development Best Practices](#development-best-practices)
+    - [Type Safety](#type-safety)
+    - [Configuration Management](#configuration-management)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -138,7 +184,7 @@ The `useGetTxInitializationAccountMutation` implements a streamlined approach to
 flowchart TD
     A[User Trigger] --> B[Authentication Check]
     B --> C[Address Validation]
-    C --> D[SDK getTxInitializationWalletAccount]
+    C --> D[SDK getInitializationWalletAccountTxPayload]
     D --> E{Response Type?}
     E -->|Transaction Data| F[Transaction Construction]
     E -->|Already Initialized| G[Return Existing Data]
@@ -188,7 +234,7 @@ The system requests initialization data from the MoneyFi SDK:
 
 ```typescript
 // From use-create.tsx - SDK initialization call
-const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
+const initializationData = await moneyFiAptos.getInitializationWalletAccountTxPayload({
   user_address: { Aptos: address }
 });
 ```
@@ -870,12 +916,7 @@ export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
@@ -888,7 +929,7 @@ export const useGetTxInitializationAccountMutation = () => {
       }
 
       try {
-        const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
+        const initializationData = await moneyFiAptos.getInitializationWalletAccountTxPayload({
           user_address: { Aptos: address }
         });
 
@@ -942,12 +983,7 @@ export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }
   const { signTransaction, submitTransaction } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
   
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   React.useEffect(() => {
     return cleanup;

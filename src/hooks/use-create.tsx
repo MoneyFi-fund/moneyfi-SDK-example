@@ -3,8 +3,8 @@ import {
   useWallet,
   type InputTransactionData,
 } from "@aptos-labs/wallet-adapter-react";
-// import { MoneyFiAptos } from "@moneyfi/ts-sdk";
-import { MoneyFi } from "@moneyfi/ts-sdk";
+import { MoneyFi } from "quy-ts-sdk";
+// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 
 export const createQueryKeys = {
@@ -20,12 +20,7 @@ export const createQueryKeys = {
 export const useGetOrCreateUserMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useMutation({
     mutationFn: async ({
@@ -47,7 +42,7 @@ export const useGetOrCreateUserMutation = () => {
         // Step 1: Check if user already exists
         let userInfo;
         try {
-          userInfo = await moneyFiAptos.getUserInfor(address);
+          userInfo = await moneyFiAptos.getUserInformation(address);
           if (userInfo) {
             return userInfo;
           }
@@ -84,12 +79,7 @@ export const useGetOrCreateUserMutation = () => {
 export const useGetOrCreatePartnershipMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
@@ -105,7 +95,7 @@ export const useGetOrCreatePartnershipMutation = () => {
         // Step 1: Check if user already exists
         let userInfo;
         try {
-          userInfo = await moneyFiAptos.getUserInfor(address);
+          userInfo = await moneyFiAptos.getUserInformation(address);
           if (userInfo) {
             return userInfo;
           }
@@ -141,12 +131,7 @@ export const useGetOrCreatePartnershipMutation = () => {
 export const useInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
@@ -190,12 +175,7 @@ export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
@@ -209,7 +189,7 @@ export const useGetTxInitializationAccountMutation = () => {
 
       try {
         const initializationData =
-          await moneyFiAptos.getTxInitializationWalletAccount({
+          await moneyFiAptos.getInitializationWalletAccountTxPayload({
             user_address: { Aptos: address }
           });
         if (
