@@ -206,9 +206,7 @@ if (
 ) {
   const transaction: InputTransactionData = {
     data: {
-      // @ts-ignore
       function: initializationData.function as `${string}::${string}::${string}`,
-      // @ts-ignore
       functionArguments: initializationData.functionArguments || [],
     },
   };
@@ -902,9 +900,7 @@ export const useGetTxInitializationAccountMutation = () => {
         ) {
           const transaction: InputTransactionData = {
             data: {
-              // @ts-ignore
               function: initializationData.function as `${string}::${string}::${string}`,
-              // @ts-ignore
               functionArguments: initializationData.functionArguments || [],
             },
           };
