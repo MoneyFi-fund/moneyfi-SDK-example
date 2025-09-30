@@ -8,14 +8,14 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Transaction Flow Documentation](#transaction-flow-documentation)
+  - [Account Initialization Flow Deep Dive](#account-initialization-flow-deep-dive)
   - [Deposit Flow Deep Dive](#deposit-flow-deep-dive)
   - [Withdraw Flow Deep Dive](#withdraw-flow-deep-dive)
-  - [Account Initialization Flow Deep Dive](#account-initialization-flow-deep-dive)
   - [Statistics Flow Deep Dive](#statistics-flow-deep-dive)
 - [Hook Architecture Documentation](#hook-architecture-documentation)
+  - [useGetTxInitializationAccountMutation Implementation](#usegettxinitializationaccountmutation-implementation)
   - [useDepositMutation Implementation](#usedepositmutation-implementation)
   - [useWithdrawMutation Implementation](#usewithdrawmutation-implementation)
-  - [useGetTxInitializationAccountMutation Implementation](#usegettxinitializationaccountmutation-implementation)
   - [useGetUserStatisticsQuery Implementation](#usegetuserstatisticsquery-implementation)
 - [SDK Integration Patterns](#sdk-integration-patterns)
 - [Contributing](#contributing)
@@ -125,6 +125,133 @@ graph TD
     D2 --> E2[Status Polling]
     D3 --> E3[Data Fetching]
 ```
+
+### Account Initialization Flow Deep Dive
+
+#### Direct Transaction Initialization Architecture
+
+The `useGetTxInitializationAccountMutation` implements a streamlined approach to wallet account initialization, directly generating and executing initialization transactions without complex multi-agent signatures.
+
+#### Account Initialization Process Flow
+
+```mermaid
+flowchart TD
+    A[User Trigger] --> B[Authentication Check]
+    B --> C[Address Validation]
+    C --> D[SDK getTxInitializationWalletAccount]
+    D --> E{Response Type?}
+    E -->|Transaction Data| F[Transaction Construction]
+    E -->|Already Initialized| G[Return Existing Data]
+    F --> H[Function Validation]
+    H --> I[InputTransactionData Creation]
+    I --> J[signAndSubmitTransaction]
+    J --> K[Blockchain Submission]
+    K --> L[Query Invalidation]
+    L --> M[Success State]
+    G --> M
+
+    style A fill:#e1f5fe
+    style D fill:#fff3e0
+    style F fill:#fce4ec
+    style J fill:#e8f5e8
+    style M fill:#e8f5e8
+```
+
+#### 1. Authentication and Validation Phase
+
+The initialization process begins with comprehensive authentication checks:
+
+```typescript
+// From use-create.tsx
+export const useGetTxInitializationAccountMutation = () => {
+  const { isAuthenticated, user } = useAuth();
+  const { signAndSubmitTransaction } = useWallet();
+
+  return useMutation({
+    mutationFn: async ({ address }: { address: string }) => {
+      if (!isAuthenticated || !user) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      if (!address) {
+        throw new Error("Address is required");
+      }
+      // Process continues...
+    }
+  });
+};
+```
+
+#### 2. SDK Initialization Request
+
+The system requests initialization data from the MoneyFi SDK:
+
+```typescript
+// From use-create.tsx - SDK initialization call
+const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
+  user_address: { Aptos: address }
+});
+```
+
+#### 3. Transaction Data Processing and Validation
+
+The mutation intelligently handles different response types and validates transaction structure:
+
+```typescript
+// From use-create.tsx - Transaction data validation
+if (
+  initializationData &&
+  typeof initializationData === "object" &&
+  "function" in initializationData
+) {
+  const transaction: InputTransactionData = {
+    data: {
+      // @ts-ignore
+      function: initializationData.function as `${string}::${string}::${string}`,
+      // @ts-ignore
+      functionArguments: initializationData.functionArguments || [],
+    },
+  };
+
+  const response = await signAndSubmitTransaction(transaction);
+  return response;
+}
+
+return initializationData;
+```
+
+#### 4. Direct Transaction Execution
+
+Unlike the deposit flow's multi-agent approach, initialization uses direct transaction submission:
+
+```typescript
+// From use-create.tsx - Direct transaction execution
+const response = await signAndSubmitTransaction(transaction);
+```
+
+#### Error Handling and Cache Management
+
+The initialization flow implements comprehensive error handling and cache invalidation:
+
+```typescript
+// From use-create.tsx - Error handling and cache management
+onSuccess: (data, variables) => {
+  queryClient.invalidateQueries({
+    queryKey: createQueryKeys.initialization(variables.address),
+  });
+},
+onError: (error) => {
+  console.error("Account initialization failed:", error);
+},
+retry: false,
+```
+
+#### Key Differences from Deposit Flow
+
+1. **Single-Step Process**: No multi-phase state management required
+2. **Direct Execution**: No multi-agent transaction complexity
+3. **Simplified Payload**: Uses Aptos wallet's `signAndSubmitTransaction` directly
+4. **Conditional Logic**: Handles both transaction and non-transaction responses
 
 ### Deposit Flow Deep Dive
 
@@ -490,133 +617,6 @@ The withdrawal interface provides comprehensive user feedback:
 )}
 ```
 
-### Account Initialization Flow Deep Dive
-
-#### Direct Transaction Initialization Architecture
-
-The `useGetTxInitializationAccountMutation` implements a streamlined approach to wallet account initialization, directly generating and executing initialization transactions without complex multi-agent signatures.
-
-#### Account Initialization Process Flow
-
-```mermaid
-flowchart TD
-    A[User Trigger] --> B[Authentication Check]
-    B --> C[Address Validation]
-    C --> D[SDK getTxInitializationWalletAccount]
-    D --> E{Response Type?}
-    E -->|Transaction Data| F[Transaction Construction]
-    E -->|Already Initialized| G[Return Existing Data]
-    F --> H[Function Validation]
-    H --> I[InputTransactionData Creation]
-    I --> J[signAndSubmitTransaction]
-    J --> K[Blockchain Submission]
-    K --> L[Query Invalidation]
-    L --> M[Success State]
-    G --> M
-
-    style A fill:#e1f5fe
-    style D fill:#fff3e0
-    style F fill:#fce4ec
-    style J fill:#e8f5e8
-    style M fill:#e8f5e8
-```
-
-#### 1. Authentication and Validation Phase
-
-The initialization process begins with comprehensive authentication checks:
-
-```typescript
-// From use-create.tsx
-export const useGetTxInitializationAccountMutation = () => {
-  const { isAuthenticated, user } = useAuth();
-  const { signAndSubmitTransaction } = useWallet();
-
-  return useMutation({
-    mutationFn: async ({ address }: { address: string }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
-
-      if (!address) {
-        throw new Error("Address is required");
-      }
-      // Process continues...
-    }
-  });
-};
-```
-
-#### 2. SDK Initialization Request
-
-The system requests initialization data from the MoneyFi SDK:
-
-```typescript
-// From use-create.tsx - SDK initialization call
-const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
-  user_address: { Aptos: address }
-});
-```
-
-#### 3. Transaction Data Processing and Validation
-
-The mutation intelligently handles different response types and validates transaction structure:
-
-```typescript
-// From use-create.tsx - Transaction data validation
-if (
-  initializationData &&
-  typeof initializationData === "object" &&
-  "function" in initializationData
-) {
-  const transaction: InputTransactionData = {
-    data: {
-      // @ts-ignore
-      function: initializationData.function as `${string}::${string}::${string}`,
-      // @ts-ignore
-      functionArguments: initializationData.functionArguments || [],
-    },
-  };
-
-  const response = await signAndSubmitTransaction(transaction);
-  return response;
-}
-
-return initializationData;
-```
-
-#### 4. Direct Transaction Execution
-
-Unlike the deposit flow's multi-agent approach, initialization uses direct transaction submission:
-
-```typescript
-// From use-create.tsx - Direct transaction execution
-const response = await signAndSubmitTransaction(transaction);
-```
-
-#### Error Handling and Cache Management
-
-The initialization flow implements comprehensive error handling and cache invalidation:
-
-```typescript
-// From use-create.tsx - Error handling and cache management
-onSuccess: (data, variables) => {
-  queryClient.invalidateQueries({
-    queryKey: createQueryKeys.initialization(variables.address),
-  });
-},
-onError: (error) => {
-  console.error("Account initialization failed:", error);
-},
-retry: false,
-```
-
-#### Key Differences from Deposit Flow
-
-1. **Single-Step Process**: No multi-phase state management required
-2. **Direct Execution**: No multi-agent transaction complexity
-3. **Simplified Payload**: Uses Aptos wallet's `signAndSubmitTransaction` directly
-4. **Conditional Logic**: Handles both transaction and non-transaction responses
-
 ### Statistics Flow Deep Dive
 
 #### Portfolio Analytics Architecture
@@ -862,6 +862,79 @@ export const useDelayedBalanceRefetch = () => {
 };
 ```
 
+### useGetTxInitializationAccountMutation Implementation
+
+Streamlined mutation hook for direct wallet account initialization:
+
+```typescript
+// From use-create.tsx - Account initialization mutation
+export const useGetTxInitializationAccountMutation = () => {
+  const { isAuthenticated, user } = useAuth();
+  const { signAndSubmitTransaction } = useWallet();
+  const queryClient = useQueryClient();
+  const moneyFiAptos = new MoneyFi([
+    {
+      chain_id: -1,
+      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
+    },
+  ]);
+
+  return useMutation({
+    mutationFn: async ({ address }: { address: string }) => {
+      if (!isAuthenticated || !user) {
+        throw new Error("Please connect your wallet first");
+      }
+
+      if (!address) {
+        throw new Error("Address is required");
+      }
+
+      try {
+        const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
+          user_address: { Aptos: address }
+        });
+
+        // Handle transaction data response
+        if (
+          initializationData &&
+          typeof initializationData === "object" &&
+          "function" in initializationData
+        ) {
+          const transaction: InputTransactionData = {
+            data: {
+              // @ts-ignore
+              function: initializationData.function as `${string}::${string}::${string}`,
+              // @ts-ignore
+              functionArguments: initializationData.functionArguments || [],
+            },
+          };
+
+          const response = await signAndSubmitTransaction(transaction);
+          return response;
+        }
+
+        return initializationData;
+      } catch (error) {
+        console.error("Error initializing account:", error);
+        throw error;
+      }
+    },
+
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: createQueryKeys.initialization(variables.address),
+      });
+    },
+
+    onError: (error) => {
+      console.error("Account initialization failed:", error);
+    },
+
+    retry: false,
+  });
+};
+```
+
 ### useDepositMutation Implementation
 
 Advanced mutation hook with sophisticated transaction processing:
@@ -1043,79 +1116,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       cleanup();
     },
     
-    retry: false,
-  });
-};
-```
-
-### useGetTxInitializationAccountMutation Implementation
-
-Streamlined mutation hook for direct wallet account initialization:
-
-```typescript
-// From use-create.tsx - Account initialization mutation
-export const useGetTxInitializationAccountMutation = () => {
-  const { isAuthenticated, user } = useAuth();
-  const { signAndSubmitTransaction } = useWallet();
-  const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
-
-  return useMutation({
-    mutationFn: async ({ address }: { address: string }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
-
-      if (!address) {
-        throw new Error("Address is required");
-      }
-
-      try {
-        const initializationData = await moneyFiAptos.getTxInitializationWalletAccount({
-          user_address: { Aptos: address }
-        });
-
-        // Handle transaction data response
-        if (
-          initializationData &&
-          typeof initializationData === "object" &&
-          "function" in initializationData
-        ) {
-          const transaction: InputTransactionData = {
-            data: {
-              // @ts-ignore
-              function: initializationData.function as `${string}::${string}::${string}`,
-              // @ts-ignore
-              functionArguments: initializationData.functionArguments || [],
-            },
-          };
-
-          const response = await signAndSubmitTransaction(transaction);
-          return response;
-        }
-
-        return initializationData;
-      } catch (error) {
-        console.error("Error initializing account:", error);
-        throw error;
-      }
-    },
-
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: createQueryKeys.initialization(variables.address),
-      });
-    },
-
-    onError: (error) => {
-      console.error("Account initialization failed:", error);
-    },
-
     retry: false,
   });
 };
