@@ -38,6 +38,7 @@ import {
 } from "@aptos-labs/ts-sdk";
 import { APTOS_CONFIG, aptosClient } from "@/constants/aptos";
 import { APTOS_ERROR_CODE } from "@/constants/error";
+import { MoneyFi } from "quy-ts-sdk";
 
 const tokens = createListCollection({
   items: [
@@ -163,30 +164,47 @@ export const DepositComponent: React.FC = () => {
     setStepError(null);
 
     try {
-      setCurrentStep("creating-user");
-      await new Promise<any>((resolve, reject) => {
-        createUserMutation.mutate(
-          {
-            address: user.address,
-            refBy: undefined,
-          },
-          {
-            onSuccess: async (data) => {
-              // Invalidate user-related queries after successful user creation
-              await queryClient.invalidateQueries({
-                queryKey: ["user", user.address],
-              });
-              await queryClient.invalidateQueries({
-                queryKey: ["userProfile"],
-              });
-              resolve(data);
+      // Always fetch user information first
+      const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+      let userInfo;
+      let userExists = false;
+
+      try {
+        userInfo = await moneyFiAptos.getUserInformation(user.address);
+        console.log("User information fetched:", userInfo);
+        userExists = true;
+      } catch (error) {
+        console.log("User information not found, will create user");
+      }
+
+      // Only create user if getUserInformation failed
+      if (!userExists) {
+        setCurrentStep("creating-user");
+        await new Promise<any>((resolve, reject) => {
+          createUserMutation.mutate(
+            {
+              address: user.address,
+              refBy: undefined,
             },
-            onError: (error) => {
-              reject(error);
-            },
-          }
-        );
-      });
+            {
+              onSuccess: async (data) => {
+                // Invalidate user-related queries after successful user creation
+                await queryClient.invalidateQueries({
+                  queryKey: ["user", user.address],
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ["userProfile"],
+                });
+                resolve(data);
+              },
+              onError: (error) => {
+                reject(error);
+              },
+            }
+          );
+        });
+      }
+
       if (!hasWalletAccount) {
         setCurrentStep("initializing-account");
         await checkOrCreateAptosAccount();
