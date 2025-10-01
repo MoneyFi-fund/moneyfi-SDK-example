@@ -10,14 +10,7 @@ export const statsQueryKeys = {
 
 export const useGetUserStatisticsQuery = (address?: string) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFi(
-    [
-      {
-        chain_id: -1,
-        custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1"
-      }
-    ]
-  );
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useQuery({
     queryKey: statsQueryKeys.user(address),
@@ -31,7 +24,7 @@ export const useGetUserStatisticsQuery = (address?: string) => {
       }
 
       try {
-        const stats = await moneyFiAptos.getUserStatistic({address, chain_id: -1});
+        const stats = await moneyFiAptos.getUserStatistic({address});
         return stats;
       } catch (error) {
         console.error("Error fetching user statistics:", error);

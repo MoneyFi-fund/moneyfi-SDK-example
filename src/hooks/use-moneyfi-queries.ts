@@ -203,14 +203,14 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-
+      debugger;
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
         pubkey: payload.encoded_pubkey,
         message: payload.full_message,
       };
-      const response = await moneyFiAptos.reqWithdraw(
+      await moneyFiAptos.reqWithdraw(
         address,
         transformedPayload
       );
@@ -233,7 +233,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               amount: amount as bigint,
             });
 
-            return { withdrawResponse: response, txPayload };
+            return { txPayload };
           }
 
           // Wait 3 seconds before checking again
