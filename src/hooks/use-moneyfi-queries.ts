@@ -1,8 +1,8 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-// import { MoneyFiAptos } from "@moneyfi/ts-sdk";
-import { MoneyFi } from "@moneyfi/ts-sdk";
+import { MoneyFi } from "quy-ts-sdk";
+// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import {
   Deserializer,
@@ -24,6 +24,8 @@ export const moneyFiQueryKeys = {
     [...moneyFiQueryKeys.all, "balance", address] as const,
   balanceRefreshing: (address?: string) =>
     [...moneyFiQueryKeys.balance(address), "refreshing"] as const,
+  supportedChains: () => [...moneyFiQueryKeys.all, "supportedChains"] as const,
+  supportedTokens: () => [...moneyFiQueryKeys.all, "supportedTokens"] as const,
 };
 
 export const useDelayedBalanceRefetch = () => {
@@ -103,12 +105,7 @@ export const useDepositMutation = ({
   const { isAuthenticated, user } = useAuth();
   const { signTransaction, submitTransaction } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
@@ -179,12 +176,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { isAuthenticated, user } = useAuth();
   const { account: aptosAccount } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1",
-    },
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   const { signTransaction, submitTransaction } = useWallet();
 
   // Cleanup on unmount
@@ -211,14 +203,14 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-
+      debugger;
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
         pubkey: payload.encoded_pubkey,
         message: payload.full_message,
       };
-      const response = await moneyFiAptos.reqWithdraw(
+      await moneyFiAptos.reqWithdraw(
         address,
         transformedPayload
       );
@@ -241,7 +233,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               amount: amount as bigint,
             });
 
-            return { withdrawResponse: response, txPayload };
+            return { txPayload };
           }
 
           // Wait 3 seconds before checking again
@@ -285,5 +277,45 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       cleanup();
     },
     retry: false, // Don't retry mutations automatically
+  });
+};
+
+export const useGetSupportedChains = () => {
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  
+  return useQuery({
+    queryKey: moneyFiQueryKeys.supportedChains(),
+    queryFn: async () => {
+      try {
+        const supportedChains = await moneyFiAptos.getSupportedChains();
+        return supportedChains;
+      } catch (error) {
+        console.error("Error fetching supported chains:", error);
+        throw error;
+      }
+    },
+    staleTime: BALANCE_REFETCH_CONFIG.staleTime,
+    gcTime: BALANCE_REFETCH_CONFIG.gcTime,
+    retry: 1,
+  });
+};
+
+export const useGetSupportedTokens = () => {
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  
+  return useQuery({
+    queryKey: moneyFiQueryKeys.supportedTokens(),
+    queryFn: async () => {
+      try {
+        const supportedTokens = await moneyFiAptos.getSupportedTokens();
+        return supportedTokens;
+      } catch (error) {
+        console.error("Error fetching supported tokens:", error);
+        throw error;
+      }
+    },
+    staleTime: BALANCE_REFETCH_CONFIG.staleTime,
+    gcTime: BALANCE_REFETCH_CONFIG.gcTime,
+    retry: 1,
   });
 };

@@ -131,7 +131,7 @@ export default function Stats() {
 
   if (!isAuthenticated) {
     return (
-      <Box minH="100vh" bg={colors.background}>
+      <Box minH="60vh" bg={colors.background}>
         <Container maxW="full" p={8}>
           <VStack align="stretch" gap={6}>
             <Text
@@ -165,7 +165,7 @@ export default function Stats() {
   }
 
   return (
-    <Box minH="100vh" bg={colors.background}>
+    <Box minH="60vh" bg={colors.background}>
       <Container maxW="full" p={6}>
         <VStack align="stretch" gap={6}>
           {/* Refresh Button */}

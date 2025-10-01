@@ -11,8 +11,9 @@ import { WithdrawComponent } from "@/modules/dashboard/components/transaction/wi
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import Stats from "../stats/stats";
-import { CreatePartnershipComponent } from "./components/account/create-partnership";
-import { InitAccountComponent } from "./components/account/init-account";
+import Supported from "./components/supported/supported";
+// import { CreatePartnershipComponent } from "./components/account/create-partnership";
+// import { InitAccountComponent } from "./components/account/init-account";
 
 export const DashboardPage = () => {
   const { colors } = useThemeColors();
@@ -35,6 +36,7 @@ export const DashboardPage = () => {
             <WithdrawComponent />
           </SimpleGrid>
           <Stats />
+          {/* <Supported /> */}
         </VStack>
       </Container>
     </Box>

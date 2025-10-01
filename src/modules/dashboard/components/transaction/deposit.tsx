@@ -273,63 +273,63 @@ export const DepositComponent: React.FC = () => {
       </Card.Root>
     );
   }
-
-  if (!hasWalletAccount && !isCheckingAccount) {
-    return (
-      <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
-        boxShadow={materialDesign3Theme.elevation.level1}
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        _hover={{
-          boxShadow: materialDesign3Theme.elevation.level2,
-        }}
-        border="1px solid"
-        borderColor={cardColors.border}
-      >
-        <Card.Header p={6}>
-          <Text
-            fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
-            lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
-            fontWeight="medium"
-            color={cardColors.text}
-          >
-            MoneyFi Account Status
-          </Text>
-        </Card.Header>
-        <Card.Body px={6} pb={6}>
-          <VStack align="stretch" gap={4}>
-            <Alert.Root
-              status="warning"
-              bg="warning.50"
-              borderRadius={materialDesign3Theme.borderRadius.sm}
-              border="1px solid"
-              borderColor="warning.200"
-              p={4}
-            >
-              <Alert.Description>
-                <Text
-                  color="warning.800"
-                  fontWeight="medium"
-                  fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
-                >
-                  Account not found
-                </Text>
-                <Text
-                  color="warning.700"
-                  fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-                  mt={2}
-                >
-                  You need a MoneyFi account to deposit funds. Please contact
-                  support or create an account first.
-                </Text>
-              </Alert.Description>
-            </Alert.Root>
-          </VStack>
-        </Card.Body>
-      </Card.Root>
-    );
-  }
+  console.log("hasWalletAccount", hasWalletAccount, isCheckingAccount);
+  // if (!hasWalletAccount && !isCheckingAccount) {
+  //   return (
+  //     <Card.Root
+  //       bg={cardColors.background}
+  //       borderRadius={materialDesign3Theme.borderRadius.md}
+  //       boxShadow={materialDesign3Theme.elevation.level1}
+  //       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+  //       _hover={{
+  //         boxShadow: materialDesign3Theme.elevation.level2,
+  //       }}
+  //       border="1px solid"
+  //       borderColor={cardColors.border}
+  //     >
+  //       <Card.Header p={6}>
+  //         <Text
+  //           fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
+  //           lineHeight={materialDesign3Theme.typography.titleLarge.lineHeight}
+  //           fontWeight="medium"
+  //           color={cardColors.text}
+  //         >
+  //           MoneyFi Account Status
+  //         </Text>
+  //       </Card.Header>
+  //       <Card.Body px={6} pb={6}>
+  //         <VStack align="stretch" gap={4}>
+  //           <Alert.Root
+  //             status="warning"
+  //             bg="warning.50"
+  //             borderRadius={materialDesign3Theme.borderRadius.sm}
+  //             border="1px solid"
+  //             borderColor="warning.200"
+  //             p={4}
+  //           >
+  //             <Alert.Description>
+  //               <Text
+  //                 color="warning.800"
+  //                 fontWeight="medium"
+  //                 fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+  //               >
+  //                 Account not found
+  //               </Text>
+  //               <Text
+  //                 color="warning.700"
+  //                 fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+  //                 mt={2}
+  //               >
+  //                 You need a MoneyFi account to deposit funds. Please contact
+  //                 support or create an account first.
+  //               </Text>
+  //             </Alert.Description>
+  //           </Alert.Root>
+  //         </VStack>
+  //       </Card.Body>
+  //     </Card.Root>
+  //   );
+  // }
 
   return (
     <Card.Root
