@@ -21,6 +21,7 @@ import {
   BiDownArrowCircle,
   BiUpArrowCircle,
   BiTargetLock,
+  BiDollarCircle,
 } from "react-icons/bi";
 import { RiPercentLine } from "react-icons/ri";
 import { useAuth } from "@/provider/auth-provider";
@@ -118,17 +119,25 @@ const statsConfig = [
     bgColor: "tertiary.50",
     borderColor: "tertiary.200",
   },
+  {
+    key: "referral_balance",
+    label: "Referral Balance",
+    icon: BiDollarCircle,
+    formatter: formatCurrency,
+    color: "black",
+    bgColor: "gray.100",
+    borderColor: "black",
+  }
 ];
 
 export default function Stats() {
   const { isAuthenticated, user } = useAuth();
   const { cardColors, colors, buttonColors } = useThemeColors();
   const getUserStatsQuery = useGetUserStatisticsQuery(user?.address);
-
   const handleRefreshStats = () => {
     getUserStatsQuery.refetch();
   };
-
+  console.log(getUserStatsQuery.data)
   if (!isAuthenticated) {
     return (
       <Box minH="60vh" bg={colors.background}>
