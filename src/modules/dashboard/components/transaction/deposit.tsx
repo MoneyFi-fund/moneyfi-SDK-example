@@ -87,7 +87,7 @@ export const DepositComponent: React.FC = () => {
     if (!user?.address || !aptosAccount?.address) {
       throw new Error("User address or Aptos account not available");
     }
-
+    
     try {
       const data = await new Promise<any>((resolve, reject) => {
         initAccountMutation.mutate(
@@ -141,14 +141,15 @@ export const DepositComponent: React.FC = () => {
           AccountAuthenticator.deserialize(new Deserializer(operatorAuth)),
         ],
       });
+      
+      // const response = await aptosClient.waitForTransaction({
+      //   transactionHash: submitTx.hash,
+      // });
+      
 
-      const response = await aptosClient.waitForTransaction({
-        transactionHash: submitTx.hash,
-      });
-
-      if (!response.success) {
-        throw new Error(APTOS_ERROR_CODE.CREATE_ACCOUNT_FAILED);
-      }
+      // if (!response.success) {
+      //   throw new Error(APTOS_ERROR_CODE.CREATE_ACCOUNT_FAILED);
+      // }
     } catch (error) {
       console.error("Account initialization failed:", error);
       throw error;
@@ -168,7 +169,7 @@ export const DepositComponent: React.FC = () => {
       const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
       let userInfo;
       let userExists = false;
-
+      
       try {
         userInfo = await moneyFiAptos.getUserInformation(user.address);
         console.log("User information fetched:", userInfo);
@@ -176,9 +177,38 @@ export const DepositComponent: React.FC = () => {
       } catch (error) {
         console.log("User information not found, will create user");
       }
+      // If user exists, skip initialization and go directly to deposit
+      if (userExists) {
+        console.log("User exists, proceeding directly to deposit");
+        setCurrentStep("depositing");
+        await new Promise<any>((resolve, reject) => {
+          depositMutation.mutate(
+            { amount, tokenAddress },
+            {
+              onSuccess: async (data) => {
+                queryClient.invalidateQueries({
+                  queryKey: moneyFiQueryKeys.balance(user.address),
+                });
+                queryClient.invalidateQueries({
+                  queryKey: ["transactions", user.address],
+                });
+                queryClient.invalidateQueries({
+                  queryKey: statsQueryKeys.user(user.address),
+                });
 
-      // Only create user if getUserInformation failed
-      if (!userExists) {
+                setAmount("");
+                setSuccessData({ hash: data.hash });
+                setCurrentStep("idle");
+                resolve(data);
+              },
+              onError: (error) => {
+                reject(error);
+              },
+            }
+          );
+        });
+      } else {
+        // User doesn't exist - follow the full initialization flow
         setCurrentStep("creating-user");
         await new Promise<any>((resolve, reject) => {
           createUserMutation.mutate(
@@ -203,50 +233,52 @@ export const DepositComponent: React.FC = () => {
             }
           );
         });
-      }
 
-      if (!hasWalletAccount) {
-        setCurrentStep("initializing-account");
-        await checkOrCreateAptosAccount();
+        // Initialize wallet account for new users
+        if (!hasWalletAccount) {
+          setCurrentStep("initializing-account");
+          await checkOrCreateAptosAccount();
 
-        // Invalidate wallet account queries after successful account initialization
-        await queryClient.invalidateQueries({
-          queryKey: ["checkWalletAccount"],
+          // Invalidate wallet account queries after successful account initialization
+          await queryClient.invalidateQueries({
+            queryKey: ["checkWalletAccount"],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ["walletAccount", user.address],
+          });
+
+          await refetchAccountStatus();
+        }
+
+        // Finally, proceed to deposit
+        setCurrentStep("depositing");
+        await new Promise<any>((resolve, reject) => {
+          depositMutation.mutate(
+            { amount, tokenAddress },
+            {
+              onSuccess: async (data) => {
+                queryClient.invalidateQueries({
+                  queryKey: moneyFiQueryKeys.balance(user.address),
+                });
+                queryClient.invalidateQueries({
+                  queryKey: ["transactions", user.address],
+                });
+                queryClient.invalidateQueries({
+                  queryKey: statsQueryKeys.user(user.address),
+                });
+
+                setAmount("");
+                setSuccessData({ hash: data.hash });
+                setCurrentStep("idle");
+                resolve(data);
+              },
+              onError: (error) => {
+                reject(error);
+              },
+            }
+          );
         });
-        await queryClient.invalidateQueries({
-          queryKey: ["walletAccount", user.address],
-        });
-
-        await refetchAccountStatus();
       }
-
-      setCurrentStep("depositing");
-      await new Promise<any>((resolve, reject) => {
-        depositMutation.mutate(
-          { amount, tokenAddress },
-          {
-            onSuccess: async (data) => {
-              queryClient.invalidateQueries({
-                queryKey: moneyFiQueryKeys.balance(user.address),
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["transactions", user.address],
-              });
-              queryClient.invalidateQueries({
-                queryKey: statsQueryKeys.user(user.address),
-              });
-
-              setAmount("");
-              setSuccessData({ hash: data.hash });
-              setCurrentStep("idle");
-              resolve(data);
-            },
-            onError: (error) => {
-              reject(error);
-            },
-          }
-        );
-      });
     } catch (error) {
       console.error("Deposit process failed:", error);
       setStepError(

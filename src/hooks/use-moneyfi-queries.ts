@@ -126,6 +126,7 @@ export const useDepositMutation = ({
         throw new Error("Please enter a valid amount");
       }
 
+      
       const amountInSmallestUnit = BigInt(
         Math.floor(Number(amount) * 1_000_000)
       );
@@ -203,7 +204,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-      debugger;
+      
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
@@ -252,11 +253,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
-
+      
       const de = new Deserializer(bytes);
       const withdrawTx = RawTransaction.deserialize(de);
       const withdrawTxSimple = new SimpleTransaction(withdrawTx);
-
+      
       const submitTx = await signTransaction({
         transactionOrPayload: withdrawTxSimple,
       });

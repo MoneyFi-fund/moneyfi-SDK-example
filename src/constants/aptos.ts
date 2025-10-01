@@ -20,6 +20,8 @@ export const aptosConfig = new AptosConfig({
   network: Network.MAINNET,
   clientConfig: {
     API_KEY: import.meta.env.VITE_APTOS_CLIENT_API_KEY,
+    
   },
+  fullnode: "https://1rpc.io/aptos",
 });
 export const aptosClient = new Aptos(aptosConfig);
