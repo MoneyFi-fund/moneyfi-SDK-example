@@ -88,17 +88,20 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd moneyfi-sdk
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Start the development server:
+
 ```bash
 pnpm dev
 ```
@@ -163,15 +166,15 @@ graph TD
     B --> C[Custom Hooks]
     C --> D[MoneyFi SDK]
     D --> E[Aptos Blockchain]
-    
+
     B1[DepositComponent] --> C1[useDepositMutation]
     B2[WithdrawComponent] --> C2[useWithdrawMutation]
     B3[StatsComponent] --> C3[useGetUserStatisticsQuery]
-    
+
     C1 --> D1[getDepositTxPayload]
     C2 --> D2[reqWithdraw]
     C3 --> D3[getUserStatistic]
-    
+
     D1 --> E1[Transaction Signing]
     D2 --> E2[Status Polling]
     D3 --> E3[Data Fetching]
@@ -228,7 +231,7 @@ export const useGetTxInitializationAccountMutation = () => {
         throw new Error("Address is required");
       }
       // Process continues...
-    }
+    },
   });
 };
 ```
@@ -239,9 +242,10 @@ The system requests initialization data from the MoneyFi SDK:
 
 ```typescript
 // From use-create.tsx - SDK initialization call
-const initializationData = await moneyFiAptos.getInitializationWalletAccountTxPayload({
-  user_address: { Aptos: address }
-});
+const initializationData =
+  await moneyFiAptos.getInitializationWalletAccountTxPayload({
+    user_address: { Aptos: address },
+  });
 ```
 
 #### 3. Transaction Data Processing and Validation
@@ -257,7 +261,8 @@ if (
 ) {
   const transaction: InputTransactionData = {
     data: {
-      function: initializationData.function as `${string}::${string}::${string}`,
+      function:
+        initializationData.function as `${string}::${string}::${string}`,
       functionArguments: initializationData.functionArguments || [],
     },
   };
@@ -309,7 +314,11 @@ retry: false,
 The `DepositComponent` implements a sophisticated state machine with four distinct phases:
 
 ```typescript
-type DepositState = "idle" | "creating-user" | "initializing-account" | "depositing";
+type DepositState =
+  | "idle"
+  | "creating-user"
+  | "initializing-account"
+  | "depositing";
 ```
 
 #### Workflow Execution Sequence
@@ -332,7 +341,7 @@ flowchart TD
     L --> M[Blockchain Submission]
     M --> N[Query Invalidation]
     N --> O[Success State]
-    
+
     style A fill:#e1f5fe
     style C fill:#fff3e0
     style F fill:#fce4ec
@@ -349,7 +358,8 @@ The deposit process begins with comprehensive input validation:
 const [amount, setAmount] = useState("");
 const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
 
-const tokenAddress = selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
+const tokenAddress =
+  selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
 
 // Validation in handleDeposit
 const handleDeposit = async () => {
@@ -484,11 +494,11 @@ await depositMutation.mutate(
       queryClient.invalidateQueries({
         queryKey: statsQueryKeys.user(user.address),
       });
-      
+
       setAmount("");
       setSuccessData({ hash: data.hash });
       setCurrentStep("idle");
-    }
+    },
   }
 );
 ```
@@ -504,21 +514,23 @@ The deposit flow implements comprehensive error handling:
 
 ```typescript
 // From deposit.tsx - Comprehensive error handling
-{(stepError ||
-  depositMutation.isError ||
-  createUserMutation.isError ||
-  initAccountMutation.isError) && (
-  <Alert.Root status="error">
-    <Alert.Description>
-      <Text color="error.800">
-        {stepError ||
-          (depositMutation.error instanceof Error
-            ? depositMutation.error.message
-            : "Deposit failed")}
-      </Text>
-    </Alert.Description>
-  </Alert.Root>
-)}
+{
+  (stepError ||
+    depositMutation.isError ||
+    createUserMutation.isError ||
+    initAccountMutation.isError) && (
+    <Alert.Root status="error">
+      <Alert.Description>
+        <Text color="error.800">
+          {stepError ||
+            (depositMutation.error instanceof Error
+              ? depositMutation.error.message
+              : "Deposit failed")}
+        </Text>
+      </Alert.Description>
+    </Alert.Root>
+  );
+}
 ```
 
 ### Withdraw Component Deep Dive
@@ -549,7 +561,7 @@ flowchart TD
     N --> O[Transaction Signing]
     O --> P[Blockchain Submission]
     P --> Q[Success State]
-    
+
     style A fill:#e1f5fe
     style D fill:#fff3e0
     style F fill:#fce4ec
@@ -566,7 +578,9 @@ The withdraw component includes real-time portfolio validation:
 const { data: userStats } = useGetUserStatisticsQuery(user?.address);
 
 // Validation logic
-const maxWithdrawAmount = userStats?.total_value ? Number(userStats.total_value) : 0;
+const maxWithdrawAmount = userStats?.total_value
+  ? Number(userStats.total_value)
+  : 0;
 const currentAmount = amount ? parseFloat(amount) : 0;
 const isAmountExceeded = currentAmount > maxWithdrawAmount;
 const isAmountValid = currentAmount > 0 && !isAmountExceeded;
@@ -584,22 +598,21 @@ Withdrawal messages are constructed with deterministic serialization:
 
 ```typescript
 // From withdraw.tsx - Message construction
-const handleWithdraw = async () => {
-  const amountNum = parseFloat(amount.toString());
-  const nonce = Math.random().toString(36).substring(2, 15);
-  
-  const message = {
-    amount: amountNum,
-    target_chain_id: -1, // Aptos mainnet identifier
-    token_address: selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT,
-  };
+const amountNum = parseFloat(amount.toString());
+const nonce = Math.random().toString(36).substring(2, 15);
 
-  const messageSerialized = JSON.stringify(message);
-  const withdrawSignature = await aptosSignMessage({
-    message: messageSerialized,
-    nonce,
-  });
+const message = {
+  amount: amountNum,
+  target_chain_id: -1, // Aptos mainnet identifier
+  token_address:
+    selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT,
 };
+
+const messageSerialized = JSON.stringify(message);
+const withdrawSignature = await aptosSignMessage({
+  message: messageSerialized,
+  nonce,
+});
 ```
 
 #### 3. Multi-Signature Support System
@@ -646,7 +659,10 @@ const pollWithdrawStatus = async (): Promise<any> => {
   while (true) {
     const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
 
-    if ((statusResponse as any) === "done" || (statusResponse as any)?.status === "done") {
+    if (
+      (statusResponse as any) === "done" ||
+      (statusResponse as any)?.status === "done"
+    ) {
       const txPayload = await moneyFiAptos.getWithdrawTxPayload({
         sender: user.address,
         chain_id: -1,
@@ -679,13 +695,15 @@ The withdrawal interface provides comprehensive user feedback:
       ? `0 0 0 2px error.200`
       : `0 0 0 2px primary.200`,
   }}
-/>
-{isAmountExceeded && (
-  <Text color="error.600">
-    Amount cannot exceed your total portfolio value of $
-    {maxWithdrawAmount.toLocaleString()}
-  </Text>
-)}
+/>;
+{
+  isAmountExceeded && (
+    <Text color="error.600">
+      Amount cannot exceed your total portfolio value of $
+      {maxWithdrawAmount.toLocaleString()}
+    </Text>
+  );
+}
 ```
 
 ### Statistics Flow Deep Dive
@@ -781,7 +799,7 @@ const statsConfig = [
     color: "black",
     bgColor: "gray.100",
     borderColor: "black",
-  }
+  },
 ];
 ```
 
@@ -821,7 +839,7 @@ flowchart TD
     G --> I[Reset Loading State]
     H --> J[Retry Option]
     J --> B
-    
+
     style A fill:#e1f5fe
     style C fill:#fff3e0
     style G fill:#e8f5e8
@@ -834,33 +852,38 @@ The component renders statistics using a responsive grid system:
 
 ```typescript
 // From stats.tsx - Statistics grid rendering
-{getUserStatsQuery.isSuccess && getUserStatsQuery.data && (
-  <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={4}>
-    {statsConfig.map((stat) => {
-      const IconComponent = stat.icon;
-      const value = getUserStatsQuery.data[stat.key as keyof typeof getUserStatsQuery.data] || 0;
-      const formattedValue = stat.formatter(Number(value));
+{
+  getUserStatsQuery.isSuccess && getUserStatsQuery.data && (
+    <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={4}>
+      {statsConfig.map((stat) => {
+        const IconComponent = stat.icon;
+        const value =
+          getUserStatsQuery.data[
+            stat.key as keyof typeof getUserStatsQuery.data
+          ] || 0;
+        const formattedValue = stat.formatter(Number(value));
 
-      return (
-        <Card.Root
-          key={stat.key}
-          bg={cardColors.background}
-          border="1px solid"
-          borderColor={stat.borderColor}
-          borderRadius={materialDesign3Theme.borderRadius.md}
-          p={6}
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-          _hover={{
-            boxShadow: materialDesign3Theme.elevation.level2,
-            transform: "translateY(-2px)",
-          }}
-        >
-          {/* Card content with icon, label, and formatted value */}
-        </Card.Root>
-      );
-    })}
-  </SimpleGrid>
-)}
+        return (
+          <Card.Root
+            key={stat.key}
+            bg={cardColors.background}
+            border="1px solid"
+            borderColor={stat.borderColor}
+            borderRadius={materialDesign3Theme.borderRadius.md}
+            p={6}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            _hover={{
+              boxShadow: materialDesign3Theme.elevation.level2,
+              transform: "translateY(-2px)",
+            }}
+          >
+            {/* Card content with icon, label, and formatted value */}
+          </Card.Root>
+        );
+      })}
+    </SimpleGrid>
+  );
+}
 ```
 
 #### Loading and Error States
@@ -869,35 +892,44 @@ The statistics component implements comprehensive state management:
 
 ```typescript
 // From stats.tsx - Loading state
-{getUserStatsQuery.isPending && (
-  <Box display="flex" flexDirection="column" alignItems="center" p={8}>
-    <Spinner size="xl" color="primary.500" borderWidth="4px" />
-    <Text mt={4} color={cardColors.textSecondary}>
-      Loading your statistics...
-    </Text>
-  </Box>
-)}
+{
+  getUserStatsQuery.isPending && (
+    <Box display="flex" flexDirection="column" alignItems="center" p={8}>
+      <Spinner size="xl" color="primary.500" borderWidth="4px" />
+      <Text mt={4} color={cardColors.textSecondary}>
+        Loading your statistics...
+      </Text>
+    </Box>
+  );
+}
 
 // Error state with retry functionality
-{getUserStatsQuery.isError && (
-  <Alert.Root status="error">
-    <Alert.Description>
-      <VStack align="stretch" gap={3}>
-        <Text color="error.800" fontWeight="medium">
-          Failed to load statistics
-        </Text>
-        <Text color="error.700" fontSize="sm">
-          {getUserStatsQuery.error instanceof Error
-            ? getUserStatsQuery.error.message
-            : "An unknown error occurred while fetching your portfolio statistics."}
-        </Text>
-        <Button onClick={handleRefreshStats} size="sm" colorScheme="error" variant="outline">
-          Try Again
-        </Button>
-      </VStack>
-    </Alert.Description>
-  </Alert.Root>
-)}
+{
+  getUserStatsQuery.isError && (
+    <Alert.Root status="error">
+      <Alert.Description>
+        <VStack align="stretch" gap={3}>
+          <Text color="error.800" fontWeight="medium">
+            Failed to load statistics
+          </Text>
+          <Text color="error.700" fontSize="sm">
+            {getUserStatsQuery.error instanceof Error
+              ? getUserStatsQuery.error.message
+              : "An unknown error occurred while fetching your portfolio statistics."}
+          </Text>
+          <Button
+            onClick={handleRefreshStats}
+            size="sm"
+            colorScheme="error"
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </VStack>
+      </Alert.Description>
+    </Alert.Root>
+  );
+}
 ```
 
 #### Manual Refresh Functionality
@@ -916,7 +948,7 @@ const handleRefreshStats = () => {
   disabled={getUserStatsQuery.isFetching}
 >
   {getUserStatsQuery.isFetching ? "Refreshing..." : "Refresh Statistics"}
-</Button>
+</Button>;
 ```
 
 ---
@@ -932,9 +964,9 @@ A core architectural pattern that implements optimistic updates with blockchain 
 ```typescript
 // From use-moneyfi-queries.ts - Delayed refetch configuration
 export const BALANCE_REFETCH_CONFIG = {
-  immediate: 0,        // Immediate optimistic refetch
-  delayed: 4000,       // 4 seconds delayed refetch for blockchain confirmation
-  staleTime: 30_000,   // 30 seconds
+  immediate: 0, // Immediate optimistic refetch
+  delayed: 4000, // 4 seconds delayed refetch for blockchain confirmation
+  staleTime: 30_000, // 30 seconds
   gcTime: 5 * 60 * 1000, // 5 minutes
 } as const;
 
@@ -943,36 +975,51 @@ export const useDelayedBalanceRefetch = () => {
   const { user } = useAuth();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const triggerDelayedRefetch = useCallback(async (options = { immediate: true, delayed: true }) => {
-    const queryKey = moneyFiQueryKeys.balance(user?.address);
+  const triggerDelayedRefetch = useCallback(
+    async (
+      options: { immediate?: boolean; delayed?: boolean } = {
+        immediate: true,
+        delayed: true,
+      }
+    ) => {
+      const queryKey = moneyFiQueryKeys.balance(user?.address);
 
-    // Clear any existing timeout to prevent multiple delayed refetches
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    try {
-      // Immediate optimistic refetch for UI responsiveness
-      if (options.immediate) {
-        await queryClient.refetchQueries({ queryKey, type: "active" });
+      // Clear any existing timeout to prevent multiple delayed refetches
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
 
-      // Schedule delayed refetch for blockchain confirmation
-      if (options.delayed) {
-        timeoutRef.current = setTimeout(async () => {
-          try {
-            await queryClient.refetchQueries({ queryKey, type: "active" });
-          } catch (error) {
-            console.error("Delayed balance refetch failed:", error);
-          }
-          timeoutRef.current = null;
-        }, BALANCE_REFETCH_CONFIG.delayed);
+      try {
+        // Immediate optimistic refetch
+        if (options.immediate) {
+          await queryClient.refetchQueries({
+            queryKey,
+            type: "active",
+          });
+        }
+
+        // Schedule delayed refetch for blockchain confirmation
+        if (options.delayed) {
+          timeoutRef.current = setTimeout(async () => {
+            try {
+              await queryClient.refetchQueries({
+                queryKey,
+                type: "active",
+              });
+            } catch (error) {
+              console.error("Delayed balance refetch failed:", error);
+            } finally {
+              timeoutRef.current = null;
+            }
+          }, BALANCE_REFETCH_CONFIG.delayed);
+        }
+      } catch (error) {
+        console.error("Immediate balance refetch failed:", error);
       }
-    } catch (error) {
-      console.error("Immediate balance refetch failed:", error);
-    }
-  }, [queryClient, user?.address]);
+    },
+    [queryClient, user?.address]
+  );
 
   // Cleanup timeout on unmount
   const cleanup = useCallback(() => {
@@ -1009,11 +1056,10 @@ export const useGetTxInitializationAccountMutation = () => {
       }
 
       try {
-        const initializationData = await moneyFiAptos.getInitializationWalletAccountTxPayload({
-          user_address: { Aptos: address }
-        });
-
-        // Handle transaction data response
+        const initializationData =
+          await moneyFiAptos.getInitializationWalletAccountTxPayload({
+            user_address: { Aptos: address },
+          });
         if (
           initializationData &&
           typeof initializationData === "object" &&
@@ -1021,7 +1067,8 @@ export const useGetTxInitializationAccountMutation = () => {
         ) {
           const transaction: InputTransactionData = {
             data: {
-              function: initializationData.function as `${string}::${string}::${string}`,
+              function:
+                initializationData.function as `${string}::${string}::${string}`,
               functionArguments: initializationData.functionArguments || [],
             },
           };
@@ -1036,17 +1083,14 @@ export const useGetTxInitializationAccountMutation = () => {
         throw error;
       }
     },
-
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: createQueryKeys.initialization(variables.address),
       });
     },
-
     onError: (error) => {
       console.error("Account initialization failed:", error);
     },
-
     retry: false,
   });
 };
@@ -1058,11 +1102,15 @@ Advanced mutation hook with sophisticated transaction processing:
 
 ```typescript
 // From use-moneyfi-queries.ts - Deposit mutation implementation
-export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }: DepositMutationParams) => {
+export const useDepositMutation = ({
+  tokenAddress,
+  sender: userAddress,
+  amount,
+}: DepositMutationParams) => {
   const { isAuthenticated, user } = useAuth();
   const { signTransaction, submitTransaction } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  
+
   const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   React.useEffect(() => {
@@ -1070,7 +1118,13 @@ export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }
   }, [cleanup]);
 
   return useMutation({
-    mutationFn: async ({ amount, tokenAddress }: { amount: string; tokenAddress: string }) => {
+    mutationFn: async ({
+      amount,
+      tokenAddress,
+    }: {
+      amount: string;
+      tokenAddress: string;
+    }) => {
       if (!isAuthenticated || !user) {
         throw new Error("Please connect your wallet first");
       }
@@ -1079,7 +1133,9 @@ export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }
         throw new Error("Please enter a valid amount");
       }
 
-      const amountInSmallestUnit = BigInt(Math.floor(Number(amount) * 1_000_000));
+      const amountInSmallestUnit = BigInt(
+        Math.floor(Number(amount) * 1_000_000)
+      );
 
       // SDK payload generation
       const payload = await moneyFiAptos.getDepositTxPayload({
@@ -1100,11 +1156,11 @@ export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }
       const de = new Deserializer(bytes);
       const depositTx = RawTransaction.deserialize(de);
       const depoistTxSimple = new SimpleTransaction(depositTx);
-      
+
       const submitTx = await signTransaction({
         transactionOrPayload: depoistTxSimple,
       });
-      
+
       const rst = await submitTransaction({
         transaction: depoistTxSimple,
         senderAuthenticator: submitTx.authenticator,
@@ -1119,12 +1175,12 @@ export const useDepositMutation = ({ tokenAddress, sender: userAddress, amount }
         delayed: true,
       });
     },
-    
+
     onError: (error) => {
       console.error("Deposit transaction failed:", error);
       cleanup();
     },
-    
+
     retry: false,
   });
 };
@@ -1143,14 +1199,22 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   const { signTransaction, submitTransaction } = useWallet();
 
+  // Cleanup on unmount
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
 
   return useMutation({
-    mutationFn: async ({ address, payload }: {
+    mutationFn: async ({
+      address,
+      payload,
+    }: {
       address: string;
-      payload: { encoded_signature: string; encoded_pubkey: string; full_message: string; };
+      payload: {
+        encoded_signature: string;
+        encoded_pubkey: string;
+        full_message: string;
+      };
     }) => {
       if (!isAuthenticated || !user) {
         throw new Error("Please connect your wallet first");
@@ -1159,7 +1223,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-
+      
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
@@ -1171,7 +1235,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         transformedPayload
       );
 
-      // Asynchronous status polling with infinite loop
+      // Poll for withdraw status until it's done
       const pollWithdrawStatus = async (): Promise<any> => {
         while (true) {
           const statusResponse = await moneyFiAptos.getWithdrawStatus(
@@ -1199,7 +1263,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
 
       return await pollWithdrawStatus();
     },
-    
     onSuccess: async (data) => {
       const { txPayload } = data;
 
@@ -1209,11 +1272,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
-
+      
       const de = new Deserializer(bytes);
       const withdrawTx = RawTransaction.deserialize(de);
       const withdrawTxSimple = new SimpleTransaction(withdrawTx);
-
+      
       const submitTx = await signTransaction({
         transactionOrPayload: withdrawTxSimple,
       });
@@ -1229,13 +1292,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
 
       return rst;
     },
-    
     onError: (error) => {
       console.error("Withdraw transaction failed:", error);
       cleanup();
     },
-    
-    retry: false,
+    retry: false, // Don't retry mutations automatically
   });
 };
 ```
@@ -1275,9 +1336,9 @@ export const useGetUserStatisticsQuery = (address?: string) => {
       }
     },
     enabled: !!(isAuthenticated && user && address),
-    staleTime: 60_000,        // 60 seconds
-    gcTime: 5 * 60 * 1000,    // 5 minutes
-    retry: 10,                // Aggressive retry for important user data
+    staleTime: 60_000, // 60 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 10, // Aggressive retry for important user data
   });
 };
 ```
@@ -1336,7 +1397,7 @@ sequenceDiagram
     Wallet-->>Hook: Signed message + signature
     Hook->>SDK: reqWithdraw(signature)
     SDK-->>Hook: Request submitted
-    
+
     loop Status Polling
         Hook->>SDK: getWithdrawStatus()
         SDK-->>Hook: Status response
@@ -1347,7 +1408,7 @@ sequenceDiagram
             SDK-->>Hook: Transaction payload
         end
     end
-    
+
     Hook->>Wallet: Sign final transaction
     Wallet-->>Hook: Signed transaction
     Hook->>Chain: Submit transaction
@@ -1365,8 +1426,10 @@ The SDK implements a hierarchical query key system for optimal cache management:
 // From use-moneyfi-queries.ts
 export const moneyFiQueryKeys = {
   all: ["moneyfi"] as const,
-  balance: (address?: string) => [...moneyFiQueryKeys.all, "balance", address] as const,
-  balanceRefreshing: (address?: string) => [...moneyFiQueryKeys.balance(address), "refreshing"] as const,
+  balance: (address?: string) =>
+    [...moneyFiQueryKeys.all, "balance", address] as const,
+  balanceRefreshing: (address?: string) =>
+    [...moneyFiQueryKeys.balance(address), "refreshing"] as const,
 };
 
 // From use-stats.ts
@@ -1417,12 +1480,14 @@ Errors are transformed into user-friendly messages:
 
 ```typescript
 // From deposit.tsx - Error message transformation
-{stepError ||
-  (depositMutation.error instanceof Error
-    ? depositMutation.error.message
-    : depositMutation.isError
-    ? "Deposit failed"
-    : "An unknown error occurred")}
+{
+  stepError ||
+    (depositMutation.error instanceof Error
+      ? depositMutation.error.message
+      : depositMutation.isError
+      ? "Deposit failed"
+      : "An unknown error occurred");
+}
 ```
 
 ### Performance Optimization Patterns
@@ -1434,8 +1499,8 @@ The SDK implements optimistic updates for better user experience:
 ```typescript
 // Immediate UI update followed by delayed blockchain confirmation
 await triggerDelayedRefetch({
-  immediate: true,  // Instant UI feedback
-  delayed: true,    // Blockchain confirmation after 4 seconds
+  immediate: true, // Instant UI feedback
+  delayed: true, // Blockchain confirmation after 4 seconds
 });
 ```
 
