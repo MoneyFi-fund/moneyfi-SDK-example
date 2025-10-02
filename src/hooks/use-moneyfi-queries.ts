@@ -204,7 +204,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-      
+
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
@@ -227,11 +227,34 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
             (statusResponse as any) === "done" ||
             (statusResponse as any)?.status === "done"
           ) {
+            // Fetch wallet amount to check withdraw_amount
+            const walletAmountResponse = await moneyFiAptos.getWalletAccountAssets({
+              sender: user.address,
+            });
+
+            // Find the matching token by comparing token_address
+            const targetAddress = tokenAddress.replace("0x", "");
+            const matchedToken = (walletAmountResponse as any)?.data?.find(
+              (token: { token_address: string; withdraw_amount: string }) =>
+                token.token_address === targetAddress
+            );
+
+            // Determine the actual amount to withdraw
+            let actualAmount = amount;
+            if (matchedToken) {
+              const withdrawAmountBigInt = BigInt(matchedToken.withdraw_amount);
+              const requestedAmountBigInt = BigInt(amount.toString());
+              // If withdraw_amount is smaller than requested amount, use withdraw_amount
+              if (withdrawAmountBigInt < requestedAmountBigInt) {
+                actualAmount = withdrawAmountBigInt as any;
+              }
+            }
+
             const txPayload = await moneyFiAptos.getWithdrawTxPayload({
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
-              amount: amount as bigint,
+              amount: actualAmount as bigint,
             });
 
             return { txPayload };

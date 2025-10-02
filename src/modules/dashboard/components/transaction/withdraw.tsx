@@ -17,7 +17,10 @@ import { useAuth } from "@/provider/auth-provider";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useWithdrawMutation } from "@/hooks/use-moneyfi-queries";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
+import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
+import { useQueryClient } from "@tanstack/react-query";
+import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { KeylessPublicKey, KeylessSignature } from "@aptos-labs/ts-sdk";
@@ -39,15 +42,13 @@ type CreateWithdrawRequestPayload = {
 export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { cardColors, buttonColors } = useThemeColors();
+  const queryClient = useQueryClient();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } =
     useCheckWalletAccountQuery();
   const { data: userStats, isLoading: isLoadingStats } =
     useGetUserStatisticsQuery(user?.address);
-  const {
-    account: aptosAccount,
-    signMessage: aptosSignMessage,
-    signAndSubmitTransaction: aptosSignAndSubmitTransaction,
-  } = useWallet();
+  console.log(userStats?.total_value)
+  const { account: aptosAccount, signMessage: aptosSignMessage } = useWallet();
   // Form state
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
@@ -63,17 +64,21 @@ export const WithdrawComponent: React.FC = () => {
     amountInSmallestUnit
   );
 
-  // Validation logic
-  const maxWithdrawAmount = userStats?.total_value
-    ? Number(userStats.total_value)
-    : 0;
+  // Get wallet amount for display only
+  const { data: walletAmountData, isLoading: isLoadingWalletAmount } =
+    useGetWalletAmountQuery(user?.address || null);
+  console.log(JSON.stringify(walletAmountData?.data, null, 2));
+
+  // Validation logic - use userStats.total_value as max withdraw amount
+  const maxWithdrawAmount = Number(userStats?.total_value || 0);
+  console.log(maxWithdrawAmount);
   const currentAmount = amount ? parseFloat(amount) : 0;
   const isAmountExceeded = currentAmount > maxWithdrawAmount;
   const isAmountValid = currentAmount > 0 && !isAmountExceeded;
 
   const handleMaxAmount = () => {
-    if (userStats?.total_value) {
-      setAmount(userStats.total_value.toString());
+    if (maxWithdrawAmount > 0) {
+      setAmount(maxWithdrawAmount.toString());
     }
   };
 
@@ -130,10 +135,16 @@ export const WithdrawComponent: React.FC = () => {
     setSuccessData(null);
 
     try {
-      const result = await withdrawMutation.mutateAsync({
+      await withdrawMutation.mutateAsync({
         address: user.address,
         payload,
       });
+
+      // Refetch wallet amount after successful withdrawal
+      await queryClient.invalidateQueries({
+        queryKey: walletAmountQueryKeys.assets(user.address),
+      });
+
       setAmount("");
     } catch (error) {
       console.error("Withdrawal failed:", error);
@@ -257,41 +268,43 @@ export const WithdrawComponent: React.FC = () => {
       </Card.Header>
       <Card.Body px={6} pb={6}>
         <VStack align="stretch" gap={6}>
-          {userStats && (
-            <Card.Root
-              bg={cardColors.background}
-              border="1px solid"
-              borderColor={cardColors.border}
-              borderRadius={materialDesign3Theme.borderRadius.sm}
-              boxShadow={materialDesign3Theme.elevation.level1}
-            >
-              <Card.Body p={4}>
-                <VStack align="stretch" gap={2}>
-                  <Text
-                    fontSize={
-                      materialDesign3Theme.typography.labelLarge.fontSize
-                    }
-                    fontWeight="medium"
-                    color={cardColors.textSecondary}
-                  >
-                    Total Portfolio Value
-                  </Text>
-                  <Text
-                    fontSize={
-                      materialDesign3Theme.typography.headlineSmall.fontSize
-                    }
-                    fontWeight="bold"
-                    color={cardColors.text}
-                  >
-                    $
-                    {userStats.total_value
-                      ? Number(userStats.total_value).toLocaleString()
-                      : "0"}
-                  </Text>
-                </VStack>
-              </Card.Body>
-            </Card.Root>
-          )}
+          {walletAmountData && (
+              <Card.Root
+                bg={cardColors.background}
+                border="1px solid"
+                borderColor={cardColors.border}
+                borderRadius={materialDesign3Theme.borderRadius.sm}
+                boxShadow={materialDesign3Theme.elevation.level1}
+              >
+                <Card.Body p={4}>
+                  <VStack align="stretch" gap={2}>
+                    <HStack justify="space-between">
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.labelLarge.fontSize
+                        }
+                        fontWeight="medium"
+                        color={cardColors.textSecondary}
+                      >
+                        Available to Withdraw ({selectedToken})
+                      </Text>
+                    </HStack>
+                    <Text
+                      fontSize={
+                        materialDesign3Theme.typography.headlineSmall.fontSize
+                      }
+                      fontWeight="bold"
+                      color={cardColors.text}
+                    >
+                      $
+                      {maxWithdrawAmount > 0
+                        ? maxWithdrawAmount.toFixed(6)
+                        : "0.000000"}
+                    </Text>
+                  </VStack>
+                </Card.Body>
+              </Card.Root>
+            )}
 
           <VStack align="stretch" gap={2}>
             <Text
@@ -372,15 +385,18 @@ export const WithdrawComponent: React.FC = () => {
               >
                 Amount
               </Text>
-              {userStats && Number(userStats.total_value) > 0 && (
+              {maxWithdrawAmount > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="surface"
                   size="sm"
                   onClick={handleMaxAmount}
                   color="primary.600"
                   fontSize={materialDesign3Theme.typography.labelSmall.fontSize}
                   fontWeight="medium"
-                  _hover={{ bg: "primary.50" }}
+                  border={
+                    isAmountExceeded ? "1px solid" : "none"
+                  }
+                  _hover={{ bg: "primary.900", color: "white" }}
                 >
                   MAX
                 </Button>
@@ -427,7 +443,10 @@ export const WithdrawComponent: React.FC = () => {
           <Button
             onClick={handleWithdraw}
             loading={
-              withdrawMutation.isPending || isCheckingAccount || isLoadingStats
+              withdrawMutation.isPending ||
+              isCheckingAccount ||
+              isLoadingStats ||
+              isLoadingWalletAmount
             }
             disabled={
               !amount ||
@@ -435,7 +454,8 @@ export const WithdrawComponent: React.FC = () => {
               withdrawMutation.isPending ||
               isCheckingAccount ||
               !hasWalletAccount ||
-              isLoadingStats
+              isLoadingStats ||
+              isLoadingWalletAmount
             }
             bg={buttonColors.error.background}
             color={buttonColors.error.text}
@@ -468,6 +488,8 @@ export const WithdrawComponent: React.FC = () => {
               ? "Checking Account..."
               : isLoadingStats
               ? "Loading Stats..."
+              : isLoadingWalletAmount
+              ? "Loading Wallet Amount..."
               : withdrawMutation.isPending
               ? "Withdrawing..."
               : "Withdraw"}
