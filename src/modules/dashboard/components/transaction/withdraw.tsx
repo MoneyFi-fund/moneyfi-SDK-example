@@ -17,7 +17,7 @@ import { useAuth } from "@/provider/auth-provider";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useWithdrawMutation } from "@/hooks/use-moneyfi-queries";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
-import { useGetMaxQuoteQuery } from "@/hooks/use-get-max-quote";
+import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
@@ -60,22 +60,29 @@ export const WithdrawComponent: React.FC = () => {
     amountInSmallestUnit
   );
 
-  // Get max quote for withdraw
-  const maxQuoteParams = user?.address
-    ? {
-        sender: user.address,
-      }
-    : null;
-  const { data: maxQuoteData, isLoading: isLoadingMaxQuote } =
-    useGetMaxQuoteQuery(maxQuoteParams);
-  console.log(maxQuoteData?.data[0]);
-  // Validation logic - maxQuoteData is an array of GetMaxQuotesResponse
-  const maxWithdrawAmount =
-    maxQuoteData && maxQuoteData.data.length > 0
-      ? selectedToken === "USDC"
-        ? Number(maxQuoteData.data[0].usdc) / 1_000_000
-        : Number(maxQuoteData.data[0].usdt) / 1_000_000
-      : 0;
+  // Get wallet amount for withdraw
+  const { data: walletAmountData, isLoading: isLoadingWalletAmount } =
+    useGetWalletAmountQuery(user?.address || null);
+  console.log(JSON.stringify(walletAmountData?.data, null, 2));
+
+  // Validation logic - match token_address with selected token
+  const maxWithdrawAmount = walletAmountData?.data
+    ? (() => {
+        const targetAddress =
+          selectedToken === "USDC"
+            ? APTOS_ADDRESS.USDC.replace("0x", "")
+            : APTOS_ADDRESS.USDT.replace("0x", "");
+        console.log(targetAddress);
+        const matchedToken = walletAmountData?.data.find(
+          (token: { token_address: string }) =>
+            token.token_address === targetAddress
+        );
+
+        return matchedToken
+          ? Number(matchedToken.withdraw_amount) / 1_000_000
+          : 0;
+      })()
+    : 0;
   console.log(maxWithdrawAmount);
   const currentAmount = amount ? parseFloat(amount) : 0;
   const isAmountExceeded = currentAmount > maxWithdrawAmount;
@@ -267,9 +274,7 @@ export const WithdrawComponent: React.FC = () => {
       </Card.Header>
       <Card.Body px={6} pb={6}>
         <VStack align="stretch" gap={6}>
-          {maxQuoteData &&
-            maxQuoteData.data &&
-            maxQuoteData.data.length > 0 && (
+          {walletAmountData && (
               <Card.Root
                 bg={cardColors.background}
                 border="1px solid"
@@ -447,7 +452,7 @@ export const WithdrawComponent: React.FC = () => {
               withdrawMutation.isPending ||
               isCheckingAccount ||
               isLoadingStats ||
-              isLoadingMaxQuote
+              isLoadingWalletAmount
             }
             disabled={
               !amount ||
@@ -456,7 +461,7 @@ export const WithdrawComponent: React.FC = () => {
               isCheckingAccount ||
               !hasWalletAccount ||
               isLoadingStats ||
-              isLoadingMaxQuote
+              isLoadingWalletAmount
             }
             bg={buttonColors.error.background}
             color={buttonColors.error.text}
@@ -489,8 +494,8 @@ export const WithdrawComponent: React.FC = () => {
               ? "Checking Account..."
               : isLoadingStats
               ? "Loading Stats..."
-              : isLoadingMaxQuote
-              ? "Loading Max Amount..."
+              : isLoadingWalletAmount
+              ? "Loading Wallet Amount..."
               : withdrawMutation.isPending
               ? "Withdrawing..."
               : "Withdraw"}
