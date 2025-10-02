@@ -142,14 +142,6 @@ export const DepositComponent: React.FC = () => {
         ],
       });
       
-      // const response = await aptosClient.waitForTransaction({
-      //   transactionHash: submitTx.hash,
-      // });
-      
-
-      // if (!response.success) {
-      //   throw new Error(APTOS_ERROR_CODE.CREATE_ACCOUNT_FAILED);
-      // }
     } catch (error) {
       console.error("Account initialization failed:", error);
       throw error;
