@@ -27,6 +27,8 @@ import { RiPercentLine } from "react-icons/ri";
 import { useAuth } from "@/provider/auth-provider";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
+import { useQueryClient } from "@tanstack/react-query";
+import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
 
 // Utility function to format currency values
 const formatCurrency = (value: number): string => {
@@ -133,9 +135,17 @@ const statsConfig = [
 export default function Stats() {
   const { isAuthenticated, user } = useAuth();
   const { cardColors, colors, buttonColors } = useThemeColors();
+  const queryClient = useQueryClient();
   const getUserStatsQuery = useGetUserStatisticsQuery(user?.address);
-  const handleRefreshStats = () => {
+  const handleRefreshStats = async () => {
     getUserStatsQuery.refetch();
+
+    // Also refetch wallet amount data
+    if (user?.address) {
+      await queryClient.invalidateQueries({
+        queryKey: walletAmountQueryKeys.assets(user.address),
+      });
+    }
   };
   console.log(getUserStatsQuery.data)
   if (!isAuthenticated) {

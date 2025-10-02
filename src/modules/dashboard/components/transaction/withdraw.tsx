@@ -19,6 +19,8 @@ import { useWithdrawMutation } from "@/hooks/use-moneyfi-queries";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
 import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
+import { useQueryClient } from "@tanstack/react-query";
+import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { KeylessPublicKey, KeylessSignature } from "@aptos-labs/ts-sdk";
@@ -40,6 +42,7 @@ type CreateWithdrawRequestPayload = {
 export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { cardColors, buttonColors } = useThemeColors();
+  const queryClient = useQueryClient();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } =
     useCheckWalletAccountQuery();
   const { data: userStats, isLoading: isLoadingStats } =
@@ -151,6 +154,12 @@ export const WithdrawComponent: React.FC = () => {
         address: user.address,
         payload,
       });
+
+      // Refetch wallet amount after successful withdrawal
+      await queryClient.invalidateQueries({
+        queryKey: walletAmountQueryKeys.assets(user.address),
+      });
+
       setAmount("");
     } catch (error) {
       console.error("Withdrawal failed:", error);
