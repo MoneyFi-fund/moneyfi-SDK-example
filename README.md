@@ -72,7 +72,7 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 - **Multi-Wallet Support**: Connect with popular Aptos wallets (Petra, OKX, Nightly, Pontem)
 - **Multi-Token Support**: Deposit and withdraw both USDC and USDT seamlessly
 - **Account Management**: Automated user account creation
-- **Real-time Statistics**: Comprehensive portfolio analytics with 8 key metrics and referral rewards
+- **Real-time Statistics**: Comprehensive portfolio analytics with 9 key metrics including referral rewards
 - **Dark/Light Theme**: Material Design 3 theming with automatic system preference detection
 - **Transaction Monitoring**: Track transaction hashes with direct links to Aptos Explorer
 - **Responsive Design**: Mobile-first interface built with modern UI components
@@ -136,9 +136,14 @@ VITE_APTOS_CLIENT_API_KEY=your_aptos_api_key_here
 ### Withdrawing Funds
 
 1. Locate the **"Withdraw Funds"** card on the dashboard
-2. Click **"Withdraw All"** to initiate full withdrawal
-3. **Confirm the transaction** in your wallet
-4. **Monitor progress** via the transaction hash link to Aptos Explorer
+2. **Select token type** from the dropdown (USDC or USDT)
+3. **Enter withdrawal amount** or click **"MAX"** to withdraw your total portfolio value
+4. **Click "Withdraw"** - the system will:
+   - Create a signed withdrawal message
+   - Submit the withdrawal request to MoneyFi
+   - Poll for withdrawal approval status
+   - Execute the withdrawal transaction
+5. **Monitor progress** via the transaction hash link to Aptos Explorer
 
 ---
 
@@ -394,45 +399,67 @@ The most sophisticated part of the deposit flow is the multi-agent transaction s
 ```typescript
 // From deposit.tsx - Multi-agent transaction construction
 const checkOrCreateAptosAccount = async () => {
-  const data = await initAccountMutation.mutate({ address: user.address });
-  const signed_tx = data?.signed_tx;
-  
-  // Deserialize the signed transaction
-  const txBytes = new Uint8Array(
-    atob(signed_tx)
-      .split("")
-      .map((c) => c.charCodeAt(0))
-  );
-  const de = new Deserializer(txBytes);
-  const tx = SignedTransaction.deserialize(de);
-  
-  // Extract operator authentication
-  const operatorAuth = (
-    tx.authenticator as TransactionAuthenticatorMultiAgent
-  ).sender.bcsToBytes();
-  
-  // Construct multi-agent transaction with operator
-  const operatorAddress = new AccountAddress(
-    new Uint8Array(
-      APTOS_CONFIG.OPERATOR_ADDRESS.match(/.{1,2}/g)?.map((byte) =>
-        parseInt(byte, 16)
-      ) || []
-    )
-  );
-  const multiAgentTx = new MultiAgentTransaction(tx.raw_txn, [operatorAddress]);
-  
-  // Dual signature collection: User + Operator
-  const feepayerAuthenticator = await aptosSignTransaction({
-    transactionOrPayload: multiAgentTx,
-  });
-  
-  const submitTx = await aptosSubmitTransaction({
-    transaction: multiAgentTx,
-    senderAuthenticator: feepayerAuthenticator.authenticator,
-    additionalSignersAuthenticators: [
-      AccountAuthenticator.deserialize(new Deserializer(operatorAuth)),
-    ],
-  });
+  if (!user?.address || !aptosAccount?.address) {
+    throw new Error("User address or Aptos account not available");
+  }
+
+  try {
+    const data = await new Promise<any>((resolve, reject) => {
+      initAccountMutation.mutate(
+        { address: user.address },
+        {
+          onSuccess: (data) => {
+            resolve(data);
+          },
+          onError: (error) => {
+            reject(error);
+          },
+        }
+      );
+    });
+
+    const signed_tx =
+      typeof data === "object" && data?.signed_tx ? data.signed_tx : null;
+    if (!signed_tx) {
+      throw new Error("No signed transaction returned from initialization");
+    }
+
+    const txBytes = new Uint8Array(
+      atob(signed_tx)
+        .split("")
+        .map((c) => c.charCodeAt(0))
+    );
+    const de = new Deserializer(txBytes);
+    const tx = SignedTransaction.deserialize(de);
+    const operatorAuth = (
+      tx.authenticator as TransactionAuthenticatorMultiAgent
+    ).sender.bcsToBytes();
+    const operatorAddress = new AccountAddress(
+      new Uint8Array(
+        APTOS_CONFIG.OPERATOR_ADDRESS.match(/.{1,2}/g)?.map((byte) =>
+          parseInt(byte, 16)
+        ) || []
+      )
+    );
+    const multiAgentTx = new MultiAgentTransaction(tx.raw_txn, [
+      operatorAddress,
+    ]);
+
+    const feepayerAuthenticator = await aptosSignTransaction({
+      transactionOrPayload: multiAgentTx,
+    });
+
+    const submitTx = await aptosSubmitTransaction({
+      transaction: multiAgentTx,
+      senderAuthenticator: feepayerAuthenticator.authenticator,
+      additionalSignersAuthenticators: [
+        AccountAuthenticator.deserialize(new Deserializer(operatorAuth)),
+      ],
+    });
+  } catch (error) {
+    console.error("Account initialization failed:", error);
+    throw error;
+  }
 };
 ```
 
@@ -665,7 +692,7 @@ The withdrawal interface provides comprehensive user feedback:
 
 #### Portfolio Analytics Architecture
 
-The `StatsComponent` provides comprehensive portfolio analytics with 8 key metrics, implementing a sophisticated data presentation system with real-time refresh capabilities.
+The `StatsComponent` provides comprehensive portfolio analytics with 9 key metrics including referral balance, implementing a sophisticated data presentation system with real-time refresh capabilities.
 
 #### Statistics Configuration System
 
@@ -701,7 +728,60 @@ const statsConfig = [
     bgColor: "primary.50",
     borderColor: "primary.200",
   },
-  // ... 5 more statistics configurations
+  {
+    key: "cumulative_yield_profits",
+    label: "Cumulative Profits",
+    icon: BiTrendingUp,
+    formatter: formatCurrency,
+    color: "success.700",
+    bgColor: "success.50",
+    borderColor: "success.200",
+  },
+  {
+    key: "total_monetized_balance",
+    label: "Monetized Balance",
+    icon: BiTargetLock,
+    formatter: formatCurrency,
+    color: "secondary.600",
+    bgColor: "secondary.50",
+    borderColor: "secondary.200",
+  },
+  {
+    key: "pending_yield_earnings",
+    label: "Pending Earnings",
+    icon: BiAward,
+    formatter: formatCurrency,
+    color: "warning.600",
+    bgColor: "warning.50",
+    borderColor: "warning.200",
+  },
+  {
+    key: "total_withdrawn_liquidity",
+    label: "Total Withdrawn",
+    icon: BiUpArrowCircle,
+    formatter: formatCurrency,
+    color: "error.600",
+    bgColor: "error.50",
+    borderColor: "error.200",
+  },
+  {
+    key: "apr_avg",
+    label: "Average APR",
+    icon: RiPercentLine,
+    formatter: formatPercentage,
+    color: "tertiary.600",
+    bgColor: "tertiary.50",
+    borderColor: "tertiary.200",
+  },
+  {
+    key: "referral_balance",
+    label: "Referral Balance",
+    icon: BiDollarCircle,
+    formatter: formatCurrency,
+    color: "black",
+    bgColor: "gray.100",
+    borderColor: "black",
+  }
 ];
 ```
 
@@ -1060,11 +1140,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { isAuthenticated, user } = useAuth();
   const { account: aptosAccount } = useWallet();
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
-  
-  const moneyFiAptos = new MoneyFi([
-    { chain_id: -1, custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1" },
-  ]);
-  
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   const { signTransaction, submitTransaction } = useWallet();
 
   React.useEffect(() => {
@@ -1076,35 +1152,47 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       address: string;
       payload: { encoded_signature: string; encoded_pubkey: string; full_message: string; };
     }) => {
-      if (!isAuthenticated || !user || !aptosAccount) {
+      if (!isAuthenticated || !user) {
         throw new Error("Please connect your wallet first");
       }
 
-      // Transform payload to match MoneyFi SDK requirements
+      if (!aptosAccount) {
+        throw new Error("Wallet account not connected");
+      }
+
+      // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
         pubkey: payload.encoded_pubkey,
         message: payload.full_message,
       };
-      
-      const response = await moneyFiAptos.reqWithdraw(address, transformedPayload);
+      await moneyFiAptos.reqWithdraw(
+        address,
+        transformedPayload
+      );
 
       // Asynchronous status polling with infinite loop
       const pollWithdrawStatus = async (): Promise<any> => {
         while (true) {
-          const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
+          const statusResponse = await moneyFiAptos.getWithdrawStatus(
+            user.address
+          );
 
-          if ((statusResponse as any) === "done" || (statusResponse as any)?.status === "done") {
+          if (
+            (statusResponse as any) === "done" ||
+            (statusResponse as any)?.status === "done"
+          ) {
             const txPayload = await moneyFiAptos.getWithdrawTxPayload({
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
               amount: amount as bigint,
             });
-            return { withdrawResponse: statusResponse, txPayload };
+
+            return { txPayload };
           }
 
-          // 3-second polling interval for optimal balance between responsiveness and API load
+          // Wait 3 seconds before checking again
           await new Promise((resolve) => setTimeout(resolve, 3000));
         }
       };
@@ -1115,7 +1203,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
     onSuccess: async (data) => {
       const { txPayload } = data;
 
-      // Base64 decoding and transaction execution
+      // Decode base64 string to bytes
       const binaryString = atob(txPayload.tx);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -1129,7 +1217,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       const submitTx = await signTransaction({
         transactionOrPayload: withdrawTxSimple,
       });
-      
       const rst = await submitTransaction({
         transaction: withdrawTxSimple,
         senderAuthenticator: submitTx.authenticator,
@@ -1166,12 +1253,7 @@ export const statsQueryKeys = {
 
 export const useGetUserStatisticsQuery = (address?: string) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFi([
-    {
-      chain_id: -1,
-      custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1"
-    }
-  ]);
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 
   return useQuery({
     queryKey: statsQueryKeys.user(address),
@@ -1185,10 +1267,7 @@ export const useGetUserStatisticsQuery = (address?: string) => {
       }
 
       try {
-        const stats = await moneyFiAptos.getUserStatistic({
-          address, 
-          chain_id: -1
-        });
+        const stats = await moneyFiAptos.getUserStatistic({ address });
         return stats;
       } catch (error) {
         console.error("Error fetching user statistics:", error);
@@ -1209,17 +1288,14 @@ export const useGetUserStatisticsQuery = (address?: string) => {
 
 ### MoneyFi SDK Instantiation
 
-The MoneyFi SDK is consistently instantiated across all hooks with the Aptos mainnet configuration:
+The MoneyFi SDK is consistently instantiated across all hooks using the integration code from environment variables:
 
 ```typescript
 // Standard SDK instantiation pattern used across all hooks
-const moneyFiAptos = new MoneyFi([
-  {
-    chain_id: -1, // Aptos mainnet identifier
-    custom_rpc_url: "https://api.mainnet.aptoslabs.com/v1"
-  }
-]);
+const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 ```
+
+**Note**: The SDK now uses `quy-ts-sdk` package (imported as `import { MoneyFi } from "quy-ts-sdk";`) instead of the previous `@moneyfi/ts-sdk` package.
 
 ### Transaction Lifecycle Patterns
 
