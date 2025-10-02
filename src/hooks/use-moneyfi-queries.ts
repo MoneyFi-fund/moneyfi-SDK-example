@@ -1,7 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFi } from "quy-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 // import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import {

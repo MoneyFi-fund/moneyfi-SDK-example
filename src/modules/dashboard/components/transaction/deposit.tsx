@@ -38,7 +38,7 @@ import {
 } from "@aptos-labs/ts-sdk";
 import { APTOS_CONFIG, aptosClient } from "@/constants/aptos";
 import { APTOS_ERROR_CODE } from "@/constants/error";
-import { MoneyFi } from "quy-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 
 const tokens = createListCollection({
   items: [

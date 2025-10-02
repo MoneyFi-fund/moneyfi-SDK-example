@@ -1421,7 +1421,7 @@ The MoneyFi SDK is consistently instantiated across all hooks using the integrat
 const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 ```
 
-**Note**: The SDK now uses `quy-ts-sdk` package (imported as `import { MoneyFi } from "quy-ts-sdk";`) instead of the previous `@moneyfi/ts-sdk` package.
+**Note**: The SDK now uses `@moneyfi/ts-sdk` package (imported as `import { MoneyFi } from "@moneyfi/ts-sdk";`) instead of the previous `@moneyfi/ts-sdk` package.
 
 ### Transaction Lifecycle Patterns
 

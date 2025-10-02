@@ -3,7 +3,7 @@ import {
   useWallet,
   type InputTransactionData,
 } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFi } from "quy-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk";
 // import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 
