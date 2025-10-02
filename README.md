@@ -145,8 +145,11 @@ VITE_APTOS_CLIENT_API_KEY=your_aptos_api_key_here
    - Create a signed withdrawal message
    - Submit the withdrawal request to MoneyFi
    - Poll for withdrawal approval status
-   - Execute the withdrawal transaction
+   - Automatically fetch real-time token balances and adjust the withdrawal amount if needed (based on available token liquidity)
+   - Execute the withdrawal transaction with the optimal amount
 5. **Monitor progress** via the transaction hash link to Aptos Explorer
+
+**Smart Amount Adjustment**: The system automatically adjusts your withdrawal amount if the selected token's available liquidity is less than your requested amount, ensuring successful withdrawals even when specific token balances are limited.
 
 ---
 
@@ -571,26 +574,29 @@ flowchart TD
 
 #### 1. Portfolio Validation System
 
-The withdraw component includes real-time portfolio validation:
+The withdraw component uses `userStats.total_value` as the maximum withdrawable amount, providing users with a clear understanding of their total portfolio value:
 
 ```typescript
-// From withdraw.tsx - Portfolio validation
+// From withdraw.tsx - Portfolio validation using userStats
 const { data: userStats } = useGetUserStatisticsQuery(user?.address);
 
-// Validation logic
-const maxWithdrawAmount = userStats?.total_value
-  ? Number(userStats.total_value)
-  : 0;
+// Get wallet amount for display only
+const { data: walletAmountData } = useGetWalletAmountQuery(user?.address || null);
+
+// Validation logic - use userStats.total_value as max withdraw amount
+const maxWithdrawAmount = Number(userStats?.total_value || 0);
 const currentAmount = amount ? parseFloat(amount) : 0;
 const isAmountExceeded = currentAmount > maxWithdrawAmount;
 const isAmountValid = currentAmount > 0 && !isAmountExceeded;
 
 const handleMaxAmount = () => {
-  if (userStats?.total_value) {
-    setAmount(userStats.total_value.toString());
+  if (maxWithdrawAmount > 0) {
+    setAmount(maxWithdrawAmount.toString());
   }
 };
 ```
+
+**Key Design Decision**: The maximum withdrawal amount is derived from `userStats.total_value` rather than individual token balances. This ensures users can withdraw up to their total portfolio value, with the backend automatically adjusting the actual withdrawal amount based on available token liquidity.
 
 #### 2. Message Construction and Serialization
 
@@ -649,12 +655,12 @@ if (!isWalletFromEd25519) {
 }
 ```
 
-#### 4. Asynchronous Status Polling
+#### 4. Asynchronous Status Polling with Dynamic Amount Adjustment
 
-The withdrawal process implements sophisticated status polling with automatic transaction execution:
+The withdrawal process implements sophisticated status polling with automatic liquidity-based amount adjustment:
 
 ```typescript
-// From use-moneyfi-queries.ts - Status polling implementation
+// From use-moneyfi-queries.ts - Status polling with dynamic amount adjustment
 const pollWithdrawStatus = async (): Promise<any> => {
   while (true) {
     const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
@@ -663,13 +669,37 @@ const pollWithdrawStatus = async (): Promise<any> => {
       (statusResponse as any) === "done" ||
       (statusResponse as any)?.status === "done"
     ) {
+      // Fetch wallet amount to check withdraw_amount
+      const walletAmountResponse = await moneyFiAptos.getWalletAccountAssets({
+        sender: user.address,
+      });
+
+      // Find the matching token by comparing token_address
+      const targetAddress = tokenAddress.replace("0x", "");
+      const matchedToken = (walletAmountResponse as any)?.data?.find(
+        (token: { token_address: string; withdraw_amount: string }) =>
+          token.token_address === targetAddress
+      );
+
+      // Determine the actual amount to withdraw
+      let actualAmount = amount;
+      if (matchedToken) {
+        const withdrawAmountBigInt = BigInt(matchedToken.withdraw_amount);
+        const requestedAmountBigInt = BigInt(amount.toString());
+        // If withdraw_amount is smaller than requested amount, use withdraw_amount
+        if (withdrawAmountBigInt < requestedAmountBigInt) {
+          actualAmount = withdrawAmountBigInt as any;
+        }
+      }
+
       const txPayload = await moneyFiAptos.getWithdrawTxPayload({
         sender: user.address,
         chain_id: -1,
         token_address: tokenAddress,
-        amount: amount as bigint,
+        amount: actualAmount as bigint,
       });
-      return { withdrawResponse: statusResponse, txPayload };
+
+      return { txPayload };
     }
 
     // 3-second polling interval for optimal balance between responsiveness and API load
@@ -677,6 +707,16 @@ const pollWithdrawStatus = async (): Promise<any> => {
   }
 };
 ```
+
+**Dynamic Amount Adjustment Logic**: After the withdrawal request is approved (status returns "done"), the system:
+1. Fetches the current wallet account assets via `getWalletAccountAssets()`
+2. Matches the selected token by comparing `token_address`
+3. Extracts the `withdraw_amount` for the matched token
+4. Compares the `withdraw_amount` with the user's requested amount
+5. If `withdraw_amount` is smaller (indicating limited token liquidity), it uses the `withdraw_amount` instead
+6. Proceeds with the transaction using the adjusted amount
+
+This ensures that withdrawals never fail due to insufficient token-specific liquidity, even when the user's total portfolio value is higher than the available amount for a specific token.
 
 #### Dynamic UI Feedback
 
@@ -1188,10 +1228,10 @@ export const useDepositMutation = ({
 
 ### useWithdrawMutation Implementation
 
-Sophisticated withdrawal mutation with status polling:
+Sophisticated withdrawal mutation with status polling and dynamic amount adjustment:
 
 ```typescript
-// From use-moneyfi-queries.ts - Withdraw mutation with polling
+// From use-moneyfi-queries.ts - Withdraw mutation with polling and amount adjustment
 export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { isAuthenticated, user } = useAuth();
   const { account: aptosAccount } = useWallet();
@@ -1223,7 +1263,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       if (!aptosAccount) {
         throw new Error("Wallet account not connected");
       }
-      
+
       // Transform the payload to match ReqWithdrawPayload structure
       const transformedPayload = {
         signature: payload.encoded_signature,
@@ -1246,11 +1286,34 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
             (statusResponse as any) === "done" ||
             (statusResponse as any)?.status === "done"
           ) {
+            // Fetch wallet amount to check withdraw_amount
+            const walletAmountResponse = await moneyFiAptos.getWalletAccountAssets({
+              sender: user.address,
+            });
+
+            // Find the matching token by comparing token_address
+            const targetAddress = tokenAddress.replace("0x", "");
+            const matchedToken = (walletAmountResponse as any)?.data?.find(
+              (token: { token_address: string; withdraw_amount: string }) =>
+                token.token_address === targetAddress
+            );
+
+            // Determine the actual amount to withdraw
+            let actualAmount = amount;
+            if (matchedToken) {
+              const withdrawAmountBigInt = BigInt(matchedToken.withdraw_amount);
+              const requestedAmountBigInt = BigInt(amount.toString());
+              // If withdraw_amount is smaller than requested amount, use withdraw_amount
+              if (withdrawAmountBigInt < requestedAmountBigInt) {
+                actualAmount = withdrawAmountBigInt as any;
+              }
+            }
+
             const txPayload = await moneyFiAptos.getWithdrawTxPayload({
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
-              amount: amount as bigint,
+              amount: actualAmount as bigint,
             });
 
             return { txPayload };
@@ -1272,11 +1335,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
-      
+
       const de = new Deserializer(bytes);
       const withdrawTx = RawTransaction.deserialize(de);
       const withdrawTxSimple = new SimpleTransaction(withdrawTx);
-      
+
       const submitTx = await signTransaction({
         transactionOrPayload: withdrawTxSimple,
       });
@@ -1300,6 +1363,8 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   });
 };
 ```
+
+**Key Enhancement**: The mutation now includes a liquidity-aware amount adjustment mechanism within the polling loop. After the withdrawal request is approved, the system fetches real-time token balances and automatically adjusts the withdrawal amount if the available token liquidity (`withdraw_amount`) is less than the requested amount. This prevents transaction failures due to token-specific liquidity constraints while still allowing users to withdraw up to their total portfolio value.
 
 ### useGetUserStatisticsQuery Implementation
 
@@ -1392,7 +1457,7 @@ sequenceDiagram
     participant Wallet as Aptos Wallet
     participant Chain as Aptos Blockchain
 
-    UI->>Hook: Trigger withdrawal
+    UI->>Hook: Trigger withdrawal (amount from userStats.total_value)
     Hook->>Wallet: Sign withdrawal message
     Wallet-->>Hook: Signed message + signature
     Hook->>SDK: reqWithdraw(signature)
@@ -1404,7 +1469,15 @@ sequenceDiagram
         alt Status not "done"
             Hook->>Hook: Wait 3 seconds
         else Status is "done"
-            Hook->>SDK: getWithdrawTxPayload()
+            Hook->>SDK: getWalletAccountAssets()
+            SDK-->>Hook: Token balances with withdraw_amount
+            Hook->>Hook: Compare withdraw_amount vs requested amount
+            alt withdraw_amount < requested amount
+                Hook->>Hook: Adjust to withdraw_amount (liquidity limit)
+            else withdraw_amount >= requested amount
+                Hook->>Hook: Use requested amount
+            end
+            Hook->>SDK: getWithdrawTxPayload(actualAmount)
             SDK-->>Hook: Transaction payload
         end
     end
@@ -1415,6 +1488,8 @@ sequenceDiagram
     Chain-->>Hook: Transaction hash
     Hook->>UI: Success with hash
 ```
+
+**Enhanced Withdrawal Flow**: The updated flow includes dynamic amount adjustment based on real-time token liquidity. After the withdrawal request is approved, the system fetches wallet account assets to determine the actual withdrawable amount for the specific token. If the available `withdraw_amount` is less than the user's requested amount, the system automatically adjusts to the maximum available liquidity, ensuring smooth withdrawals without failures.
 
 ### Query Management and Caching Strategy
 
