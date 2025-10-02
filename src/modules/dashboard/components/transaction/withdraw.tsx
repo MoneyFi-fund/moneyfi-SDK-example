@@ -47,6 +47,7 @@ export const WithdrawComponent: React.FC = () => {
     useCheckWalletAccountQuery();
   const { data: userStats, isLoading: isLoadingStats } =
     useGetUserStatisticsQuery(user?.address);
+  console.log(userStats?.total_value)
   const { account: aptosAccount, signMessage: aptosSignMessage } = useWallet();
   // Form state
   const [amount, setAmount] = useState("");
@@ -63,29 +64,13 @@ export const WithdrawComponent: React.FC = () => {
     amountInSmallestUnit
   );
 
-  // Get wallet amount for withdraw
+  // Get wallet amount for display only
   const { data: walletAmountData, isLoading: isLoadingWalletAmount } =
     useGetWalletAmountQuery(user?.address || null);
   console.log(JSON.stringify(walletAmountData?.data, null, 2));
 
-  // Validation logic - match token_address with selected token
-  const maxWithdrawAmount = walletAmountData?.data
-    ? (() => {
-        const targetAddress =
-          selectedToken === "USDC"
-            ? APTOS_ADDRESS.USDC.replace("0x", "")
-            : APTOS_ADDRESS.USDT.replace("0x", "");
-        console.log(targetAddress);
-        const matchedToken = walletAmountData?.data.find(
-          (token: { token_address: string }) =>
-            token.token_address === targetAddress
-        );
-
-        return matchedToken
-          ? Number(matchedToken.withdraw_amount) / 1_000_000
-          : 0;
-      })()
-    : 0;
+  // Validation logic - use userStats.total_value as max withdraw amount
+  const maxWithdrawAmount = Number(userStats?.total_value || 0);
   console.log(maxWithdrawAmount);
   const currentAmount = amount ? parseFloat(amount) : 0;
   const isAmountExceeded = currentAmount > maxWithdrawAmount;
