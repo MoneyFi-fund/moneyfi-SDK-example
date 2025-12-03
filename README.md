@@ -5,6 +5,7 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 ## Table of Contents
 
 - [Features](#features)
+- [Documentation](#documentation)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Transaction Flow Documentation](#transaction-flow-documentation)
@@ -77,6 +78,17 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 - **Transaction Monitoring**: Track transaction hashes with direct links to Aptos Explorer
 - **Responsive Design**: Mobile-first interface built with modern UI components
 - **Type-safe Development**: Full TypeScript support with comprehensive type definitions
+
+## Documentation
+
+Comprehensive project documentation is available in the `/docs` directory:
+
+- **[Project Overview & PDR](./docs/project-overview-pdr.md)** - Project description, features, technology stack, roadmap, and product requirements
+- **[Codebase Summary](./docs/codebase-summary.md)** - Directory structure, modules, file organization, and key responsibilities
+- **[Code Standards](./docs/code-standards.md)** - Development conventions, naming standards, TypeScript guidelines, testing patterns
+- **[System Architecture](./docs/system-architecture.md)** - High-level architecture diagrams, component hierarchy, data flow, transaction flows
+
+For local development guidance, see [Getting Started](#getting-started) below.
 
 ## Getting Started
 

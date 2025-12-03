@@ -1,4 +1,5 @@
 import WalletButton from "@/modules/dashboard/components/wallet-button";
+import EVMWalletButton from "@/modules/dashboard/components/evm-wallet-button";
 import { Box, Container, HStack, Text, Image, Link as ChakraLink } from "@chakra-ui/react";
 import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -55,6 +56,7 @@ export default function Header() {
 
           <HStack gap={3}>
             <CompactThemeToggle />
+            <EVMWalletButton compact />
             <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
           </HStack>
 

@@ -207,3 +207,9 @@ count.txt
 # yarn.lock
 # pnpm-lock.yaml
 
+# CLAUDE KIT
+.opencode/
+docs/
+plans/
+.claude/
+.repomixignore
