@@ -1,9 +1,13 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFi } from "@moneyfi/ts-sdk";
+import { useSendTransaction, useWriteContract } from "wagmi";
+import { wagmiConfig } from "@/config/wagmi-config";
+import { MoneyFi, PayloadType } from "moneyfi-ts-sdk";
+// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import { BALANCE_REFETCH_CONFIG } from "../use-moneyfi-queries";
+import { abi as abiERC20 } from "../../contracts/ERC20Mock.json";
 
 // Chain name to chain ID mapping for EVM networks
 export const CHAIN_ID_MAP: Record<string, number> = {
@@ -114,7 +118,10 @@ export const useGetSupportedTokens = (chainId?: number | string) => {
           ? allTokens.filter((token: any) => token.chain === chainName)
           : [];
 
-        console.log(`Tokens for chain ${chainName} (ID: ${chainId}):`, filteredTokens);
+        console.log(
+          `Tokens for chain ${chainName} (ID: ${chainId}):`,
+          filteredTokens
+        );
         return filteredTokens;
       } catch (error) {
         console.error("Error fetching supported tokens:", error);
@@ -199,25 +206,27 @@ interface EVMDepositMutationParams {
   chainId: string | number;
   tokenAddress: string;
   sender: string;
-  amount: BigInt;
+  amount?: number;
 }
 
 /**
  * Mutation hook for EVM deposit transactions
  * Accepts dynamic chainId parameter for multi-chain support
+ * Uses wagmi's sendTransaction for transaction signing and submission
  */
 export const useEVMDepositMutation = ({
   chainId,
   tokenAddress: _tokenAddress,
   sender: userAddress,
-  amount: _amount,
 }: EVMDepositMutationParams) => {
   const { isAuthenticated, user } = useAuth();
-  const { signTransaction, submitTransaction } = useWallet();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
   const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const { writeContractAsync: evmApproveContract, reset: resetEvmApprove } =
+    useWriteContract();
 
   React.useEffect(() => {
     return cleanup;
@@ -240,45 +249,42 @@ export const useEVMDepositMutation = ({
       }
 
       // Convert amount to smallest unit (assuming 6 decimals for stablecoins)
-      const amountInSmallestUnit = BigInt(
-        Math.floor(Number(amount) * 1_000_000)
-      );
+      const amountInSmallestUnit = 20000;
 
       try {
         // Get deposit transaction payload with dynamic chain_id
+
         const payload = await moneyFi.getDepositTxPayload({
           sender: userAddress,
-          chain_id: Number(chainId), // Convert to number for API
+          chain_id: Number(chainId),
           token_address: tokenAddress,
-          amount: amountInSmallestUnit,
+          amount: Number(amountInSmallestUnit),
+          target_chain: 0,
+          type: PayloadType.Evm,
+        });
+
+        const approveHash = await evmApproveContract({
+          address: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` as `0x${string}`,
+          abi: abiERC20,
+          functionName: "approve",
+          args: [payload.evm_contract_address, amountInSmallestUnit],
         });
 
         console.log("Deposit payload received:", payload);
 
-        // Decode base64 string to bytes
-        const binaryString = atob(payload.tx);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        // Deserialize transaction
-        const { Deserializer, RawTransaction, SimpleTransaction } =
-          await import("@aptos-labs/ts-sdk");
-        const de = new Deserializer(bytes);
-        const depositTx = RawTransaction.deserialize(de);
-        const depositTxSimple = new SimpleTransaction(depositTx);
-
-        // Sign and submit transaction
-        const submitTx = await signTransaction({
-          transactionOrPayload: depositTxSimple,
-        });
-        const result = await submitTransaction({
-          transaction: depositTxSimple,
-          senderAuthenticator: submitTx.authenticator,
+        // Send transaction using wagmi
+        // payload.tx is the encoded call data, payload.evm_contract_address is the target contract
+        const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+        const txHash = await sendTransactionAsync({
+          data: (payload.tx as string).startsWith("0x")
+            ? (payload.tx as `0x${string}`)
+            : (`0x${payload.tx}` as `0x${string}`),
+          to: payload.evm_contract_address as `0x${string}`, // Target contract
+          chainId: chainIdNum,
         });
 
-        return result;
+        console.log("Deposit transaction sent, hash:", txHash);
+        return { hash: txHash };
       } catch (error) {
         console.error("Deposit transaction failed:", error);
         throw error;
@@ -304,7 +310,7 @@ export const useEVMDepositMutation = ({
 interface EVMWithdrawMutationParams {
   chainId: string | number;
   tokenAddress: string;
-  amount: BigInt;
+  amount?: number;
 }
 
 interface WithdrawPayload {
@@ -316,19 +322,18 @@ interface WithdrawPayload {
 /**
  * Mutation hook for EVM withdraw transactions
  * Handles message signing and status polling with dynamic chain_id
+ * Uses wagmi's sendTransaction for transaction signing and submission
  */
 export const useEVMWithdrawMutation = ({
   chainId,
   tokenAddress,
-  amount: _amount,
 }: EVMWithdrawMutationParams) => {
   const { isAuthenticated, user } = useAuth();
-  const { account: aptosAccount } = useWallet();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
   const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
-  const { signTransaction, submitTransaction } = useWallet();
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -347,10 +352,6 @@ export const useEVMWithdrawMutation = ({
         throw new Error("Please connect your wallet first");
       }
 
-      if (!aptosAccount) {
-        throw new Error("Wallet account not connected");
-      }
-
       try {
         // Transform payload to match API expectations
         const transformedPayload = {
@@ -360,7 +361,7 @@ export const useEVMWithdrawMutation = ({
         };
 
         // Request withdrawal with dynamic chain_id
-        await moneyFi.reqWithdraw(address, transformedPayload);
+        await (moneyFi as any).reqWithdraw(address, transformedPayload);
         console.log("Withdraw request submitted");
 
         // Poll for withdraw status until it's done
@@ -389,15 +390,12 @@ export const useEVMWithdrawMutation = ({
               );
 
               // Determine the actual amount to withdraw
-              let actualAmount: BigInt = _amount;
+              let actualAmount: number = 20000;
               if (matchedToken) {
-                const withdrawAmountBigInt = BigInt(
-                  matchedToken.withdraw_amount
-                );
-                const requestedAmountBigInt = BigInt(_amount.toString());
+                const withdrawAmount = Number(matchedToken.withdraw_amount);
                 // If withdraw_amount is smaller than requested amount, use withdraw_amount
-                if (withdrawAmountBigInt < requestedAmountBigInt) {
-                  actualAmount = withdrawAmountBigInt as any;
+                if (withdrawAmount < 20000) {
+                  actualAmount = withdrawAmount;
                 }
               }
 
@@ -406,7 +404,7 @@ export const useEVMWithdrawMutation = ({
                 sender: user.address,
                 chain_id: Number(chainId), // Convert to number for API
                 token_address: tokenAddress,
-                amount: actualAmount as bigint,
+                amount: actualAmount as any,
               });
 
               return { txPayload };
@@ -428,27 +426,18 @@ export const useEVMWithdrawMutation = ({
       const { txPayload } = data;
 
       try {
-        // Decode base64 string to bytes
-        const binaryString = atob(txPayload.tx);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        // Deserialize and submit transaction
-        const { Deserializer, RawTransaction, SimpleTransaction } =
-          await import("@aptos-labs/ts-sdk");
-        const de = new Deserializer(bytes);
-        const withdrawTx = RawTransaction.deserialize(de);
-        const withdrawTxSimple = new SimpleTransaction(withdrawTx);
-
-        const submitTx = await signTransaction({
-          transactionOrPayload: withdrawTxSimple,
+        // Send transaction using wagmi
+        // payload.tx is the encoded call data, payload.evm_contract_address is the target contract
+        const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+        const txHash = await sendTransactionAsync({
+          data: (txPayload.tx as string).startsWith("0x")
+            ? (txPayload.tx as `0x${string}`)
+            : (`0x${txPayload.tx}` as `0x${string}`),
+          to: txPayload.evm_contract_address as `0x${string}`, // Target contract
+          chainId: chainIdNum,
         });
-        await submitTransaction({
-          transaction: withdrawTxSimple,
-          senderAuthenticator: submitTx.authenticator,
-        });
+
+        console.log("Withdraw transaction sent, hash:", txHash);
 
         await triggerDelayedRefetch({
           immediate: true,
