@@ -11,7 +11,7 @@ import {
   Flex,
   Grid,
 } from "@chakra-ui/react";
-import { useGetSupportedChains } from "@/hooks/use-moneyfi-queries";
+import { useGetSupportedChains } from "@/hooks/aptos";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { getNetworkIcon, getNetworkType } from "@/utils/supported";

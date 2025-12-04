@@ -26,7 +26,7 @@ import {
 import { RiPercentLine } from "react-icons/ri";
 import { useAuth } from "@/provider/auth-provider";
 import { useThemeColors } from "@/provider/theme-provider";
-import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
+import { useGetUserStatisticsQuery } from "@/hooks/common/use-stats";
 import { useQueryClient } from "@tanstack/react-query";
 import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
 

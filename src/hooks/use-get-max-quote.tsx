@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { MoneyFi } from "@moneyfi/ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
+import { useMoneyFiProvider, validateAuth } from "./common";
 
 export const maxQuoteQueryKeys = {
   all: ["maxQuote"] as const,
@@ -10,14 +9,12 @@ export const maxQuoteQueryKeys = {
 
 export const useGetMaxQuoteQuery = (params: any) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useQuery({
     queryKey: maxQuoteQueryKeys.quote(params),
     queryFn: async () => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!params) {
         throw new Error("Quote parameters are required");

@@ -1,6 +1,6 @@
 # MoneyFi SDK
 
-A modern DeFi application SDK that enables users to interact with the MoneyFi protocol on the Aptos blockchain. MoneyFi is a DeFAI platform that helps non-DeFi users monetize stablecoins across protocols and blockchains through fully automated, AI-powered strategies.
+A modern **multi-chain** DeFi application SDK enabling users to interact with MoneyFi protocol on **Aptos** and **5 EVM networks** (Arbitrum, BSC, Base, Optimism, Soneium, Core). MoneyFi is a DeFAI platform providing fully automated, AI-powered strategies that help non-DeFi users monetize stablecoins across protocols and blockchains.
 
 ## Table of Contents
 
@@ -70,14 +70,20 @@ A modern DeFi application SDK that enables users to interact with the MoneyFi pr
 
 ## Features
 
-- **Multi-Wallet Support**: Connect with popular Aptos wallets (Petra, OKX, Nightly, Pontem)
-- **Multi-Token Support**: Deposit and withdraw both USDC and USDT seamlessly
-- **Account Management**: Automated user account creation
-- **Real-time Statistics**: Comprehensive portfolio analytics with 9 key metrics including referral rewards
-- **Dark/Light Theme**: Material Design 3 theming with automatic system preference detection
-- **Transaction Monitoring**: Track transaction hashes with direct links to Aptos Explorer
-- **Responsive Design**: Mobile-first interface built with modern UI components
-- **Type-safe Development**: Full TypeScript support with comprehensive type definitions
+**Multi-Chain Support**:
+- **Aptos**: 4 wallets (Petra, OKX, Nightly, Pontem) + Ed25519/Keyless signatures
+- **EVM**: 5 networks (Arbitrum, BSC, Base, Optimism, Soneium, Core) + 3 wallets (MetaMask, WalletConnect, Coinbase)
+
+**Core Features**:
+- **Dual Wallet System**: Independent Aptos and EVM wallet authentication
+- **Multi-Chain Deposits/Withdrawals**: Unified interface across Aptos and EVM networks
+- **Multi-Token Support**: USDC and USDT on all supported chains
+- **Cross-Chain Portfolio**: Real-time aggregated statistics (9 key metrics)
+- **Account Management**: Automated user account creation (Aptos)
+- **Dark/Light Theme**: Material Design 3 theming with system preference detection
+- **Transaction Monitoring**: Explorer links for all chains (Aptos + 5 EVM networks)
+- **Responsive Design**: Mobile-first interface with Chakra UI
+- **Type-safe Development**: Full TypeScript with chain adapter pattern
 
 ## Documentation
 
@@ -95,7 +101,8 @@ For local development guidance, see [Getting Started](#getting-started) below.
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- An Aptos wallet extension (Petra, OKX, etc.)
+- **Aptos wallet** extension (Petra, OKX, Nightly, or Pontem)
+- **EVM wallet** extension (MetaMask, WalletConnect, or Coinbase Wallet)
 
 ### Installation
 
@@ -125,17 +132,30 @@ The application will be available at `http://localhost:3000`.
 Create a `.env` file in the root directory:
 
 ```env
-VITE_APTOS_CLIENT_API_KEY=your_aptos_api_key_here
+# Aptos
+VITE_APTOS_CLIENT_API_KEY=your_aptos_api_key
+VITE_INTEGRATION_CODE=your_moneyfi_integration_code
+
+# EVM
+VITE_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 ```
 
 ## Usage
 
-### Connecting a Wallet
+### Connecting Wallets
 
-1. Click the "Connect Wallet" button in the header
-2. Select your preferred Aptos wallet from the modal
-3. Approve the connection in your wallet extension
-4. Your wallet address will appear in the header once connected
+**Aptos Wallet** (for Aptos dashboard):
+1. Click "Connect Aptos Wallet" button in header
+2. Select wallet (Petra, OKX, Nightly, Pontem)
+3. Approve connection in wallet extension
+4. Wallet address appears in header
+
+**EVM Wallet** (for EVM dashboard):
+1. Navigate to `/evm` route or click "EVM" in navigation
+2. Click "Connect EVM Wallet" button
+3. Select wallet (MetaMask, WalletConnect, Coinbase)
+4. Choose network (Arbitrum, BSC, Base, Optimism, Soneium, Core)
+5. Approve connection
 
 ### Depositing Funds
 

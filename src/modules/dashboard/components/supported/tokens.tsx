@@ -11,7 +11,7 @@ import {
   Flex,
   Grid,
 } from "@chakra-ui/react";
-import { useGetSupportedTokens } from "@/hooks/use-moneyfi-queries";
+import { useGetSupportedTokens } from "@/hooks/aptos";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { getTokenIcon } from "@/utils/supported";

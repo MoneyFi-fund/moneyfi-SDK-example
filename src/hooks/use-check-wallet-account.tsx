@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { MoneyFi } from "moneyfi-ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
+import { useMoneyFiProvider } from "./common";
 
 export const checkWalletAccountQueryKeys = {
   all: ["checkWalletAccount"] as const,
@@ -11,6 +10,7 @@ export const checkWalletAccountQueryKeys = {
 
 export const useCheckWalletAccountQuery = () => {
   const { isAuthenticated, user } = useAuth();
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useQuery({
     queryKey: checkWalletAccountQueryKeys.account(user?.address),
@@ -20,7 +20,6 @@ export const useCheckWalletAccountQuery = () => {
       }
 
       try {
-        const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
         const hasAccount = await moneyFiAptos.hasWalletAccount({
           sender: user.address.startsWith('0x') ? user.address : `0x${user.address}`
         });

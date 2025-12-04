@@ -15,10 +15,10 @@ import {
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useAuth } from "@/provider/auth-provider";
 import { useThemeColors } from "@/provider/theme-provider";
-import { useWithdrawMutation } from "@/hooks/use-moneyfi-queries";
+import { useWithdrawMutation } from "@/hooks/aptos/mutations/use-withdraw-mutation";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
-import { useGetUserStatisticsQuery } from "@/hooks/use-stats";
+import { useGetUserStatisticsQuery } from "@/hooks/common";
 import { useQueryClient } from "@tanstack/react-query";
 import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
 import { APTOS_ADDRESS } from "@/constants/address";
@@ -67,7 +67,6 @@ export const WithdrawComponent: React.FC = () => {
   // Get wallet amount for display only
   const { data: walletAmountData, isLoading: isLoadingWalletAmount } =
     useGetWalletAmountQuery(user?.address || null);
-  console.log(JSON.stringify(walletAmountData?.data, null, 2));
 
   // Validation logic - use userStats.total_value as max withdraw amount
   const maxWithdrawAmount = Number(userStats?.total_value || 0);

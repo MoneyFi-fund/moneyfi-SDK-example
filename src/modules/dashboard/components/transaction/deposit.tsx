@@ -19,8 +19,8 @@ import { useThemeColors } from "@/provider/theme-provider";
 import {
   useDepositMutation,
   moneyFiQueryKeys,
-} from "@/hooks/use-moneyfi-queries";
-import { statsQueryKeys } from "@/hooks/use-stats";
+} from "@/hooks/aptos/use-moneyfi-queries";
+import { statsQueryKeys } from "@/hooks/aptos/queries/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import {
@@ -177,7 +177,7 @@ export const DepositComponent: React.FC = () => {
           depositMutation.mutate(
             { amount, tokenAddress },
             {
-              onSuccess: async (data) => {
+              onSuccess: async (data: any) => {
                 queryClient.invalidateQueries({
                   queryKey: moneyFiQueryKeys.balance(user.address),
                 });
@@ -193,7 +193,7 @@ export const DepositComponent: React.FC = () => {
                 setCurrentStep("idle");
                 resolve(data);
               },
-              onError: (error) => {
+              onError: (error: Error) => {
                 reject(error);
               },
             }
@@ -248,7 +248,7 @@ export const DepositComponent: React.FC = () => {
           depositMutation.mutate(
             { amount, tokenAddress },
             {
-              onSuccess: async (data) => {
+              onSuccess: async (data: any) => {
                 queryClient.invalidateQueries({
                   queryKey: moneyFiQueryKeys.balance(user.address),
                 });
@@ -264,7 +264,7 @@ export const DepositComponent: React.FC = () => {
                 setCurrentStep("idle");
                 resolve(data);
               },
-              onError: (error) => {
+              onError: (error: Error) => {
                 reject(error);
               },
             }

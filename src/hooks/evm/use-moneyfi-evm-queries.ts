@@ -1,33 +1,18 @@
-import React, { useRef, useCallback } from "react";
+// import { BALANCE_REFETCH_CONFIG } from './../use-moneyfi-queries';
+import React, { useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useSendTransaction, useWriteContract } from "wagmi";
 import { wagmiConfig } from "@/config/wagmi-config";
 import { MoneyFi, PayloadType } from "moneyfi-ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
-import { BALANCE_REFETCH_CONFIG } from "../use-moneyfi-queries";
+import {
+  useMoneyFiProvider,
+  validateAuth,
+  REFETCH_CONFIG,
+} from "../common";
+import { moneyFiQueryKeys } from "../common/query-keys/moneyfi-query-keys";
 import { abi as abiERC20 } from "../../contracts/ERC20Mock.json";
 
-// Chain name to chain ID mapping for EVM networks
-export const CHAIN_ID_MAP: Record<string, number> = {
-  Base: 8453,
-  Arbitrum: 42161,
-  BinanceSmartChain: 56,
-  Mainnet: 1,
-  Core: 1116,
-} as const;
-
-// Reverse mapping: chain ID to chain name for token filtering
-export const CHAIN_NAME_MAP: Record<number, string> = {
-  8453: "Base",
-  42161: "Arbitrum",
-  56: "BinanceSmartChain",
-  1: "Mainnet",
-  1116: "Core",
-} as const;
-
-// EVM-specific query keys with chain support
 export const evmQueryKeys = {
   all: ["evm"] as const,
   balance: (chainId: string, address?: string) =>
@@ -41,104 +26,53 @@ export const evmQueryKeys = {
       : [...evmQueryKeys.all, "supportedTokens"],
 } as const;
 
-/**
- * Hook to fetch supported EVM chains only
- * Filters out Aptos chain to show only EVM networks
- */
 export const useGetSupportedChains = () => {
-  const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFi = useMoneyFiProvider();
 
   return useQuery({
     queryKey: evmQueryKeys.supportedChains(),
     queryFn: async () => {
       try {
         const supportedChainsData = await moneyFi.getSupportedChains();
-        console.log("Raw supported chains:", supportedChainsData);
-
-        // Transform EVM chain names to chain objects
-        // Expected input: { evm: ["Base", "Arbitrum", ...], aptos: "Aptos" }
-        // Only return EVM chains, exclude Aptos
         const evmChains = (supportedChainsData as any)?.evm || [];
-
         const chains = evmChains.map((name: string) => ({
           id: name,
           name,
           type: "evm",
         }));
 
-        console.log("Transformed EVM chains:", chains);
         return chains;
       } catch (error) {
         console.error("Error fetching supported chains:", error);
         throw error;
       }
     },
-    staleTime: BALANCE_REFETCH_CONFIG.staleTime,
-    gcTime: BALANCE_REFETCH_CONFIG.gcTime,
+    // staleTime: BALANCE_REFETCH_CONFIG.staleTime,
+    // gcTime: BALANCE_REFETCH_CONFIG.gcTime,
     retry: 1,
   });
 };
 
-/**
- * Hook to fetch supported tokens filtered by chain ID
- * Accepts chain ID (number), converts to chain name, and filters tokens
- * Returns array of tokens for the selected chain with address, symbol, and decimals
- */
-export const useGetSupportedTokens = (chainId?: number | string) => {
-  const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
-
+export const useGetSupportedTokens = () => {
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  
   return useQuery({
-    queryKey: evmQueryKeys.supportedTokens(String(chainId)),
+    queryKey: moneyFiQueryKeys.supportedTokens(),
     queryFn: async () => {
       try {
-        const allTokens = await moneyFi.getSupportedTokens();
-        console.log("All supported tokens fetched:", allTokens);
-
-        // If no chainId provided, return empty array
-        if (!chainId) {
-          return [];
-        }
-
-        // Convert chain ID to chain name for filtering
-        // If chainId is already a string (chain name), use it directly
-        let chainName: string;
-        if (typeof chainId === "number") {
-          chainName = CHAIN_NAME_MAP[chainId] || "";
-        } else {
-          chainName = chainId;
-        }
-
-        if (!chainName) {
-          console.warn(`Unknown chain ID: ${chainId}`);
-          return [];
-        }
-
-        // Filter tokens by exact chain name match
-        const filteredTokens = Array.isArray(allTokens)
-          ? allTokens.filter((token: any) => token.chain === chainName)
-          : [];
-
-        console.log(
-          `Tokens for chain ${chainName} (ID: ${chainId}):`,
-          filteredTokens
-        );
-        return filteredTokens;
+        const supportedTokens = await moneyFiAptos.getSupportedTokens();
+        return supportedTokens;
       } catch (error) {
         console.error("Error fetching supported tokens:", error);
         throw error;
       }
     },
-    staleTime: BALANCE_REFETCH_CONFIG.staleTime,
-    gcTime: BALANCE_REFETCH_CONFIG.gcTime,
+    // staleTime: BALANCE_REFETCH_CONFIG.staleTime,
+    // gcTime: BALANCE_REFETCH_CONFIG.gcTime,
     retry: 1,
-    enabled: !!chainId, // Only run query when chainId is provided
   });
 };
 
-/**
- * Hook for delayed balance refetch with chain awareness
- * Performs immediate refetch then schedules a delayed refetch for blockchain confirmation
- */
 export const useDelayedBalanceRefetchEVM = (chainId: string) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -153,15 +87,12 @@ export const useDelayedBalanceRefetchEVM = (chainId: string) => {
       }
     ) => {
       const queryKey = evmQueryKeys.balance(chainId, user?.address);
-
-      // Clear any existing timeout to prevent multiple delayed refetches
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
 
       try {
-        // Immediate optimistic refetch
         if (options.immediate) {
           await queryClient.refetchQueries({
             queryKey,
@@ -169,7 +100,6 @@ export const useDelayedBalanceRefetchEVM = (chainId: string) => {
           });
         }
 
-        // Schedule delayed refetch for blockchain confirmation
         if (options.delayed) {
           timeoutRef.current = setTimeout(async () => {
             try {
@@ -182,7 +112,7 @@ export const useDelayedBalanceRefetchEVM = (chainId: string) => {
             } finally {
               timeoutRef.current = null;
             }
-          }, BALANCE_REFETCH_CONFIG.delayed);
+          }, 5000);
         }
       } catch (error) {
         console.error("Immediate balance refetch failed:", error);
@@ -191,7 +121,6 @@ export const useDelayedBalanceRefetchEVM = (chainId: string) => {
     [queryClient, chainId, user?.address]
   );
 
-  // Cleanup timeout on unmount
   const cleanup = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -209,14 +138,14 @@ interface EVMDepositMutationParams {
   amount?: number;
 }
 
-/**
- * Mutation hook for EVM deposit transactions
- * Accepts dynamic chainId parameter for multi-chain support
- * Uses wagmi's sendTransaction for transaction signing and submission
- */
+interface EVMWithdrawMutationParams {
+  chainId: string | number;
+  tokenAddress?: string;
+  amount?: number;
+}
+
 export const useEVMDepositMutation = ({
   chainId,
-  tokenAddress: _tokenAddress,
   sender: userAddress,
 }: EVMDepositMutationParams) => {
   const { isAuthenticated, user } = useAuth();
@@ -224,10 +153,8 @@ export const useEVMDepositMutation = ({
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
-  const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
-  const { writeContractAsync: evmApproveContract, reset: resetEvmApprove } =
-    useWriteContract();
-
+  const moneyFi = useMoneyFiProvider();
+  const { writeContractAsync: evmApproveContract } = useWriteContract();
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
@@ -240,16 +167,12 @@ export const useEVMDepositMutation = ({
       amount: string;
       tokenAddress: string;
     }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        throw new Error("Please enter a valid amount");
-      }
+      // if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      //   throw new Error("Please enter a valid amount");
+      // }
 
-      // Convert amount to smallest unit (assuming 6 decimals for stablecoins)
-      const amountInSmallestUnit = 20000;
 
       try {
         // Get deposit transaction payload with dynamic chain_id
@@ -257,34 +180,34 @@ export const useEVMDepositMutation = ({
         const payload = await moneyFi.getDepositTxPayload({
           sender: userAddress,
           chain_id: Number(chainId),
-          token_address: tokenAddress,
-          amount: Number(amountInSmallestUnit),
+          token_address: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`,
+          amount: Number(Number(amount) * 1e6),
           target_chain: 0,
           type: PayloadType.Evm,
         });
 
-        const approveHash = await evmApproveContract({
+        // ERC20 approval transaction
+        await evmApproveContract({
           address: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` as `0x${string}`,
           abi: abiERC20,
           functionName: "approve",
-          args: [payload.evm_contract_address, amountInSmallestUnit],
+          args: [(payload as any).evm_contract_address, BigInt(Math.floor(Number(amount) * 10**6))],
         });
 
-        console.log("Deposit payload received:", payload);
-
         // Send transaction using wagmi
-        // payload.tx is the encoded call data, payload.evm_contract_address is the target contract
         const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+        const payloadData = (payload as any).tx;
+        const targetAddress = (payload as any).evm_contract_address;
+
         const txHash = await sendTransactionAsync({
-          data: (payload.tx as string).startsWith("0x")
-            ? (payload.tx as `0x${string}`)
-            : (`0x${payload.tx}` as `0x${string}`),
-          to: payload.evm_contract_address as `0x${string}`, // Target contract
+          data: payloadData.startsWith("0x")
+            ? (payloadData as `0x${string}`)
+            : (`0x${payloadData}` as `0x${string}`),
+          to: targetAddress as `0x${string}`, // Target contract
           chainId: chainIdNum,
         });
 
-        console.log("Deposit transaction sent, hash:", txHash);
-        return { hash: txHash };
+                return { hash: txHash };
       } catch (error) {
         console.error("Deposit transaction failed:", error);
         throw error;
@@ -307,112 +230,90 @@ export const useEVMDepositMutation = ({
   });
 };
 
-interface EVMWithdrawMutationParams {
-  chainId: string | number;
-  tokenAddress: string;
-  amount?: number;
-}
-
-interface WithdrawPayload {
-  encoded_signature: string;
-  encoded_pubkey: string;
-  full_message: string;
-}
-
-/**
- * Mutation hook for EVM withdraw transactions
- * Handles message signing and status polling with dynamic chain_id
- * Uses wagmi's sendTransaction for transaction signing and submission
- */
 export const useEVMWithdrawMutation = ({
   chainId,
-  tokenAddress,
 }: EVMWithdrawMutationParams) => {
   const { isAuthenticated, user } = useAuth();
   const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
-  const moneyFi = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
-
-  // Cleanup on unmount
+  const moneyFi = useMoneyFiProvider();
+  const tokenAddress = `0x00000000000000000000000000000000000000000`; // Use native token for withdraw
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
 
   return useMutation({
     mutationFn: async ({
-      address,
-      payload,
+      amount,
     }: {
-      address: string;
-      payload: WithdrawPayload;
+      amount: number;
     }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
+      validateAuth(isAuthenticated, user);
+
+      if (!tokenAddress) {
+        throw new Error("Token address is required");
       }
 
       try {
-        // Transform payload to match API expectations
         const transformedPayload = {
-          signature: payload.encoded_signature,
-          pubkey: payload.encoded_pubkey,
-          message: payload.full_message,
+          type: PayloadType.Evm,
+          chain_id: Number(chainId),
+          // chain_id: 0,
+          amount: Number(amount * 1e6)
         };
 
-        // Request withdrawal with dynamic chain_id
-        await (moneyFi as any).reqWithdraw(address, transformedPayload);
-        console.log("Withdraw request submitted");
+        const response = await moneyFi.reqWithdraw(transformedPayload);
 
-        // Poll for withdraw status until it's done
+        const txData = response as any;
+        const txHash = await sendTransactionAsync({
+          data: txData.tx.startsWith("0x")
+            ? (txData.tx as `0x${string}`)
+            : (`0x${txData.tx}` as `0x${string}`),
+          to: txData.evm_contract_address as `0x${string}`,
+          chainId: Number(txData.target_chain) as 1 | 42161 | 8453 | 56,
+        });
+
         const pollWithdrawStatus = async (): Promise<any> => {
-          while (true) {
-            const statusResponse = await moneyFi.getWithdrawStatus(
-              user.address
-            );
+          const POLLING_TIMEOUT = 30000; // 30 seconds timeout
+          const POLLING_INTERVAL = 3000; // 3 seconds interval
+          const startTime = Date.now();
+          let attempts = 0;
+          const maxAttempts = Math.floor(POLLING_TIMEOUT / POLLING_INTERVAL);
 
-            if (
-              (statusResponse as any) === "done" ||
-              (statusResponse as any)?.status === "done"
-            ) {
-              // Fetch wallet amount to check withdraw_amount
-              const walletAmountResponse = await moneyFi.getWalletAccountAssets(
-                {
-                  sender: user.address,
-                }
+          while (attempts < maxAttempts) {
+            try {
+              const statusResponse = await moneyFi.getWithdrawStatus(
+                user.address
               );
 
-              // Find the matching token by comparing token_address
-              const targetAddress = tokenAddress.replace("0x", "");
-              const matchedToken = (walletAmountResponse as any)?.data?.find(
-                (token: { token_address: string; withdraw_amount: string }) =>
-                  token.token_address === targetAddress
-              );
-
-              // Determine the actual amount to withdraw
-              let actualAmount: number = 20000;
-              if (matchedToken) {
-                const withdrawAmount = Number(matchedToken.withdraw_amount);
-                // If withdraw_amount is smaller than requested amount, use withdraw_amount
-                if (withdrawAmount < 20000) {
-                  actualAmount = withdrawAmount;
-                }
+              if (
+                (statusResponse as any) === "done" ||
+                (statusResponse as any)?.status === "done"
+              ) {
+                return { txHash, actualAmount: amount };
               }
 
-              // Get withdraw transaction payload with dynamic chain_id
-              const txPayload = await moneyFi.getWithdrawTxPayload({
-                sender: user.address,
-                chain_id: Number(chainId), // Convert to number for API
-                token_address: tokenAddress,
-                amount: actualAmount as any,
-              });
+              if (Date.now() - startTime > POLLING_TIMEOUT) {
+                throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
+              }
 
-              return { txPayload };
+              attempts++;
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+            } catch (error) {
+              console.error(`Polling attempt ${attempts + 1} failed:`, error);
+              attempts++;
+
+              if (attempts >= maxAttempts) {
+                throw new Error(`Withdrawal status polling failed after ${maxAttempts} attempts`);
+              }
+
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
             }
-
-            // Wait 3 seconds before checking again
-            await new Promise((resolve) => setTimeout(resolve, 3000));
           }
+
+          throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
         };
 
         return await pollWithdrawStatus();
@@ -422,29 +323,14 @@ export const useEVMWithdrawMutation = ({
       }
     },
 
-    onSuccess: async (data) => {
-      const { txPayload } = data;
-
+    onSuccess: async () => {
       try {
-        // Send transaction using wagmi
-        // payload.tx is the encoded call data, payload.evm_contract_address is the target contract
-        const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
-        const txHash = await sendTransactionAsync({
-          data: (txPayload.tx as string).startsWith("0x")
-            ? (txPayload.tx as `0x${string}`)
-            : (`0x${txPayload.tx}` as `0x${string}`),
-          to: txPayload.evm_contract_address as `0x${string}`, // Target contract
-          chainId: chainIdNum,
-        });
-
-        console.log("Withdraw transaction sent, hash:", txHash);
-
         await triggerDelayedRefetch({
           immediate: true,
           delayed: true,
         });
       } catch (error) {
-        console.error("Withdraw transaction submission failed:", error);
+        console.error("Balance refetch failed:", error);
         throw error;
       }
     },
@@ -454,6 +340,6 @@ export const useEVMWithdrawMutation = ({
       cleanup();
     },
 
-    retry: false, // Don't retry mutations automatically
+    retry: false,
   });
 };

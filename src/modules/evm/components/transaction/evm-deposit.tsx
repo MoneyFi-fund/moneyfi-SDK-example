@@ -23,8 +23,9 @@ import {
   useGetSupportedChains,
   useGetSupportedTokens,
   evmQueryKeys,
-  CHAIN_ID_MAP,
 } from "@/hooks/evm/use-moneyfi-evm-queries";
+import { getExplorerUrl } from "@/hooks/common/get-explorer-url";
+import { CHAIN_ID_MAP } from "@/config/chains";
 
 export const EVMDepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -44,14 +45,18 @@ export const EVMDepositComponent: React.FC = () => {
   const { data: supportedChains, isLoading: isChainsLoading } =
     useGetSupportedChains();
 
-  // Get chain ID from selected chain name
+  // Get chain ID from selected chain name using CHAIN_ID_MAP
   const selectedChainId = selectedChain ? CHAIN_ID_MAP[selectedChain] : undefined;
 
-  // Fetch tokens for the selected chain ID
+  // Get explorer URL for transaction
+  const getTransactionExplorerUrl = (txHash: string) => {
+    if (!selectedChainId) return null;
+    return getExplorerUrl(selectedChainId, txHash);
+  };
+
+  // Fetch supported tokens
   const { data: supportedTokens, isLoading: isTokensLoading } =
-    useGetSupportedTokens(selectedChainId);
-  console.log(selectedChainId);
-  console.log(supportedTokens);
+    useGetSupportedTokens();
 
   // Parse chains and tokens into selectable format
   const chainsList = useMemo(() => {
@@ -59,22 +64,24 @@ export const EVMDepositComponent: React.FC = () => {
     return Array.isArray(supportedChains)
       ? supportedChains.map((chain: any) => ({
           label: chain.name || String(chain.id),
-          value: String(chain.id),
+          value: chain.name || String(chain.id),
         }))
       : [];
   }, [supportedChains]);
 
   const tokensList = useMemo(() => {
     if (!supportedTokens) return [];
-    console.log(supportedTokens);
-    return Array.isArray(supportedTokens)
-      ? supportedTokens.map((token: any) => ({
-          label: `${token.name} (${token.symbol || "?"})`,
-          value: token.address || "",
-        }))
-      : [];
-  }, [supportedTokens]);
-  console.log(tokensList);
+
+    // Filter tokens by selected chain name (selectedChain is the chain name like "Base", "Arbitrum", etc.)
+    const filteredTokens = selectedChain
+      ? supportedTokens.tokens.filter((token: any) => token.chain === selectedChain)
+      : supportedTokens.tokens;
+
+    return filteredTokens.map((token: any) => ({
+      label: token.name,
+      value: token.address || "",
+    }));
+  }, [supportedTokens, selectedChain]);
 
   const chainsCollection = createListCollection({
     items: chainsList,
@@ -89,7 +96,7 @@ export const EVMDepositComponent: React.FC = () => {
     chainId: selectedChainId || 0, // Use the chain ID calculated above
     tokenAddress: selectedToken,
     sender: evmAddress || "", // Use EVM wallet address instead of Aptos address
-    amount: BigInt(amount ? Math.floor(Number(amount) * 1_000_000) : 0),
+    amount: (amount ? Math.floor(Number(amount) * 10**6) : 0),
   });
 
   const handleDeposit = async () => {
@@ -106,7 +113,7 @@ export const EVMDepositComponent: React.FC = () => {
 
       await new Promise<any>((resolve, reject) => {
         depositMutation.mutate(
-          { amount, tokenAddress: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`},
+          { amount, tokenAddress: selectedToken },
           {
             onSuccess: async (data) => {
               // Invalidate relevant queries
@@ -172,7 +179,6 @@ export const EVMDepositComponent: React.FC = () => {
     );
   }
 
-  // Show warning if authenticated but EVM wallet not connected
   if (!isEVMConnected) {
     return (
       <Card.Root
@@ -441,7 +447,7 @@ export const EVMDepositComponent: React.FC = () => {
               }}
             />
           </VStack>
-
+          
           {/* Deposit Button */}
           <Button
             onClick={handleDeposit}
