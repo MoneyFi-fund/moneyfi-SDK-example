@@ -18,6 +18,7 @@ import { useAuth } from "@/provider/auth-provider";
 import { useEVM } from "@/provider/evm-provider";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useEVMWithdrawMutation, useGetSupportedChains, useGetSupportedTokens, evmQueryKeys } from "@/hooks/evm/use-moneyfi-evm-queries";
+import { useGetMaxQuoteQuery } from "@/hooks/use-get-max-quote";
 import { useQueryClient } from "@tanstack/react-query";
 import { CHAIN_ID_MAP } from "@/config/chains";
 import { getExplorerUrl } from "@/hooks/common/get-explorer-url";
@@ -53,6 +54,34 @@ export const EVMWithdrawComponent: React.FC = () => {
   // Fetch tokens for the selected chain ID
   const { data: supportedTokens, isLoading: isTokensLoading } =
     useGetSupportedTokens();
+
+  // Fetch max quote for withdrawal using EVM wallet address
+  const { data: maxQuoteData, isLoading: isMaxQuoteLoading } = useGetMaxQuoteQuery(
+    evmAddress ? { address: evmAddress } : null
+  );
+
+  // Calculate max withdraw amount based on selected chain and token
+  const maxWithdrawAmount = useMemo(() => {
+    if (!maxQuoteData?.data || !selectedChainId || !selectedToken) return 0;
+
+    // Find chain data matching selected chain ID
+    const chainData = maxQuoteData.data.find(
+      (item: { chain_id: number; usdc: number }) => item.chain_id === selectedChainId
+    );
+
+    if (!chainData) return 0;
+
+    // Get token amount (currently only USDC supported)
+    // Amount is already in base units, divide by 1e6 for display
+    return chainData.usdc ? Number(chainData.usdc) / 1e6 : 0;
+  }, [maxQuoteData, selectedChainId, selectedToken]);
+
+  // Handle max amount button click
+  const handleMaxAmount = () => {
+    if (maxWithdrawAmount > 0) {
+      setAmount(maxWithdrawAmount.toString());
+    }
+  };
 
   // Parse chains and tokens
   const chainsList = useMemo(() => {
@@ -407,13 +436,30 @@ export const EVMWithdrawComponent: React.FC = () => {
 
           {/* Amount Input */}
           <VStack align="stretch" gap={2}>
-            <Text
-              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
-              fontWeight="medium"
-              color={cardColors.textSecondary}
-            >
-              Amount
-            </Text>
+            <HStack justify="space-between">
+              <Text
+                fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                fontWeight="medium"
+                color={cardColors.textSecondary}
+              >
+                Amount
+              </Text>
+              {selectedChainId && selectedToken && (
+                <Button
+                  variant="surface"
+                  size="sm"
+                  onClick={handleMaxAmount}
+                  color="primary.600"
+                  fontSize={materialDesign3Theme.typography.labelSmall.fontSize}
+                  fontWeight="medium"
+                  loading={isMaxQuoteLoading}
+                  disabled={maxWithdrawAmount <= 0 && !isMaxQuoteLoading}
+                  _hover={{ bg: "primary.900", color: "white" }}
+                >
+                  MAX {maxWithdrawAmount > 0 ? `(${maxWithdrawAmount.toFixed(2)})` : ""}
+                </Button>
+              )}
+            </HStack>
             <Input
               type="number"
               placeholder="0.00"

@@ -1,7 +1,7 @@
 // import { BALANCE_REFETCH_CONFIG } from './../use-moneyfi-queries';
 import React, { useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSendTransaction, useWriteContract } from "wagmi";
+import { useSendTransaction, useWriteContract, useSwitchChain } from "wagmi";
 import { wagmiConfig } from "@/config/wagmi-config";
 import { MoneyFi, PayloadType } from "moneyfi-ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
@@ -150,6 +150,7 @@ export const useEVMDepositMutation = ({
 }: EVMDepositMutationParams) => {
   const { isAuthenticated, user } = useAuth();
   const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
@@ -169,33 +170,35 @@ export const useEVMDepositMutation = ({
     }) => {
       validateAuth(isAuthenticated, user);
 
-      // if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      //   throw new Error("Please enter a valid amount");
-      // }
-
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
 
       try {
-        // Get deposit transaction payload with dynamic chain_id
+        // Switch to the correct chain before executing transactions
+        await switchChainAsync({ chainId: chainIdNum });
 
+        // Get deposit transaction payload with dynamic chain_id
         const payload = await moneyFi.getDepositTxPayload({
           sender: userAddress,
-          chain_id: Number(chainId),
-          token_address: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`,
+          chain_id: chainIdNum,
+          token_address: tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`,
           amount: Number(Number(amount) * 1e6),
           target_chain: 0,
           type: PayloadType.Evm,
         });
 
+        const targetTokenAddress = tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`;
+
         // ERC20 approval transaction
-        await evmApproveContract({
-          address: `0xaf88d065e77c8cC2239327C5EDb3A432268e5831` as `0x${string}`,
+        const approve = await evmApproveContract({
+          address: targetTokenAddress as `0x${string}`,
           abi: abiERC20,
           functionName: "approve",
           args: [(payload as any).evm_contract_address, BigInt(Math.floor(Number(amount) * 10**6))],
+          chainId: chainIdNum,
         });
+        console.log("Approval transaction sent:", approve);
 
-        // Send transaction using wagmi
-        const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+        // Send deposit transaction using wagmi
         const payloadData = (payload as any).tx;
         const targetAddress = (payload as any).evm_contract_address;
 
@@ -203,11 +206,11 @@ export const useEVMDepositMutation = ({
           data: payloadData.startsWith("0x")
             ? (payloadData as `0x${string}`)
             : (`0x${payloadData}` as `0x${string}`),
-          to: targetAddress as `0x${string}`, // Target contract
+          to: targetAddress as `0x${string}`,
           chainId: chainIdNum,
         });
 
-                return { hash: txHash };
+        return { hash: txHash };
       } catch (error) {
         console.error("Deposit transaction failed:", error);
         throw error;
@@ -235,11 +238,11 @@ export const useEVMWithdrawMutation = ({
 }: EVMWithdrawMutationParams) => {
   const { isAuthenticated, user } = useAuth();
   const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
     String(chainId)
   );
   const moneyFi = useMoneyFiProvider();
-  const tokenAddress = `0x00000000000000000000000000000000000000000`; // Use native token for withdraw
   React.useEffect(() => {
     return cleanup;
   }, [cleanup]);
@@ -252,27 +255,29 @@ export const useEVMWithdrawMutation = ({
     }) => {
       validateAuth(isAuthenticated, user);
 
-      if (!tokenAddress) {
-        throw new Error("Token address is required");
-      }
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
 
       try {
+        // Request withdraw payload from MoneyFi
         const transformedPayload = {
           type: PayloadType.Evm,
-          chain_id: Number(chainId),
-          // chain_id: 0,
+          chain_id: chainIdNum,
           amount: Number(amount * 1e6)
         };
 
         const response = await moneyFi.reqWithdraw(transformedPayload);
-
         const txData = response as any;
+        const targetChainId = Number(txData.target_chain) as 1 | 42161 | 8453 | 56;
+
+        // Switch to the target chain before executing the transaction
+        await switchChainAsync({ chainId: targetChainId });
+
         const txHash = await sendTransactionAsync({
           data: txData.tx.startsWith("0x")
             ? (txData.tx as `0x${string}`)
             : (`0x${txData.tx}` as `0x${string}`),
           to: txData.evm_contract_address as `0x${string}`,
-          chainId: Number(txData.target_chain) as 1 | 42161 | 8453 | 56,
+          chainId: targetChainId,
         });
 
         const pollWithdrawStatus = async (): Promise<any> => {

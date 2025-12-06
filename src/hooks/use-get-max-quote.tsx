@@ -4,31 +4,39 @@ import { useMoneyFiProvider, validateAuth } from "./common";
 
 export const maxQuoteQueryKeys = {
   all: ["maxQuote"] as const,
-  quote: (params?: any) => [...maxQuoteQueryKeys.all, "quote", params] as const,
+  quote: (address?: string) => [...maxQuoteQueryKeys.all, "quote", address] as const,
 };
 
-export const useGetMaxQuoteQuery = (params: any) => {
+interface MaxQuoteParams {
+  address?: string;
+}
+
+export const useGetMaxQuoteQuery = (params?: MaxQuoteParams | null) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = useMoneyFiProvider();
+  const moneyFi = useMoneyFiProvider();
+
+  // Use provided address or fall back to user's address
+  const walletAddress = params?.address || user?.address;
 
   return useQuery({
-    queryKey: maxQuoteQueryKeys.quote(params),
+    queryKey: maxQuoteQueryKeys.quote(walletAddress),
     queryFn: async () => {
       validateAuth(isAuthenticated, user);
 
-      if (!params) {
-        throw new Error("Quote parameters are required");
+      if (!walletAddress) {
+        throw new Error("Wallet address is required");
       }
 
       try {
-        const quoteResponse = await moneyFiAptos.getMaxQuotesAmount(params);
+        // Pass address as object with 'sender' key to SDK
+        const quoteResponse = await moneyFi.getMaxQuotesAmount({ sender: walletAddress });
         return quoteResponse;
       } catch (error) {
         console.error("Error getting max quote:", error);
         throw error;
       }
     },
-    enabled: !!(isAuthenticated && user && params),
+    enabled: !!(isAuthenticated && user && walletAddress),
     retry: false,
     refetchOnWindowFocus: false,
   });

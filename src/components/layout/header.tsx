@@ -62,8 +62,8 @@ export default function Header() {
 
           <HStack gap={3}>
             <CompactThemeToggle />
-            {(location.pathname === '/evm' || aptosAddress?.walletName === "EVM Wallet") && <EVMWalletButton compact />}
-            {(location.pathname === '/') && <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />}
+            {location.pathname === '/evm' && <EVMWalletButton compact />}
+            {location.pathname === '/' && <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />}
           </HStack>
 
           <WalletConnectModal
