@@ -30,4 +30,6 @@ export const moneyFiQueryKeys = {
     [...moneyFiQueryKeys.all, "transactions", address] as const,
   withdrawStatus: (address?: string) =>
     [...moneyFiQueryKeys.all, "withdrawStatus", address] as const,
+  bridgeStatus: (txHash?: string) =>
+    [...moneyFiQueryKeys.all, "bridgeStatus", txHash] as const,
 } as const;

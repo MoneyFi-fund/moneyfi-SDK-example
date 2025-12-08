@@ -18,10 +18,12 @@ import { useAuth } from "@/provider/auth-provider";
 import { useEVM } from "@/provider/evm-provider";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useEVMWithdrawMutation, useGetSupportedChains, useGetSupportedTokens, evmQueryKeys } from "@/hooks/evm/use-moneyfi-evm-queries";
-import { useGetMaxQuoteQuery } from "@/hooks/use-get-max-quote";
+import { useGetMaxQuoteQuery, maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 import { useQueryClient } from "@tanstack/react-query";
 import { CHAIN_ID_MAP } from "@/config/chains";
 import { getExplorerUrl } from "@/hooks/common/get-explorer-url";
+import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
+import { statsQueryKeys } from "@/hooks/common";
 
 export const EVMWithdrawComponent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -114,12 +116,17 @@ export const EVMWithdrawComponent: React.FC = () => {
     items: tokensList,
   });
 
-  
+
   const withdrawMutation = useEVMWithdrawMutation({
     chainId: selectedChainId || 0,
-    tokenAddress: selectedToken,
     onStatusChange: setPollingStatus,
   });
+
+  // Poll bridge status for the transaction
+  const { data: bridgeStatus, isLoading: isBridgeStatusLoading } = useGetBridgeStatusQuery(
+    successData?.hash,
+    !!successData?.hash
+  );
 
   const handleWithdraw = async () => {
     if (!amount || !selectedChain || !evmAddress) {
@@ -136,17 +143,29 @@ export const EVMWithdrawComponent: React.FC = () => {
 
       await new Promise<any>((resolve, reject) => {
         withdrawMutation.mutate(
-          { amount: Number(amount) },
+          { amount: Number(amount), tokenAddress: selectedToken },
           {
             onSuccess: async (data: any) => {
+              // Invalidate balance queries
               queryClient.invalidateQueries({
                 queryKey: evmQueryKeys.balance(selectedChain, evmAddress),
+              });
+
+              // Invalidate user statistics
+              queryClient.invalidateQueries({
+                queryKey: statsQueryKeys.user(evmAddress),
+              });
+
+              // Invalidate max quote data
+              queryClient.invalidateQueries({
+                queryKey: maxQuoteQueryKeys.quote(evmAddress),
               });
 
               setAmount("");
               setSuccessData({ hash: data?.txHash || "pending" });
               setCurrentStep("idle");
-              setPollingStatus(null);
+              // Keep the final status to show "done" state
+              setPollingStatus("done");
               resolve(data);
             },
             onError: (error) => {
@@ -584,7 +603,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                       materialDesign3Theme.typography.labelLarge.fontSize
                     }
                   >
-                    Withdrawal successful!
+                    Request withdrawal successful!
                   </Text>
                   <HStack flexWrap="wrap" gap={1}>
                     <Text
@@ -626,6 +645,95 @@ export const EVMWithdrawComponent: React.FC = () => {
                       </Text>
                     )}
                   </HStack>
+                  {/* Withdraw Status from Polling */}
+                  {pollingStatus && (
+                    <HStack flexWrap="wrap" gap={1}>
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Withdrawal Status:
+                      </Text>
+                      <HStack gap={1}>
+                        <Text
+                          fontSize={
+                            materialDesign3Theme.typography.bodySmall.fontSize
+                          }
+                          color={pollingStatus === "done" ? "success.900" : "success.800"}
+                          fontWeight="medium"
+                          textTransform="capitalize"
+                        >
+                          {pollingStatus}
+                        </Text>
+                        {pollingStatus === "done" && (
+                          <Text
+                            fontSize={
+                              materialDesign3Theme.typography.bodySmall.fontSize
+                            }
+                            color="success.900"
+                          >
+                            ✓
+                          </Text>
+                        )}
+                      </HStack>
+                    </HStack>
+                  )}
+                  {/* Bridge Status */}
+                  {isBridgeStatusLoading && (
+                    <HStack gap={2}>
+                      <Spinner size="xs" color="primary.500" />
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Checking bridge status...
+                      </Text>
+                    </HStack>
+                  )}
+                  {bridgeStatus && (
+                    <HStack flexWrap="wrap" gap={1}>
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Bridge Status:
+                      </Text>
+                      <HStack gap={1}>
+                        <Text
+                          fontSize={
+                            materialDesign3Theme.typography.bodySmall.fontSize
+                          }
+                          color={
+                            (typeof bridgeStatus === "string" ? bridgeStatus : (bridgeStatus as any)?.status) === "done"
+                              ? "success.900"
+                              : "success.800"
+                          }
+                          fontWeight="medium"
+                          textTransform="capitalize"
+                        >
+                          {typeof bridgeStatus === "string"
+                            ? bridgeStatus
+                            : (bridgeStatus as any)?.status || "pending"}
+                        </Text>
+                        {(typeof bridgeStatus === "string" ? bridgeStatus : (bridgeStatus as any)?.status) === "done" && (
+                          <Text
+                            fontSize={
+                              materialDesign3Theme.typography.bodySmall.fontSize
+                            }
+                            color="success.900"
+                          >
+                            ✓
+                          </Text>
+                        )}
+                      </HStack>
+                    </HStack>
+                  )}
                 </VStack>
               </Alert.Description>
             </Alert.Root>

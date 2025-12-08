@@ -26,6 +26,9 @@ import {
 } from "@/hooks/evm/use-moneyfi-evm-queries";
 import { getExplorerUrl } from "@/hooks/common/get-explorer-url";
 import { CHAIN_ID_MAP } from "@/config/chains";
+import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
+import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
+import { statsQueryKeys } from "@/hooks/common";
 
 export const EVMDepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -99,6 +102,12 @@ export const EVMDepositComponent: React.FC = () => {
     amount: (amount ? Math.floor(Number(amount) * 10**6) : 0),
   });
 
+  // Poll bridge status for the transaction
+  const { data: bridgeStatus, isLoading: isBridgeStatusLoading } = useGetBridgeStatusQuery(
+    successData?.hash,
+    !!successData?.hash
+  );
+
   const handleDeposit = async () => {
     if (!amount || !selectedChain || !evmAddress) {
       setStepError("Please connect your EVM wallet first");
@@ -116,9 +125,19 @@ export const EVMDepositComponent: React.FC = () => {
           { amount, tokenAddress: selectedToken },
           {
             onSuccess: async (data) => {
-              // Invalidate relevant queries
+              // Invalidate balance queries
               queryClient.invalidateQueries({
                 queryKey: evmQueryKeys.balance(selectedChain, evmAddress),
+              });
+
+              // Invalidate user statistics
+              queryClient.invalidateQueries({
+                queryKey: statsQueryKeys.user(evmAddress),
+              });
+
+              // Invalidate max quote data
+              queryClient.invalidateQueries({
+                queryKey: maxQuoteQueryKeys.quote(evmAddress),
               });
 
               setAmount("");
@@ -534,6 +553,60 @@ export const EVMDepositComponent: React.FC = () => {
                       {successData.hash.slice(-8)}
                     </Link>
                   </HStack>
+                  {/* Bridge Status */}
+                  {isBridgeStatusLoading && (
+                    <HStack gap={2}>
+                      <Spinner size="xs" color="primary.500" />
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Checking bridge status...
+                      </Text>
+                    </HStack>
+                  )}
+                  {bridgeStatus && (
+                    <HStack flexWrap="wrap" gap={1}>
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Bridge Status:
+                      </Text>
+                      <HStack gap={1}>
+                        <Text
+                          fontSize={
+                            materialDesign3Theme.typography.bodySmall.fontSize
+                          }
+                          color={
+                            (typeof bridgeStatus === "string" ? bridgeStatus : (bridgeStatus as any)?.status) === "done"
+                              ? "success.900"
+                              : "success.800"
+                          }
+                          fontWeight="medium"
+                          textTransform="capitalize"
+                        >
+                          {typeof bridgeStatus === "string"
+                            ? bridgeStatus
+                            : (bridgeStatus as any)?.status || "pending"}
+                        </Text>
+                        {(typeof bridgeStatus === "string" ? bridgeStatus : (bridgeStatus as any)?.status) === "done" && (
+                          <Text
+                            fontSize={
+                              materialDesign3Theme.typography.bodySmall.fontSize
+                            }
+                            color="success.900"
+                          >
+                            ✓
+                          </Text>
+                        )}
+                      </HStack>
+                    </HStack>
+                  )}
                 </VStack>
               </Alert.Description>
             </Alert.Root>

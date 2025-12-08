@@ -236,6 +236,7 @@ export const useEVMDepositMutation = ({
 
 export const useEVMWithdrawMutation = ({
   chainId,
+  tokenAddress,
   onStatusChange,
 }: EVMWithdrawMutationParams) => {
   const { isAuthenticated, user } = useAuth();
@@ -252,8 +253,10 @@ export const useEVMWithdrawMutation = ({
   return useMutation({
     mutationFn: async ({
       amount,
+      tokenAddress,
     }: {
       amount: number;
+      tokenAddress: string;
     }) => {
       validateAuth(isAuthenticated, user);
 
@@ -264,7 +267,8 @@ export const useEVMWithdrawMutation = ({
         const transformedPayload = {
           type: PayloadType.Evm,
           chain_id: chainIdNum,
-          amount: Number(amount * 1e6)
+          amount: Number(amount * 1e6),
+          token_address: tokenAddress,
         };
 
         const response = await moneyFi.reqWithdraw(transformedPayload);

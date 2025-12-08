@@ -6,6 +6,7 @@ import {
   useMoneyFiProvider,
   validateAuth,
   moneyFiQueryKeys,
+  useDelayedBalanceRefetch,
 } from "../../common";
 
 interface DepositMutationParams {
@@ -32,7 +33,7 @@ export const useDepositMutation = ({
   const { signTransaction, submitTransaction } = useWallet();
   const moneyFiAptos = useMoneyFiProvider();
 
-  const { triggerRefetch, cleanup } = useDelayedRefetch`(
+  const { triggerRefetch, cleanup } = useDelayedBalanceRefetch(
     moneyFiQueryKeys.balance(user?.address)
   );
 
