@@ -1842,8 +1842,7 @@ export const useGetSupportedTokens = () => {
 
 #### useEVMDepositMutation
 
-EVM-specific deposit mutation using wagmi:
-
+EVM-specific deposit mutation using wagmi: 
 ```typescript
 interface EVMDepositMutationParams {
   chainId: string | number;
@@ -1864,6 +1863,9 @@ export const useEVMDepositMutation = ({
   );
   const moneyFi = useMoneyFiProvider();
   const { writeContractAsync: evmApproveContract } = useWriteContract();
+  React.useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
 
   return useMutation({
     mutationFn: async ({
@@ -1874,18 +1876,66 @@ export const useEVMDepositMutation = ({
       tokenAddress: string;
     }) => {
       validateAuth(isAuthenticated, user);
-      // Implementation as shown in EVM Deposit Flow section above
+
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+
+      try {
+        // Switch to the correct chain before executing transactions
+        await switchChainAsync({ chainId: chainIdNum });
+
+        // Get deposit transaction payload with dynamic chain_id
+        const payload = await moneyFi.getDepositTxPayload({
+          sender: userAddress,
+          chain_id: chainIdNum,
+          token_address: tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`,
+          amount: Number(Number(amount) * 1e6),
+          target_chain: 0,
+          type: PayloadType.Evm,
+        });
+
+        const targetTokenAddress = tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`;
+
+        // ERC20 approval transaction
+        const approve = await evmApproveContract({
+          address: targetTokenAddress as `0x${string}`,
+          abi: abiERC20,
+          functionName: "approve",
+          args: [(payload as any).evm_contract_address, BigInt(Math.floor(Number(amount) * 10**6))],
+          chainId: chainIdNum,
+        });
+        console.log("Approval transaction sent:", approve);
+
+        // Send deposit transaction using wagmi
+        const payloadData = (payload as any).tx;
+        const targetAddress = (payload as any).evm_contract_address;
+
+        const txHash = await sendTransactionAsync({
+          data: payloadData.startsWith("0x")
+            ? (payloadData as `0x${string}`)
+            : (`0x${payloadData}` as `0x${string}`),
+          to: targetAddress as `0x${string}`,
+          chainId: chainIdNum,
+        });
+
+        return { hash: txHash };
+      } catch (error) {
+        console.error("Deposit transaction failed:", error);
+        throw error;
+      }
     },
+
     onSuccess: async () => {
       await triggerDelayedRefetch({
         immediate: true,
         delayed: true,
       });
     },
+
     onError: (error) => {
       console.error("Deposit mutation error:", error);
       cleanup();
     },
+
     retry: false,
   });
 };
@@ -1914,6 +1964,9 @@ export const useEVMWithdrawMutation = ({
     String(chainId)
   );
   const moneyFi = useMoneyFiProvider();
+  React.useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
 
   return useMutation({
     mutationFn: async ({
@@ -1922,8 +1975,90 @@ export const useEVMWithdrawMutation = ({
       amount: number;
     }) => {
       validateAuth(isAuthenticated, user);
-      // Implementation as shown in EVM Withdrawal Flow section above
+
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+
+      try {
+        // Request withdraw payload from MoneyFi
+        const transformedPayload = {
+          type: PayloadType.Evm,
+          chain_id: chainIdNum,
+          amount: Number(amount * 1e6)
+        };
+
+        const response = await moneyFi.reqWithdraw(transformedPayload);
+        const txData = response as any;
+        const targetChainId = Number(txData.target_chain) as 1 | 42161 | 8453 | 56;
+
+        // Switch to the target chain before executing the transaction
+        await switchChainAsync({ chainId: targetChainId });
+
+        const txHash = await sendTransactionAsync({
+          data: txData.tx.startsWith("0x")
+            ? (txData.tx as `0x${string}`)
+            : (`0x${txData.tx}` as `0x${string}`),
+          to: txData.evm_contract_address as `0x${string}`,
+          chainId: targetChainId,
+        });
+
+        const pollWithdrawStatus = async (): Promise<any> => {
+          const POLLING_INTERVAL = 10000; // 10 seconds interval
+          const POLLING_TIMEOUT = 400000; // 6 minutes timeout
+          const startTime = Date.now();
+          let attempts = 0;
+          const maxAttempts = Math.floor(POLLING_TIMEOUT / POLLING_INTERVAL);
+
+          while (attempts < maxAttempts) {
+            try {
+              const statusResponse = await moneyFi.getWithdrawStatus(
+                // @ts-ignore
+                user.address
+              );
+
+              // Extract status string for UI display
+              const currentStatus = typeof statusResponse === "string"
+                ? statusResponse
+                : (statusResponse as any)?.status || "polling";
+
+              // Notify UI of current status
+              onStatusChange?.(currentStatus);
+
+              if (
+                (statusResponse as any) === "done" ||
+                (statusResponse as any)?.status === "done"
+              ) {
+                return { txHash, actualAmount: amount };
+              }
+
+              if (Date.now() - startTime > POLLING_TIMEOUT) {
+                throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
+              }
+
+              attempts++;
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+            } catch (error) {
+              console.error(`Polling attempt ${attempts + 1} failed:`, error);
+              onStatusChange?.("retrying");
+              attempts++;
+
+              if (attempts >= maxAttempts) {
+                throw new Error(`Withdrawal status polling failed after ${maxAttempts} attempts`);
+              }
+
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+            }
+          }
+
+          throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
+        };
+
+        return await pollWithdrawStatus();
+      } catch (error) {
+        console.error("Withdraw process failed:", error);
+        throw error;
+      }
     },
+
     onSuccess: async () => {
       try {
         await triggerDelayedRefetch({
@@ -1935,10 +2070,12 @@ export const useEVMWithdrawMutation = ({
         throw error;
       }
     },
+
     onError: (error) => {
       console.error("Withdraw mutation error:", error);
       cleanup();
     },
+
     retry: false,
   });
 };
