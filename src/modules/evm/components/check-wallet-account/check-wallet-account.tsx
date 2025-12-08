@@ -7,13 +7,13 @@ import {
   HStack,
   Badge,
 } from "@chakra-ui/react";
-import { useAptos } from "@/provider/aptos-provider";
+import { useEVM } from "@/provider/evm-provider";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 
 export default function CheckWalletAccount() {
-  const { address, isConnected, walletName, disconnect } = useAptos();
+  const { address, isConnected, disconnect } = useEVM();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
   const { cardColors, colors, buttonColors } = useThemeColors();
 
@@ -41,7 +41,7 @@ export default function CheckWalletAccount() {
         <VStack align="stretch" gap={2}>
           <HStack justify="space-between" align="center" width="100%">
             <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
-              Aptos Wallet
+              EVM Wallet
             </Text>
             {isConnected && (
               <Badge
@@ -64,19 +64,15 @@ export default function CheckWalletAccount() {
             <VStack align="stretch" gap={3}>
               <Alert.Root status="info">
                 <Alert.Description>
-                  Connect your Aptos wallet to access MoneyFi features
+                  Connect your EVM wallet to access MoneyFi features
                 </Alert.Description>
               </Alert.Root>
-
-              <Text fontSize="sm" color={cardColors.textSecondary} textAlign="center">
-                Supported wallets: Petra, Martian, Pontem, Fewcha
-              </Text>
             </VStack>
           ) : (
             <VStack align="stretch" gap={3}>
               <Alert.Root status="success">
                 <Alert.Description>
-                  Aptos wallet connected
+                  EVM wallet connected
                 </Alert.Description>
               </Alert.Root>
 
@@ -88,11 +84,6 @@ export default function CheckWalletAccount() {
                   <Text fontSize="md" fontWeight="medium" color={cardColors.text} fontFamily="mono">
                     {address.slice(0, 6)}...{address.slice(-4)}
                   </Text>
-                  {walletName && (
-                    <Text fontSize="sm" color={cardColors.textSecondary}>
-                      Wallet: {walletName}
-                    </Text>
-                  )}
                   
                   <VStack align="stretch" gap={1} mt={2}>
                     <Text fontSize="sm" color={cardColors.textSecondary}>

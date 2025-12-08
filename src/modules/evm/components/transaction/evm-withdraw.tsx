@@ -36,6 +36,7 @@ export const EVMWithdrawComponent: React.FC = () => {
   const [successData, setSuccessData] = useState<{ hash: string } | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<"idle" | "withdrawing">("idle");
+  const [pollingStatus, setPollingStatus] = useState<string | null>(null);
 
 
   // Fetch supported chains and tokens
@@ -62,21 +63,19 @@ export const EVMWithdrawComponent: React.FC = () => {
 
   // Calculate max withdraw amount based on selected chain and token
   const maxWithdrawAmount = useMemo(() => {
-    if (!maxQuoteData?.data || !selectedChainId || !selectedToken) return 0;
-
-    // Find chain data matching selected chain ID
-    const chainData = maxQuoteData.data.find(
-      (item: { chain_id: number; usdc: number }) => item.chain_id === selectedChainId
+    if (!maxQuoteData || !selectedChain || !selectedToken) return 0;
+    console.log(maxQuoteData, selectedChain, selectedToken);
+    // @ts-ignore
+    const quoteArray = Array.isArray(maxQuoteData) ? maxQuoteData : maxQuoteData?.data;
+    if (!Array.isArray(quoteArray)) return 0;
+    const chainData = quoteArray.find(
+      (item: { chain_id: string; usdc: number }) => item.chain_id.toLowerCase() === selectedChain.toLowerCase()
     );
 
     if (!chainData) return 0;
-
-    // Get token amount (currently only USDC supported)
-    // Amount is already in base units, divide by 1e6 for display
     return chainData.usdc ? Number(chainData.usdc) / 1e6 : 0;
-  }, [maxQuoteData, selectedChainId, selectedToken]);
+  }, [maxQuoteData, selectedChain, selectedToken]);
 
-  // Handle max amount button click
   const handleMaxAmount = () => {
     if (maxWithdrawAmount > 0) {
       setAmount(maxWithdrawAmount.toString());
@@ -89,7 +88,7 @@ export const EVMWithdrawComponent: React.FC = () => {
     return Array.isArray(supportedChains)
       ? supportedChains.map((chain: any) => ({
           label: chain.name || String(chain.id),
-          value: chain.name || String(chain.id), // Use chain name as value for filtering tokens
+          value: chain.name || String(chain.id),
         }))
       : [];
   }, [supportedChains]);
@@ -97,7 +96,6 @@ export const EVMWithdrawComponent: React.FC = () => {
   const tokensList = useMemo(() => {
     if (!supportedTokens) return [];
     
-    // Filter tokens by selected chain name (selectedChain is the chain name like "Base", "Arbitrum", etc.)
     const filteredTokens = selectedChain
       ? supportedTokens.tokens.filter((token: any) => token.chain === selectedChain)
       : supportedTokens.tokens;
@@ -120,6 +118,7 @@ export const EVMWithdrawComponent: React.FC = () => {
   const withdrawMutation = useEVMWithdrawMutation({
     chainId: selectedChainId || 0,
     tokenAddress: selectedToken,
+    onStatusChange: setPollingStatus,
   });
 
   const handleWithdraw = async () => {
@@ -130,6 +129,7 @@ export const EVMWithdrawComponent: React.FC = () => {
 
     setSuccessData(null);
     setStepError(null);
+    setPollingStatus(null);
 
     try {
       setCurrentStep("withdrawing");
@@ -139,15 +139,14 @@ export const EVMWithdrawComponent: React.FC = () => {
           { amount: Number(amount) },
           {
             onSuccess: async (data: any) => {
-              // Invalidate relevant queries
               queryClient.invalidateQueries({
                 queryKey: evmQueryKeys.balance(selectedChain, evmAddress),
               });
 
               setAmount("");
-              // Extract tx hash from the response
               setSuccessData({ hash: data?.txHash || "pending" });
               setCurrentStep("idle");
+              setPollingStatus(null);
               resolve(data);
             },
             onError: (error) => {
@@ -162,6 +161,7 @@ export const EVMWithdrawComponent: React.FC = () => {
         error instanceof Error ? error.message : "An unknown error occurred"
       );
       setCurrentStep("idle");
+      setPollingStatus(null);
     }
   };
 
@@ -535,6 +535,34 @@ export const EVMWithdrawComponent: React.FC = () => {
               : "Withdraw"}
           </Button>
 
+          {/* Polling Status Alert */}
+          {pollingStatus && currentStep === "withdrawing" && (
+            <Alert.Root
+              status="info"
+              bg="primary.50"
+              border="1px solid"
+              borderColor="primary.200"
+              borderRadius={materialDesign3Theme.borderRadius.sm}
+              p={4}
+              overflow="hidden"
+              width="100%"
+            >
+              <Alert.Description width="100%" overflow="hidden">
+                <HStack gap={3} flexWrap="wrap">
+                  <Spinner size="sm" color="primary.500" />
+                  <Text
+                    color="primary.800"
+                    fontWeight="medium"
+                    fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                    wordBreak="break-word"
+                  >
+                    Status: {pollingStatus}
+                  </Text>
+                </HStack>
+              </Alert.Description>
+            </Alert.Root>
+          )}
+
           {/* Success Alert */}
           {successData ? (
             <Alert.Root
@@ -544,9 +572,11 @@ export const EVMWithdrawComponent: React.FC = () => {
               borderColor="success.200"
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
+              overflow="hidden"
+              width="100%"
             >
-              <Alert.Description>
-                <VStack align="stretch" gap={2}>
+              <Alert.Description width="100%" overflow="hidden">
+                <VStack align="stretch" gap={2} width="100%">
                   <Text
                     color="success.800"
                     fontWeight="medium"
@@ -556,7 +586,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                   >
                     Withdrawal successful!
                   </Text>
-                  <HStack>
+                  <HStack flexWrap="wrap" gap={1}>
                     <Text
                       fontSize={
                         materialDesign3Theme.typography.bodySmall.fontSize
@@ -577,6 +607,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                         fontFamily="mono"
                         textDecoration="underline"
                         _hover={{ color: "primary.700" }}
+                        wordBreak="break-all"
                       >
                         {successData.hash.slice(0, 8)}...
                         {successData.hash.slice(-8)}
@@ -588,6 +619,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
                         fontFamily="mono"
+                        wordBreak="break-all"
                       >
                         {successData.hash.slice(0, 8)}...
                         {successData.hash.slice(-8)}
@@ -608,12 +640,15 @@ export const EVMWithdrawComponent: React.FC = () => {
               borderColor="error.200"
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
+              overflow="hidden"
+              width="100%"
             >
-              <Alert.Description>
+              <Alert.Description width="100%" overflow="hidden">
                 <Text
                   color="error.800"
                   fontWeight="medium"
                   fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                  wordBreak="break-word"
                 >
                   {stepError ||
                     (withdrawMutation.error instanceof Error

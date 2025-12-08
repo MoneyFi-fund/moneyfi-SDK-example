@@ -26,8 +26,8 @@ interface WithdrawMutationOptions {
 }
 
 const POLLING_CONFIG = {
-  interval: 3000, // 3 seconds
-  maxAttempts: 40, // 2 minutes max (40 * 3s = 120s)
+  interval: 10000, // 10 seconds
+  maxAttempts: 40, // 6 minutes max (40 * 10s = 400s)
 } as const;
 
 /**

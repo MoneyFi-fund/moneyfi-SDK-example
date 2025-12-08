@@ -29,6 +29,7 @@ import { useThemeColors } from "@/provider/theme-provider";
 import { useGetUserStatisticsQuery } from "@/hooks/common/use-stats";
 import { useQueryClient } from "@tanstack/react-query";
 import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
+import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 
 // Utility function to format currency values
 const formatCurrency = (value: number): string => {
@@ -140,11 +141,16 @@ export default function Stats() {
   const handleRefreshStats = async () => {
     getUserStatsQuery.refetch();
 
-    // Also refetch wallet amount data
+    // Also refetch wallet amount and max quote data
     if (user?.address) {
-      await queryClient.invalidateQueries({
-        queryKey: walletAmountQueryKeys.assets(user.address),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: walletAmountQueryKeys.assets(user.address),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: maxQuoteQueryKeys.quote(user.address),
+        }),
+      ]);
     }
   };
   console.log(getUserStatsQuery.data)

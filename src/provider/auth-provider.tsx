@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEVM } from "@/provider/evm-provider";
+import { useAptos } from "@/provider/aptos-provider";
 import type {
   AuthState,
   AuthContextValue,
@@ -138,8 +139,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
-  const { connect, disconnect, account, connected, wallet } = useWallet();
+  const { connect, disconnect } = useWallet();
   const { address: evmAddress, isConnected: isEVMConnected } = useEVM();
+  const {
+    address: aptosAddress,
+    publicKey: aptosPublicKey,
+    isConnected: isAptosConnected,
+    walletName: aptosWalletName
+  } = useAptos();
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -150,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedUser = AuthStorage.getUser();
 
       // Authenticate if EITHER Aptos or EVM wallet is connected
-      const hasAptosWallet = connected && account;
+      const hasAptosWallet = isAptosConnected && aptosAddress;
       const hasEVMWallet = isEVMConnected && evmAddress;
       const isWalletConnected = hasAptosWallet || hasEVMWallet;
 
@@ -173,11 +180,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     initializeAuth();
-  }, [connected, account, isEVMConnected, evmAddress]);
+  }, [isAptosConnected, aptosAddress, isEVMConnected, evmAddress]);
 
   // Monitor wallet connection changes - authenticate on EITHER wallet connection
   useEffect(() => {
-    const hasAptosWallet = connected && account && wallet;
+    const hasAptosWallet = isAptosConnected && aptosAddress && aptosWalletName;
     const hasEVMWallet = isEVMConnected && evmAddress;
 
     if (hasAptosWallet || hasEVMWallet) {
@@ -187,13 +194,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (hasAptosWallet) {
         // Use Aptos wallet
         user = {
-          address: formatAddress(account.address.toString()),
-          publicKey: account.publicKey?.toString() || "",
-          walletName: `Aptos - ${wallet.name}`,
+          address: formatAddress(aptosAddress),
+          publicKey: aptosPublicKey || "",
+          walletName: `Aptos - ${aptosWalletName}`,
         };
       } else {
         // Use EVM wallet
         user = {
+          // @ts-ignore
           address: evmAddress,
           publicKey: "", // EVM doesn't have explicit public key like Aptos
           walletName: "EVM Wallet",
@@ -219,12 +227,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         type: "SET_AUTH_SUCCESS",
         payload: { user, session },
       });
-    } else if (!connected && !isEVMConnected) {
+    } else if (!isAptosConnected && !isEVMConnected) {
       // Both wallets disconnected, clear auth state
       AuthStorage.clearSession();
       dispatch({ type: "CLEAR_AUTH" });
     }
-  }, [connected, account, wallet, isEVMConnected, evmAddress]);
+  }, [isAptosConnected, aptosAddress, aptosPublicKey, aptosWalletName, isEVMConnected, evmAddress]);
 
   // Connect to specific wallet - this will open the wallet popup
   const signIn = useCallback(

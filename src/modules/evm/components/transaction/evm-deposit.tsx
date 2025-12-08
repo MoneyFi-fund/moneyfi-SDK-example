@@ -494,9 +494,11 @@ export const EVMDepositComponent: React.FC = () => {
               borderColor="success.200"
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
+              overflow="hidden"
+              width="100%"
             >
-              <Alert.Description>
-                <VStack align="stretch" gap={2}>
+              <Alert.Description width="100%" overflow="hidden">
+                <VStack align="stretch" gap={2} width="100%">
                   <Text
                     color="success.800"
                     fontWeight="medium"
@@ -506,7 +508,7 @@ export const EVMDepositComponent: React.FC = () => {
                   >
                     Deposit successful!
                   </Text>
-                  <HStack>
+                  <HStack flexWrap="wrap" gap={1}>
                     <Text
                       fontSize={
                         materialDesign3Theme.typography.bodySmall.fontSize
@@ -516,7 +518,7 @@ export const EVMDepositComponent: React.FC = () => {
                       Transaction:
                     </Text>
                     <Link
-                      href={`https://explorer.aptoslabs.com/txn/${successData.hash}?network=mainnet`}
+                      href={getTransactionExplorerUrl(successData.hash) || `https://explorer.aptoslabs.com/txn/${successData.hash}?network=mainnet`}
                       target="_blank"
                       rel="noopener noreferrer"
                       color="primary.600"
@@ -526,6 +528,7 @@ export const EVMDepositComponent: React.FC = () => {
                       fontFamily="mono"
                       textDecoration="underline"
                       _hover={{ color: "primary.700" }}
+                      wordBreak="break-all"
                     >
                       {successData.hash.slice(0, 8)}...
                       {successData.hash.slice(-8)}
@@ -545,12 +548,15 @@ export const EVMDepositComponent: React.FC = () => {
               borderColor="error.200"
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
+              overflow="hidden"
+              width="100%"
             >
-              <Alert.Description>
+              <Alert.Description width="100%" overflow="hidden">
                 <Text
                   color="error.800"
                   fontWeight="medium"
                   fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
+                  wordBreak="break-word"
                 >
                   {stepError ||
                     (depositMutation.error instanceof Error

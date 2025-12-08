@@ -8,17 +8,11 @@ import WalletConnectModal from "@/modules/dashboard/components/wallet-connect-mo
 import { CompactThemeToggle } from "@/components/theme-toggle";
 import { useThemeColors } from "@/provider/theme-provider";
 import { menuItems } from "@/utils/menu";
-import { useEVM } from "@/provider/evm-provider";
-import { useAuth } from "@/provider/auth-provider";
 
 export default function Header() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const location = useLocation();
   const { colors, cardColors } = useThemeColors();
-  console.log(location.pathname);
-  const { address: evmAddress } = useEVM();
-  const { user: aptosAddress } = useAuth();
-  console.log([evmAddress, aptosAddress]);
 
   return (
     <Box 

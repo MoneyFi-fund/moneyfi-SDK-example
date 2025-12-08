@@ -9,62 +9,22 @@ A modern **multi-chain** DeFi application SDK enabling users to interact with Mo
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Transaction Flow Documentation](#transaction-flow-documentation)
-  - [Account Initialization Flow Deep Dive](#account-initialization-flow-deep-dive)
-    - [Direct Transaction Initialization Architecture](#direct-transaction-initialization-architecture)
-    - [Account Initialization Process Flow](#account-initialization-process-flow)
-    - [1. Authentication and Validation Phase](#1-authentication-and-validation-phase)
-    - [2. SDK Initialization Request](#2-sdk-initialization-request)
-    - [3. Transaction Data Processing and Validation](#3-transaction-data-processing-and-validation)
-    - [4. Direct Transaction Execution](#4-direct-transaction-execution)
-    - [Error Handling and Cache Management](#error-handling-and-cache-management)
-    - [Key Differences from Deposit Flow](#key-differences-from-deposit-flow)
-  - [Deposit Flow Deep Dive](#deposit-flow-deep-dive)
-    - [Multi-Step Deposit Workflow Architecture](#multi-step-deposit-workflow-architecture)
-    - [Workflow Execution Sequence](#workflow-execution-sequence)
-    - [1. User Input Validation](#1-user-input-validation)
-    - [2. Creating User Phase](#2-creating-user-phase)
-    - [3. Smart Account Management System](#3-smart-account-management-system)
-    - [4. Deposit Execution Phase](#4-deposit-execution-phase)
-    - [Error Handling and Recovery Mechanisms](#error-handling-and-recovery-mechanisms)
-  - [Withdraw Component Deep Dive](#withdraw-component-deep-dive)
-    - [Signature-Based Withdrawal Architecture](#signature-based-withdrawal-architecture)
-    - [Withdrawal Process Flow](#withdrawal-process-flow)
-    - [1. Portfolio Validation System](#1-portfolio-validation-system)
-    - [2. Message Construction and Serialization](#2-message-construction-and-serialization)
-    - [3. Multi-Signature Support System](#3-multi-signature-support-system)
-    - [4. Asynchronous Status Polling](#4-asynchronous-status-polling)
-    - [Dynamic UI Feedback](#dynamic-ui-feedback)
-  - [Statistics Flow Deep Dive](#statistics-flow-deep-dive)
-    - [Portfolio Analytics Architecture](#portfolio-analytics-architecture)
-    - [Statistics Configuration System](#statistics-configuration-system)
-    - [Data Formatting Utilities](#data-formatting-utilities)
-    - [Statistics Refresh Flow](#statistics-refresh-flow)
-    - [Real-Time Statistics Display](#real-time-statistics-display)
-    - [Loading and Error States](#loading-and-error-states)
-    - [Manual Refresh Functionality](#manual-refresh-functionality)
+  - [Aptos Flows](#aptos-flows)
+    - [Account Initialization Flow Deep Dive](#account-initialization-flow-deep-dive)
+    - [Deposit Flow Deep Dive](#deposit-flow-deep-dive)
+    - [Withdraw Component Deep Dive](#withdraw-component-deep-dive)
+    - [Statistics Flow Deep Dive](#statistics-flow-deep-dive)
+  - [EVM Flows](#evm-flows)
+    - [EVM Deposit Flow Deep Dive](#evm-deposit-flow-deep-dive)
+    - [EVM Withdrawal Flow Deep Dive](#evm-withdrawal-flow-deep-dive)
 - [Hook Architecture Documentation](#hook-architecture-documentation)
   - [useDelayedBalanceRefetch Pattern](#usedelayedbalancerefetch-pattern)
   - [useGetTxInitializationAccountMutation Implementation](#usegettxinitializationaccountmutation-implementation)
   - [useDepositMutation Implementation](#usedepositmutation-implementation)
   - [useWithdrawMutation Implementation](#usewithdrawmutation-implementation)
   - [useGetUserStatisticsQuery Implementation](#usegetuserstatisticsquery-implementation)
+  - [EVM Hooks Implementation](#evm-hooks-implementation)
 - [SDK Integration Patterns](#sdk-integration-patterns)
-  - [MoneyFi SDK Instantiation](#moneyfi-sdk-instantiation)
-  - [Transaction Lifecycle Patterns](#transaction-lifecycle-patterns)
-    - [1. Deposit Transaction Flow](#1-deposit-transaction-flow)
-    - [2. Withdrawal Transaction Flow](#2-withdrawal-transaction-flow)
-  - [Query Management and Caching Strategy](#query-management-and-caching-strategy)
-    - [Query Key Patterns](#query-key-patterns)
-    - [Cache Invalidation Strategy](#cache-invalidation-strategy)
-  - [Error Handling Patterns](#error-handling-patterns)
-    - [Centralized Error Management](#centralized-error-management)
-    - [User-Friendly Error Messages](#user-friendly-error-messages)
-  - [Performance Optimization Patterns](#performance-optimization-patterns)
-    - [Optimistic Updates](#optimistic-updates)
-    - [Memory Management](#memory-management)
-  - [Development Best Practices](#development-best-practices)
-    - [Type Safety](#type-safety)
-    - [Configuration Management](#configuration-management)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -187,9 +147,9 @@ VITE_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 
 ## Transaction Flow Documentation
 
-The MoneyFi SDK implements a sophisticated three-layer transaction processing architecture designed for seamless DeFi operations on the Aptos blockchain:
+The MoneyFi SDK implements a sophisticated multi-layer transaction processing architecture designed for seamless DeFi operations on the Aptos and EVM blockchains:
 
-1. **Presentation Layer**: React components (`src/modules/dashboard/components/transaction/`)
+1. **Presentation Layer**: React components (`src/modules/dashboard/components/transaction/` and `src/modules/evm/components/transaction/`)
 2. **Hook Layer**: Custom React hooks with TanStack Query integration (`src/hooks/`)
 3. **SDK Layer**: MoneyFi TypeScript SDK integration (`@moneyfi/ts-sdk`)
 
@@ -200,28 +160,36 @@ graph TD
     A[User Interface] --> B[React Components]
     B --> C[Custom Hooks]
     C --> D[MoneyFi SDK]
-    D --> E[Aptos Blockchain]
+    D --> E[Aptos Blockchain / EVM Chains]
 
     B1[DepositComponent] --> C1[useDepositMutation]
     B2[WithdrawComponent] --> C2[useWithdrawMutation]
     B3[StatsComponent] --> C3[useGetUserStatisticsQuery]
+    B4[EVMDepositComponent] --> C4[useEVMDepositMutation]
+    B5[EVMWithdrawComponent] --> C5[useEVMWithdrawMutation]
 
     C1 --> D1[getDepositTxPayload]
     C2 --> D2[reqWithdraw]
     C3 --> D3[getUserStatistic]
+    C4 --> D4[getDepositTxPayload - EVM]
+    C5 --> D5[reqWithdraw - EVM]
 
-    D1 --> E1[Transaction Signing]
-    D2 --> E2[Status Polling]
-    D3 --> E3[Data Fetching]
+    D1 --> E1[Aptos Transaction Signing]
+    D2 --> E2[Aptos Status Polling]
+    D3 --> E3[Aptos Data Fetching]
+    D4 --> E4[EVM Transaction via wagmi]
+    D5 --> E5[EVM Status Polling]
 ```
 
-### Account Initialization Flow Deep Dive
+### Aptos Flows
 
-#### Direct Transaction Initialization Architecture
+#### Account Initialization Flow Deep Dive
 
 The `useGetTxInitializationAccountMutation` implements a streamlined approach to wallet account initialization, directly generating and executing initialization transactions without complex multi-agent signatures.
 
-#### Account Initialization Process Flow
+##### Direct Transaction Initialization Architecture
+
+##### Account Initialization Process Flow
 
 ```mermaid
 flowchart TD
@@ -246,12 +214,11 @@ flowchart TD
     style M fill:#e8f5e8
 ```
 
-#### 1. Authentication and Validation Phase
+##### 1. Authentication and Validation Phase
 
 The initialization process begins with comprehensive authentication checks:
 
 ```typescript
-// From use-create.tsx
 export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
@@ -271,24 +238,22 @@ export const useGetTxInitializationAccountMutation = () => {
 };
 ```
 
-#### 2. SDK Initialization Request
+##### 2. SDK Initialization Request
 
 The system requests initialization data from the MoneyFi SDK:
 
 ```typescript
-// From use-create.tsx - SDK initialization call
 const initializationData =
   await moneyFiAptos.getInitializationWalletAccountTxPayload({
     user_address: { Aptos: address },
   });
 ```
 
-#### 3. Transaction Data Processing and Validation
+##### 3. Transaction Data Processing and Validation
 
 The mutation intelligently handles different response types and validates transaction structure:
 
 ```typescript
-// From use-create.tsx - Transaction data validation
 if (
   initializationData &&
   typeof initializationData === "object" &&
@@ -309,21 +274,19 @@ if (
 return initializationData;
 ```
 
-#### 4. Direct Transaction Execution
+##### 4. Direct Transaction Execution
 
 Unlike the deposit flow's multi-agent approach, initialization uses direct transaction submission:
 
 ```typescript
-// From use-create.tsx - Direct transaction execution
 const response = await signAndSubmitTransaction(transaction);
 ```
 
-#### Error Handling and Cache Management
+##### Error Handling and Cache Management
 
 The initialization flow implements comprehensive error handling and cache invalidation:
 
 ```typescript
-// From use-create.tsx - Error handling and cache management
 onSuccess: (data, variables) => {
   queryClient.invalidateQueries({
     queryKey: createQueryKeys.initialization(variables.address),
@@ -335,16 +298,14 @@ onError: (error) => {
 retry: false,
 ```
 
-#### Key Differences from Deposit Flow
+##### Key Differences from Deposit Flow
 
 1. **Single-Step Process**: No multi-phase state management required
 2. **Direct Execution**: No multi-agent transaction complexity
 3. **Simplified Payload**: Uses Aptos wallet's `signAndSubmitTransaction` directly
 4. **Conditional Logic**: Handles both transaction and non-transaction responses
 
-### Deposit Flow Deep Dive
-
-#### Multi-Step Deposit Workflow Architecture
+#### Deposit Flow Deep Dive
 
 The `DepositComponent` implements a sophisticated state machine with four distinct phases:
 
@@ -356,7 +317,9 @@ type DepositState =
   | "depositing";
 ```
 
-#### Workflow Execution Sequence
+##### Multi-Step Deposit Workflow Architecture
+
+##### Workflow Execution Sequence
 
 ```mermaid
 flowchart TD
@@ -384,19 +347,17 @@ flowchart TD
     style O fill:#e8f5e8
 ```
 
-#### 1. User Input Validation
+##### 1. User Input Validation
 
 The deposit process begins with comprehensive input validation:
 
 ```typescript
-// From deposit.tsx
 const [amount, setAmount] = useState("");
 const [selectedToken, setSelectedToken] = useState<"USDC" | "USDT">("USDC");
 
 const tokenAddress =
   selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
 
-// Validation in handleDeposit
 const handleDeposit = async () => {
   if (!amount || !user?.address) {
     return;
@@ -405,12 +366,11 @@ const handleDeposit = async () => {
 };
 ```
 
-#### 2. Creating User Phase
+##### 2. Creating User Phase
 
 The system automatically creates a MoneyFi user account if it doesn't exist:
 
 ```typescript
-// From deposit.tsx
 setCurrentStep("creating-user");
 await new Promise<any>((resolve, reject) => {
   createUserMutation.mutate(
@@ -437,12 +397,11 @@ await new Promise<any>((resolve, reject) => {
 });
 ```
 
-#### 3. Smart Account Management System
+##### 3. Smart Account Management System
 
 The most sophisticated part of the deposit flow is the multi-agent transaction system for account initialization:
 
 ```typescript
-// From deposit.tsx - Multi-agent transaction construction
 const checkOrCreateAptosAccount = async () => {
   if (!user?.address || !aptosAccount?.address) {
     throw new Error("User address or Aptos account not available");
@@ -508,12 +467,11 @@ const checkOrCreateAptosAccount = async () => {
 };
 ```
 
-#### 4. Deposit Execution Phase
+##### 4. Deposit Execution Phase
 
 The final phase uses the MoneyFi SDK to generate and submit the deposit transaction:
 
 ```typescript
-// From deposit.tsx
 setCurrentStep("depositing");
 await depositMutation.mutate(
   { amount, tokenAddress },
@@ -538,7 +496,7 @@ await depositMutation.mutate(
 );
 ```
 
-#### Error Handling and Recovery Mechanisms
+##### Error Handling and Recovery Mechanisms
 
 The deposit flow implements comprehensive error handling:
 
@@ -548,7 +506,6 @@ The deposit flow implements comprehensive error handling:
 - **Retry Capability**: Users can restart the process without data corruption
 
 ```typescript
-// From deposit.tsx - Comprehensive error handling
 {
   (stepError ||
     depositMutation.isError ||
@@ -568,13 +525,13 @@ The deposit flow implements comprehensive error handling:
 }
 ```
 
-### Withdraw Component Deep Dive
-
-#### Signature-Based Withdrawal Architecture
+#### Withdraw Component Deep Dive
 
 The `WithdrawComponent` implements a sophisticated cryptographic signature system supporting both Ed25519 and Keyless signature schemes.
 
-#### Withdrawal Process Flow
+##### Signature-Based Withdrawal Architecture
+
+##### Withdrawal Process Flow
 
 ```mermaid
 flowchart TD
@@ -604,12 +561,11 @@ flowchart TD
     style Q fill:#e8f5e8
 ```
 
-#### 1. Portfolio Validation System
+##### 1. Portfolio Validation System
 
 The withdraw component uses `userStats.total_value` as the maximum withdrawable amount, providing users with a clear understanding of their total portfolio value:
 
 ```typescript
-// From withdraw.tsx - Portfolio validation using userStats
 const { data: userStats } = useGetUserStatisticsQuery(user?.address);
 
 // Get wallet amount for display only
@@ -630,12 +586,11 @@ const handleMaxAmount = () => {
 
 **Key Design Decision**: The maximum withdrawal amount is derived from `userStats.total_value` rather than individual token balances. This ensures users can withdraw up to their total portfolio value, with the backend automatically adjusting the actual withdrawal amount based on available token liquidity.
 
-#### 2. Message Construction and Serialization
+##### 2. Message Construction and Serialization
 
 Withdrawal messages are constructed with deterministic serialization:
 
 ```typescript
-// From withdraw.tsx - Message construction
 const amountNum = parseFloat(amount.toString());
 const nonce = Math.random().toString(36).substring(2, 15);
 
@@ -653,12 +608,11 @@ const withdrawSignature = await aptosSignMessage({
 });
 ```
 
-#### 3. Multi-Signature Support System
+##### 3. Multi-Signature Support System
 
 The component automatically detects and handles different signature types:
 
 ```typescript
-// From withdraw.tsx - Multi-signature support
 const isWalletFromEd25519 = isEd25519(aptosAccount?.publicKey.toString());
 
 if (!isWalletFromEd25519) {
@@ -687,12 +641,11 @@ if (!isWalletFromEd25519) {
 }
 ```
 
-#### 4. Asynchronous Status Polling with Dynamic Amount Adjustment
+##### 4. Asynchronous Status Polling with Dynamic Amount Adjustment
 
 The withdrawal process implements sophisticated status polling with automatic liquidity-based amount adjustment:
 
 ```typescript
-// From use-moneyfi-queries.ts - Status polling with dynamic amount adjustment
 const pollWithdrawStatus = async (): Promise<any> => {
   while (true) {
     const statusResponse = await moneyFiAptos.getWithdrawStatus(user.address);
@@ -750,12 +703,11 @@ const pollWithdrawStatus = async (): Promise<any> => {
 
 This ensures that withdrawals never fail due to insufficient token-specific liquidity, even when the user's total portfolio value is higher than the available amount for a specific token.
 
-#### Dynamic UI Feedback
+##### Dynamic UI Feedback
 
 The withdrawal interface provides comprehensive user feedback:
 
 ```typescript
-// From withdraw.tsx - Dynamic validation UI
 <Input
   type="number"
   value={amount}
@@ -778,18 +730,17 @@ The withdrawal interface provides comprehensive user feedback:
 }
 ```
 
-### Statistics Flow Deep Dive
-
-#### Portfolio Analytics Architecture
+#### Statistics Flow Deep Dive
 
 The `StatsComponent` provides comprehensive portfolio analytics with 9 key metrics including referral balance, implementing a sophisticated data presentation system with real-time refresh capabilities.
 
-#### Statistics Configuration System
+##### Portfolio Analytics Architecture
+
+##### Statistics Configuration System
 
 The component uses a configuration-driven approach for displaying metrics:
 
 ```typescript
-// From stats.tsx - Statistics configuration
 const statsConfig = [
   {
     key: "total_value",
@@ -875,12 +826,11 @@ const statsConfig = [
 ];
 ```
 
-#### Data Formatting Utilities
+##### Data Formatting Utilities
 
 The component implements utility functions for consistent data presentation:
 
 ```typescript
-// From stats.tsx - Utility functions
 const formatCurrency = (value: number): string => {
   if (value === 0) return "$0.00";
   if (value >= 1000000) {
@@ -897,7 +847,7 @@ const formatPercentage = (value: number): string => {
 };
 ```
 
-#### Statistics Refresh Flow
+##### Statistics Refresh Flow
 
 ```mermaid
 flowchart TD
@@ -918,12 +868,11 @@ flowchart TD
     style H fill:#ffcdd2
 ```
 
-#### Real-Time Statistics Display
+##### Real-Time Statistics Display
 
 The component renders statistics using a responsive grid system:
 
 ```typescript
-// From stats.tsx - Statistics grid rendering
 {
   getUserStatsQuery.isSuccess && getUserStatsQuery.data && (
     <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} gap={4}>
@@ -958,12 +907,11 @@ The component renders statistics using a responsive grid system:
 }
 ```
 
-#### Loading and Error States
+##### Loading and Error States
 
 The statistics component implements comprehensive state management:
 
 ```typescript
-// From stats.tsx - Loading state
 {
   getUserStatsQuery.isPending && (
     <Box display="flex" flexDirection="column" alignItems="center" p={8}>
@@ -1004,12 +952,11 @@ The statistics component implements comprehensive state management:
 }
 ```
 
-#### Manual Refresh Functionality
+##### Manual Refresh Functionality
 
 Users can manually refresh their statistics with instant feedback:
 
 ```typescript
-// From stats.tsx - Manual refresh implementation
 const handleRefreshStats = () => {
   getUserStatsQuery.refetch();
 };
@@ -1023,18 +970,353 @@ const handleRefreshStats = () => {
 </Button>;
 ```
 
+### EVM Flows
+
+#### EVM Deposit Flow Deep Dive
+
+The `useEVMDepositMutation` hook implements a sophisticated EVM deposit flow using wagmi for wallet integration and the MoneyFi SDK for transaction payload generation.
+
+##### EVM Deposit Process Flow
+
+```mermaid
+flowchart TD
+    A[User Input] --> B[Validate Amount & Token]
+    B --> C[Chain Validation]
+    C --> D[Switch to Target Chain]
+    D --> E[Get Deposit Payload from SDK]
+    E --> F[Generate ERC20 Approval Transaction]
+    F --> G[User Signs Approval]
+    G --> H{Approval Confirmed?}
+    H -->|No| I[Error State]
+    H -->|Yes| J[Submit Approval Transaction]
+    J --> K[Wait for Approval Confirmation]
+    K --> L[Generate Deposit Transaction Data]
+    L --> M[Send Deposit Transaction via wagmi]
+    M --> N[User Signs Deposit]
+    N --> O{Deposit Confirmed?}
+    O -->|No| I
+    O -->|Yes| P[Trigger Balance Refetch]
+    P --> Q[Immediate Refetch]
+    Q --> R[Delayed Refetch 5s]
+    R --> S[Success with Hash]
+
+    style A fill:#e1f5fe
+    style D fill:#fff3e0
+    style E fill:#fce4ec
+    style J fill:#ffeb3b
+    style S fill:#e8f5e8
+```
+
+##### 1. Authentication and Chain Setup
+
+The deposit process begins with authentication validation and chain switching:
+
+```typescript
+export const useEVMDepositMutation = ({
+  chainId,
+  sender: userAddress,
+}: EVMDepositMutationParams) => {
+  const { isAuthenticated, user } = useAuth();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
+  const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
+    String(chainId)
+  );
+  const moneyFi = useMoneyFiProvider();
+  const { writeContractAsync: evmApproveContract } = useWriteContract();
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+      tokenAddress,
+    }: {
+      amount: string;
+      tokenAddress: string;
+    }) => {
+      validateAuth(isAuthenticated, user);
+
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+
+      try {
+        // Switch to the correct chain before executing transactions
+        await switchChainAsync({ chainId: chainIdNum });
+```
+
+##### 2. SDK Payload Generation
+
+The SDK generates the deposit transaction payload with EVM-specific parameters:
+
+```typescript
+        // Get deposit transaction payload with dynamic chain_id
+        const payload = await moneyFi.getDepositTxPayload({
+          sender: userAddress,
+          chain_id: chainIdNum,
+          token_address: tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`,
+          amount: Number(Number(amount) * 1e6),
+          target_chain: 0,
+          type: PayloadType.Evm,
+        });
+
+        const targetTokenAddress = tokenAddress || `0xaf88d065e77c8cC2239327C5EDb3A432268e5831`;
+```
+
+##### 3. ERC20 Token Approval
+
+Before depositing, the user must approve the MoneyFi contract to spend their tokens:
+
+```typescript
+        // ERC20 approval transaction
+        const approve = await evmApproveContract({
+          address: targetTokenAddress as `0x${string}`,
+          abi: abiERC20,
+          functionName: "approve",
+          args: [(payload as any).evm_contract_address, BigInt(Math.floor(Number(amount) * 10**6))],
+          chainId: chainIdNum,
+        });
+        console.log("Approval transaction sent:", approve);
+```
+
+##### 4. Deposit Transaction Submission
+
+After approval is confirmed, the deposit transaction is submitted:
+
+```typescript
+        // Send deposit transaction using wagmi
+        const payloadData = (payload as any).tx;
+        const targetAddress = (payload as any).evm_contract_address;
+
+        const txHash = await sendTransactionAsync({
+          data: payloadData.startsWith("0x")
+            ? (payloadData as `0x${string}`)
+            : (`0x${payloadData}` as `0x${string}`),
+          to: targetAddress as `0x${string}`,
+          chainId: chainIdNum,
+        });
+
+        return { hash: txHash };
+      } catch (error) {
+        console.error("Deposit transaction failed:", error);
+        throw error;
+      }
+    },
+
+    onSuccess: async () => {
+      await triggerDelayedRefetch({
+        immediate: true,
+        delayed: true,
+      });
+    },
+
+    onError: (error) => {
+      console.error("Deposit mutation error:", error);
+      cleanup();
+    },
+
+    retry: false,
+  });
+};
+```
+
+##### 5. Balance Refetch with Delayed Confirmation
+
+After successful deposit, balance is updated immediately and again after 5 seconds for blockchain confirmation.
+
+#### EVM Withdrawal Flow Deep Dive
+
+The `useEVMWithdrawMutation` hook implements EVM withdrawal with status polling and automatic confirmation verification.
+
+##### EVM Withdrawal Process Flow
+
+```mermaid
+flowchart TD
+    A[User Input] --> B[Validate Amount]
+    B --> C[Chain Validation]
+    C --> D[Switch to Target Chain]
+    D --> E[Create Withdrawal Payload]
+    E --> F[SDK reqWithdraw Request]
+    F --> G[Receive Transaction Data]
+    G --> H[Switch to Target Chain if Different]
+    H --> I[Submit Withdrawal Transaction]
+    I --> J[User Signs Transaction]
+    J --> K{Withdrawal Confirmed?}
+    K -->|No| L[Error State]
+    K -->|Yes| M[Start Status Polling]
+    M --> N[Poll Withdrawal Status 10s intervals]
+    N --> O{Status Done?}
+    O -->|No| P[Continue Polling]
+    P --> N
+    O -->|Timeout| Q[Timeout Error]
+    O -->|Yes| R[Return Transaction Hash]
+    R --> S[Trigger Balance Refetch]
+    S --> T[Success State]
+
+    style A fill:#e1f5fe
+    style F fill:#fff3e0
+    style I fill:#fce4ec
+    style M fill:#ffeb3b
+    style T fill:#e8f5e8
+```
+
+##### 1. Withdrawal Request Initialization
+
+The withdrawal process begins with payload creation and withdrawal request submission:
+
+```typescript
+export const useEVMWithdrawMutation = ({
+  chainId,
+  onStatusChange,
+}: EVMWithdrawMutationParams) => {
+  const { isAuthenticated, user } = useAuth();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
+  const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
+    String(chainId)
+  );
+  const moneyFi = useMoneyFiProvider();
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+    }: {
+      amount: number;
+    }) => {
+      validateAuth(isAuthenticated, user);
+
+      const chainIdNum = Number(chainId) as 1 | 42161 | 8453 | 56;
+
+      try {
+        // Request withdraw payload from MoneyFi
+        const transformedPayload = {
+          type: PayloadType.Evm,
+          chain_id: chainIdNum,
+          amount: Number(amount * 1e6)
+        };
+
+        const response = await moneyFi.reqWithdraw(transformedPayload);
+```
+
+##### 2. Transaction Submission
+
+The withdrawal transaction is submitted to the target chain:
+
+```typescript
+        const txData = response as any;
+        const targetChainId = Number(txData.target_chain) as 1 | 42161 | 8453 | 56;
+
+        // Switch to the target chain before executing the transaction
+        await switchChainAsync({ chainId: targetChainId });
+
+        const txHash = await sendTransactionAsync({
+          data: txData.tx.startsWith("0x")
+            ? (txData.tx as `0x${string}`)
+            : (`0x${txData.tx}` as `0x${string}`),
+          to: txData.evm_contract_address as `0x${string}`,
+          chainId: targetChainId,
+        });
+```
+
+##### 3. Status Polling with Adaptive Intervals
+
+After submission, the system polls for withdrawal approval with 10-second intervals and 6-minute timeout:
+
+```typescript
+        const pollWithdrawStatus = async (): Promise<any> => {
+          const POLLING_INTERVAL = 10000; // 10 seconds interval
+          const POLLING_TIMEOUT = 400000; // 6 minutes timeout
+          const startTime = Date.now();
+          let attempts = 0;
+          const maxAttempts = Math.floor(POLLING_TIMEOUT / POLLING_INTERVAL);
+
+          while (attempts < maxAttempts) {
+            try {
+              const statusResponse = await moneyFi.getWithdrawStatus(
+                user.address
+              );
+
+              // Extract status string for UI display
+              const currentStatus = typeof statusResponse === "string"
+                ? statusResponse
+                : (statusResponse as any)?.status || "polling";
+
+              // Notify UI of current status
+              onStatusChange?.(currentStatus);
+
+              if (
+                (statusResponse as any) === "done" ||
+                (statusResponse as any)?.status === "done"
+              ) {
+                return { txHash, actualAmount: amount };
+              }
+
+              if (Date.now() - startTime > POLLING_TIMEOUT) {
+                throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
+              }
+
+              attempts++;
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+            } catch (error) {
+              console.error(`Polling attempt ${attempts + 1} failed:`, error);
+              onStatusChange?.("retrying");
+              attempts++;
+
+              if (attempts >= maxAttempts) {
+                throw new Error(`Withdrawal status polling failed after ${maxAttempts} attempts`);
+              }
+
+              await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+            }
+          }
+
+          throw new Error(`Withdrawal status polling timed out after ${POLLING_TIMEOUT / 1000} seconds`);
+        };
+
+        return await pollWithdrawStatus();
+      } catch (error) {
+        console.error("Withdraw process failed:", error);
+        throw error;
+      }
+    },
+
+    onSuccess: async () => {
+      try {
+        await triggerDelayedRefetch({
+          immediate: true,
+          delayed: true,
+        });
+      } catch (error) {
+        console.error("Balance refetch failed:", error);
+        throw error;
+      }
+    },
+
+    onError: (error) => {
+      console.error("Withdraw mutation error:", error);
+      cleanup();
+    },
+
+    retry: false,
+  });
+};
+```
+
+**Key Features**:
+- **Adaptive Polling**: 10-second intervals for balance between responsiveness and API load
+- **Timeout Protection**: 6-minute maximum polling time to prevent infinite loops
+- **Status Feedback**: Real-time status updates to UI via `onStatusChange` callback
+- **Error Recovery**: Automatic retry with detailed error messages
+- **Attempt Tracking**: Monitors total attempts and provides max attempt limits
+
 ---
 
 ## Hook Architecture Documentation
 
-The MoneyFi SDK implements a sophisticated hook-based architecture using TanStack Query for optimal state management, caching, and synchronization with the Aptos blockchain.
+The MoneyFi SDK implements a sophisticated hook-based architecture using TanStack Query for optimal state management, caching, and synchronization with the Aptos blockchain and EVM networks.
 
 ### useDelayedBalanceRefetch Pattern
 
 A core architectural pattern that implements optimistic updates with blockchain confirmation:
 
 ```typescript
-// From use-moneyfi-queries.ts - Delayed refetch configuration
 export const BALANCE_REFETCH_CONFIG = {
   immediate: 0, // Immediate optimistic refetch
   delayed: 4000, // 4 seconds delayed refetch for blockchain confirmation
@@ -1110,7 +1392,6 @@ export const useDelayedBalanceRefetch = () => {
 Streamlined mutation hook for direct wallet account initialization:
 
 ```typescript
-// From use-create.tsx - Account initialization mutation
 export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
@@ -1173,7 +1454,6 @@ export const useGetTxInitializationAccountMutation = () => {
 Advanced mutation hook with sophisticated transaction processing:
 
 ```typescript
-// From use-moneyfi-queries.ts - Deposit mutation implementation
 export const useDepositMutation = ({
   tokenAddress,
   sender: userAddress,
@@ -1263,7 +1543,6 @@ export const useDepositMutation = ({
 Sophisticated withdrawal mutation with status polling and dynamic amount adjustment:
 
 ```typescript
-// From use-moneyfi-queries.ts - Withdraw mutation with polling and amount adjustment
 export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { isAuthenticated, user } = useAuth();
   const { account: aptosAccount } = useWallet();
@@ -1403,7 +1682,6 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
 Optimized query hook for portfolio statistics:
 
 ```typescript
-// From use-stats.ts - Statistics query implementation
 export const statsQueryKeys = {
   all: ["stats"] as const,
   user: (address?: string) => [...statsQueryKeys.all, "user", address] as const,
@@ -1440,6 +1718,232 @@ export const useGetUserStatisticsQuery = (address?: string) => {
 };
 ```
 
+### EVM Hooks Implementation
+
+EVM hooks are located in `src/hooks/evm/use-moneyfi-evm-queries.ts` and implement multi-chain support with wagmi integration.
+
+#### useDelayedBalanceRefetchEVM Pattern
+
+Similar to Aptos pattern but with chain-specific refetch:
+
+```typescript
+export const useDelayedBalanceRefetchEVM = (chainId: string) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerDelayedRefetch = useCallback(
+    async (
+      options: { immediate?: boolean; delayed?: boolean } = {
+        immediate: true,
+        delayed: true,
+      }
+    ) => {
+      const queryKey = evmQueryKeys.balance(chainId, user?.address);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
+      try {
+        if (options.immediate) {
+          await queryClient.refetchQueries({
+            queryKey,
+            type: "active",
+          });
+        }
+
+        if (options.delayed) {
+          timeoutRef.current = setTimeout(async () => {
+            try {
+              await queryClient.refetchQueries({
+                queryKey,
+                type: "active",
+              });
+            } catch (error) {
+              console.error("Delayed balance refetch failed:", error);
+            } finally {
+              timeoutRef.current = null;
+            }
+          }, 5000); // 5 seconds for EVM
+        }
+      } catch (error) {
+        console.error("Immediate balance refetch failed:", error);
+      }
+    },
+    [queryClient, chainId, user?.address]
+  );
+
+  const cleanup = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  return { triggerDelayedRefetch, cleanup };
+};
+```
+
+#### useGetSupportedChains
+
+Fetches supported EVM chains from MoneyFi SDK:
+
+```typescript
+export const useGetSupportedChains = () => {
+  const moneyFi = useMoneyFiProvider();
+
+  return useQuery({
+    queryKey: evmQueryKeys.supportedChains(),
+    queryFn: async () => {
+      try {
+        const supportedChainsData = await moneyFi.getSupportedChains();
+        const evmChains = (supportedChainsData as any)?.evm || [];
+        const chains = evmChains.map((name: string) => ({
+          id: name,
+          name,
+          type: "evm",
+        }));
+
+        return chains;
+      } catch (error) {
+        console.error("Error fetching supported chains:", error);
+        throw error;
+      }
+    },
+    retry: 1,
+  });
+};
+```
+
+#### useGetSupportedTokens
+
+Fetches supported tokens across chains:
+
+```typescript
+export const useGetSupportedTokens = () => {
+  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+
+  return useQuery({
+    queryKey: moneyFiQueryKeys.supportedTokens(),
+    queryFn: async () => {
+      try {
+        const supportedTokens = await moneyFiAptos.getSupportedTokens();
+        return supportedTokens;
+      } catch (error) {
+        console.error("Error fetching supported tokens:", error);
+        throw error;
+      }
+    },
+    retry: 1,
+  });
+};
+```
+
+#### useEVMDepositMutation
+
+EVM-specific deposit mutation using wagmi:
+
+```typescript
+interface EVMDepositMutationParams {
+  chainId: string | number;
+  tokenAddress: string;
+  sender: string;
+  amount?: number;
+}
+
+export const useEVMDepositMutation = ({
+  chainId,
+  sender: userAddress,
+}: EVMDepositMutationParams) => {
+  const { isAuthenticated, user } = useAuth();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
+  const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
+    String(chainId)
+  );
+  const moneyFi = useMoneyFiProvider();
+  const { writeContractAsync: evmApproveContract } = useWriteContract();
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+      tokenAddress,
+    }: {
+      amount: string;
+      tokenAddress: string;
+    }) => {
+      validateAuth(isAuthenticated, user);
+      // Implementation as shown in EVM Deposit Flow section above
+    },
+    onSuccess: async () => {
+      await triggerDelayedRefetch({
+        immediate: true,
+        delayed: true,
+      });
+    },
+    onError: (error) => {
+      console.error("Deposit mutation error:", error);
+      cleanup();
+    },
+    retry: false,
+  });
+};
+```
+
+#### useEVMWithdrawMutation
+
+EVM-specific withdrawal mutation with polling:
+
+```typescript
+interface EVMWithdrawMutationParams {
+  chainId: string | number;
+  tokenAddress?: string;
+  amount?: number;
+  onStatusChange?: (status: string) => void;
+}
+
+export const useEVMWithdrawMutation = ({
+  chainId,
+  onStatusChange,
+}: EVMWithdrawMutationParams) => {
+  const { isAuthenticated, user } = useAuth();
+  const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
+  const { switchChainAsync } = useSwitchChain({ config: wagmiConfig });
+  const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetchEVM(
+    String(chainId)
+  );
+  const moneyFi = useMoneyFiProvider();
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+    }: {
+      amount: number;
+    }) => {
+      validateAuth(isAuthenticated, user);
+      // Implementation as shown in EVM Withdrawal Flow section above
+    },
+    onSuccess: async () => {
+      try {
+        await triggerDelayedRefetch({
+          immediate: true,
+          delayed: true,
+        });
+      } catch (error) {
+        console.error("Balance refetch failed:", error);
+        throw error;
+      }
+    },
+    onError: (error) => {
+      console.error("Withdraw mutation error:", error);
+      cleanup();
+    },
+    retry: false,
+  });
+};
+```
+
 ---
 
 ## SDK Integration Patterns
@@ -1453,7 +1957,7 @@ The MoneyFi SDK is consistently instantiated across all hooks using the integrat
 const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 ```
 
-**Note**: The SDK now uses `@moneyfi/ts-sdk` package (imported as `import { MoneyFi } from "@moneyfi/ts-sdk";`) instead of the previous `@moneyfi/ts-sdk` package.
+**Note**: The SDK now uses `@moneyfi/ts-sdk` package (imported as `import { MoneyFi } from "@moneyfi/ts-sdk";`) and supports both Aptos and EVM operations via `PayloadType` enum.
 
 ### Transaction Lifecycle Patterns
 
@@ -1544,6 +2048,20 @@ export const statsQueryKeys = {
   all: ["stats"] as const,
   user: (address?: string) => [...statsQueryKeys.all, "user", address] as const,
 };
+
+// From use-moneyfi-evm-queries.ts
+export const evmQueryKeys = {
+  all: ["evm"] as const,
+  balance: (chainId: string, address?: string) =>
+    [...evmQueryKeys.all, "balance", chainId, address] as const,
+  balanceRefreshing: (chainId: string, address?: string) =>
+    [...evmQueryKeys.balance(chainId, address), "refreshing"] as const,
+  supportedChains: () => [...evmQueryKeys.all, "supportedChains"] as const,
+  supportedTokens: (chainId?: string) =>
+    chainId
+      ? [...evmQueryKeys.all, "supportedTokens", chainId]
+      : [...evmQueryKeys.all, "supportedTokens"],
+};
 ```
 
 #### Cache Invalidation Strategy
@@ -1607,7 +2125,7 @@ The SDK implements optimistic updates for better user experience:
 // Immediate UI update followed by delayed blockchain confirmation
 await triggerDelayedRefetch({
   immediate: true, // Instant UI feedback
-  delayed: true, // Blockchain confirmation after 4 seconds
+  delayed: true, // Blockchain confirmation after 4 seconds (Aptos) or 5 seconds (EVM)
 });
 ```
 
@@ -1633,6 +2151,20 @@ interface DepositMutationParams {
   tokenAddress: string;
   sender: string;
   amount: BigInt;
+}
+
+interface EVMDepositMutationParams {
+  chainId: string | number;
+  tokenAddress: string;
+  sender: string;
+  amount?: number;
+}
+
+interface EVMWithdrawMutationParams {
+  chainId: string | number;
+  tokenAddress?: string;
+  amount?: number;
+  onStatusChange?: (status: string) => void;
 }
 
 type CreateWithdrawRequestPayload = {

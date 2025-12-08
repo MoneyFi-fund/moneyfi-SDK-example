@@ -208,6 +208,7 @@ count.txt
 # pnpm-lock.yaml
 
 # CLAUDE KIT
+CLAUDE.md
 .opencode/
 docs/
 plans/

@@ -142,6 +142,7 @@ interface EVMWithdrawMutationParams {
   chainId: string | number;
   tokenAddress?: string;
   amount?: number;
+  onStatusChange?: (status: string) => void;
 }
 
 export const useEVMDepositMutation = ({
@@ -235,6 +236,7 @@ export const useEVMDepositMutation = ({
 
 export const useEVMWithdrawMutation = ({
   chainId,
+  onStatusChange,
 }: EVMWithdrawMutationParams) => {
   const { isAuthenticated, user } = useAuth();
   const { sendTransactionAsync } = useSendTransaction({ config: wagmiConfig });
@@ -281,8 +283,8 @@ export const useEVMWithdrawMutation = ({
         });
 
         const pollWithdrawStatus = async (): Promise<any> => {
-          const POLLING_TIMEOUT = 30000; // 30 seconds timeout
-          const POLLING_INTERVAL = 3000; // 3 seconds interval
+          const POLLING_INTERVAL = 10000; // 10 seconds interval
+          const POLLING_TIMEOUT = 400000; // 6 minutes timeout
           const startTime = Date.now();
           let attempts = 0;
           const maxAttempts = Math.floor(POLLING_TIMEOUT / POLLING_INTERVAL);
@@ -290,8 +292,17 @@ export const useEVMWithdrawMutation = ({
           while (attempts < maxAttempts) {
             try {
               const statusResponse = await moneyFi.getWithdrawStatus(
+                // @ts-ignore
                 user.address
               );
+
+              // Extract status string for UI display
+              const currentStatus = typeof statusResponse === "string"
+                ? statusResponse
+                : (statusResponse as any)?.status || "polling";
+
+              // Notify UI of current status
+              onStatusChange?.(currentStatus);
 
               if (
                 (statusResponse as any) === "done" ||
@@ -308,6 +319,7 @@ export const useEVMWithdrawMutation = ({
               await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
             } catch (error) {
               console.error(`Polling attempt ${attempts + 1} failed:`, error);
+              onStatusChange?.("retrying");
               attempts++;
 
               if (attempts >= maxAttempts) {

@@ -2,10 +2,10 @@ import React from "react";
 import { Box, Container, VStack, Text, SimpleGrid } from "@chakra-ui/react";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
-import CheckWalletAccount from "../dashboard/components/check-wallet-account/check-wallet-account";
 import { EVMDepositComponent } from "./components/transaction/evm-deposit";
 import { EVMWithdrawComponent } from "./components/transaction/evm-withdraw";
 import Stats from "../stats/stats";
+import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
 
 export default function EVMPage() {
   const { colors } = useThemeColors();
@@ -23,6 +23,7 @@ export default function EVMPage() {
           </Text>
           <SimpleGrid columns={{ base: 1, md: 1, lg: 3 }} gap={6}>
             {/* <InitAccountComponent /> */}
+            <CheckWalletAccount />
             <EVMDepositComponent />
             <EVMWithdrawComponent />
           </SimpleGrid>
