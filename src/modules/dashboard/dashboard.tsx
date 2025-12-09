@@ -15,6 +15,7 @@ import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useAuth } from "@/provider/auth-provider";
 import Stats from "../stats/stats";
+import UserAssetAllocationComponent from "../evm/components/user-asset-allication";
 // import { CreatePartnershipComponent } from "./components/account/create-partnership";
 // import { InitAccountComponent } from "./components/account/init-account";
 
@@ -71,6 +72,7 @@ export const DashboardPage = () => {
               <DepositComponent />
               <WithdrawComponent />
             </SimpleGrid>
+            <UserAssetAllocationComponent />
             <Stats />
           </>
         </VStack>

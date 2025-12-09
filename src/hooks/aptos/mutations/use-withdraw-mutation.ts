@@ -26,8 +26,8 @@ interface WithdrawMutationOptions {
 }
 
 const POLLING_CONFIG = {
-  interval: 10000, // 10 seconds
-  maxAttempts: 40, // 6 minutes max (40 * 10s = 400s)
+  interval: 30000, // 30 seconds
+  maxAttempts: 40, // 20 minutes max (40 * 30s = 1200s)
 } as const;
 
 /**
@@ -122,7 +122,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
           }
 
           // Wait 3 seconds before checking again
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+          await new Promise((resolve) => setTimeout(resolve, 30000));
         }
       };
 

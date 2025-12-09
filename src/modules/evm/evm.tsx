@@ -6,6 +6,7 @@ import { EVMDepositComponent } from "./components/transaction/evm-deposit";
 import { EVMWithdrawComponent } from "./components/transaction/evm-withdraw";
 import Stats from "../stats/stats";
 import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
+import UserAssetAllocationComponent from "./components/user-asset-allication";
 
 export default function EVMPage() {
   const { colors } = useThemeColors();
@@ -27,6 +28,7 @@ export default function EVMPage() {
             <EVMDepositComponent />
             <EVMWithdrawComponent />
           </SimpleGrid>
+          <UserAssetAllocationComponent />
           <Stats />
 
           {/* <Supported /> */}
