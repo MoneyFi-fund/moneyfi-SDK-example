@@ -61,14 +61,19 @@ export const EVMDepositComponent: React.FC = () => {
   const { data: supportedTokens, isLoading: isTokensLoading } =
     useGetSupportedTokens();
 
+  // Allowed chains for EVM deposit
+  const DEPOSIT_ALLOWED_CHAINS = ["Arbitrum"];
+
   // Parse chains and tokens into selectable format
   const chainsList = useMemo(() => {
     if (!supportedChains) return [];
     return Array.isArray(supportedChains)
-      ? supportedChains.map((chain: any) => ({
-          label: chain.name || String(chain.id),
-          value: chain.name || String(chain.id),
-        }))
+      ? supportedChains
+          .filter((chain: any) => DEPOSIT_ALLOWED_CHAINS.includes(chain.name))
+          .map((chain: any) => ({
+            label: chain.name || String(chain.id),
+            value: chain.name || String(chain.id),
+          }))
       : [];
   }, [supportedChains]);
 
