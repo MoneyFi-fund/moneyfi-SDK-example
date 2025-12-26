@@ -23,6 +23,7 @@
     "@aptos-labs/ts-sdk": "^4.0.0",
     "@aptos-labs/wallet-adapter-react": "^7.0.4",
     "@chakra-ui/react": "^3.26.0",
+    "@hookform/resolvers": "^5.2.2",
     "@moneyfi/ts-sdk": "0.1.4",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.2.2",
@@ -42,12 +43,14 @@
     "quy-ts-sdk": "^0.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.68.0",
     "recharts": "^3.5.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.0.6",
     "viem": "2.x",
     "vite-plugin-eslint": "^1.8.1",
-    "wagmi": "^2.14.13"
+    "wagmi": "^2.14.13",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.12.3",

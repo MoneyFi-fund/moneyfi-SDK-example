@@ -45,7 +45,7 @@ const formatCurrency = (value: number): string => {
 
 // Utility function to format percentage
 const formatPercentage = (value: number): string => {
-  return `${value.toFixed(2)}%`;
+  return `${(value * 100).toFixed(2)}%`;
 };
 
 // Define statistics configuration with labels, icons, and formatting
@@ -114,8 +114,8 @@ const statsConfig = [
     borderColor: "error.200",
   },
   {
-    key: "apr_avg",
-    label: "Average APR",
+    key: "apy_avg",
+    label: "Average APY",
     icon: RiPercentLine,
     formatter: formatPercentage,
     color: "tertiary.600",
@@ -354,15 +354,6 @@ export default function Stats() {
                         letterSpacing="-0.02em"
                       >
                         {formattedValue}
-                      </Text>
-
-                      {/* Value Change Indicator (placeholder for future enhancement) */}
-                      <Text
-                        fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-                        color="neutral.500"
-                        mt={2}
-                      >
-                        Current value
                       </Text>
                     </Card.Body>
                   </Card.Root>

@@ -29,9 +29,10 @@ import { CHAIN_ID_MAP } from "@/config/chains";
 import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
 import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 import { statsQueryKeys } from "@/hooks/common";
+import { useTokenBalance, validateBalance } from "@/hooks/evm/use-token-balance";
 
 export const EVMDepositComponent: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { address: evmAddress, isConnected: isEVMConnected } = useEVM();
   const { cardColors, buttonColors } = useThemeColors();
   const queryClient = useQueryClient();
@@ -113,6 +114,31 @@ export const EVMDepositComponent: React.FC = () => {
     !!successData?.hash
   );
 
+  // Fetch token balance for selected token on selected chain
+  const {
+    displayBalance,
+    rawBalance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useTokenBalance({
+    tokenAddress: selectedToken || undefined,
+    userAddress: evmAddress || undefined,
+    chainId: selectedChainId,
+    enabled: !!selectedToken && !!evmAddress && !!selectedChainId,
+  });
+
+  // Validate balance
+  const { isInsufficientBalance, maxAmount } = useMemo(() => {
+    return validateBalance(amount, rawBalance, 6);
+  }, [amount, rawBalance]);
+
+  // MAX button handler
+  const handleMaxAmount = () => {
+    if (!rawBalance) return;
+    const max = (Number(rawBalance) / 1e6).toString();
+    setAmount(max);
+  };
+
   const handleDeposit = async () => {
     if (!amount || !selectedChain || !evmAddress) {
       setStepError("Please connect your EVM wallet first");
@@ -144,6 +170,9 @@ export const EVMDepositComponent: React.FC = () => {
               queryClient.invalidateQueries({
                 queryKey: maxQuoteQueryKeys.quote(evmAddress),
               });
+
+              // Refetch token balance
+              refetchBalance();
 
               setAmount("");
               setSuccessData({ hash: data.hash });
@@ -436,15 +465,47 @@ export const EVMDepositComponent: React.FC = () => {
             )}
           </VStack>
 
-          {/* Amount Input */}
+          {/* Amount Input with Balance Display */}
           <VStack align="stretch" gap={2}>
-            <Text
-              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
-              fontWeight="medium"
-              color={cardColors.textSecondary}
-            >
-              Amount
-            </Text>
+            <HStack justify="space-between" align="center">
+              <Text
+                fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                fontWeight="medium"
+                color={cardColors.textSecondary}
+              >
+                Amount
+              </Text>
+              <HStack gap={2}>
+                <Text
+                  fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  color={cardColors.textSecondary}
+                >
+                  Balance: {isBalanceLoading ? "..." : displayBalance}
+                </Text>
+                <Button
+                  size="xs"
+                  variant="outline"
+                  onClick={handleMaxAmount}
+                  disabled={!rawBalance || isBalanceLoading}
+                  borderRadius={materialDesign3Theme.borderRadius.sm}
+                  fontSize="xs"
+                  px={2}
+                  minH="24px"
+                  borderColor={cardColors.border}
+                  color={cardColors.text}
+                  _hover={{
+                    bg: cardColors.background,
+                    borderColor: "primary.500",
+                  }}
+                  _disabled={{
+                    opacity: 0.5,
+                    cursor: "not-allowed",
+                  }}
+                >
+                  MAX
+                </Button>
+              </HStack>
+            </HStack>
             <Input
               type="number"
               placeholder="0.00"
@@ -453,7 +514,7 @@ export const EVMDepositComponent: React.FC = () => {
               step="0.000001"
               min="0"
               border="1px solid"
-              borderColor={cardColors.border}
+              borderColor={isInsufficientBalance ? "error.500" : cardColors.border}
               borderRadius={materialDesign3Theme.borderRadius.sm}
               minH="48px"
               px={4}
@@ -462,21 +523,38 @@ export const EVMDepositComponent: React.FC = () => {
               _placeholder={{ color: cardColors.textSecondary }}
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               _hover={{
-                borderColor: cardColors.border,
+                borderColor: isInsufficientBalance ? "error.500" : cardColors.border,
               }}
               _focus={{
-                borderColor: "primary.500",
-                boxShadow: `0 0 0 2px rgba(63, 81, 181, 0.1)`,
+                borderColor: isInsufficientBalance ? "error.500" : "primary.500",
+                boxShadow: isInsufficientBalance
+                  ? "0 0 0 2px rgba(239, 68, 68, 0.1)"
+                  : "0 0 0 2px rgba(63, 81, 181, 0.1)",
                 outline: "none",
               }}
             />
+            {/* Insufficient Balance Warning */}
+            {isInsufficientBalance && (
+              <Text
+                fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                color="error.600"
+              >
+                Insufficient balance. Max: {maxAmount.toFixed(2)}
+              </Text>
+            )}
           </VStack>
           
           {/* Deposit Button */}
           <Button
             onClick={handleDeposit}
             loading={currentStep !== "idle"}
-            disabled={!amount || !selectedChain || !evmAddress || currentStep !== "idle"}
+            disabled={
+              !amount ||
+              !selectedChain ||
+              !evmAddress ||
+              currentStep !== "idle" ||
+              isInsufficientBalance
+            }
             bg={buttonColors.primary.background}
             color={buttonColors.primary.text}
             minH="48px"
@@ -505,7 +583,11 @@ export const EVMDepositComponent: React.FC = () => {
             }}
           >
             <span>
-              {currentStep === "depositing" ? "Depositing..." : "Deposit"}
+              {currentStep === "depositing"
+                ? "Depositing..."
+                : isInsufficientBalance
+                  ? "Insufficient Balance"
+                  : "Deposit"}
             </span>
           </Button>
 

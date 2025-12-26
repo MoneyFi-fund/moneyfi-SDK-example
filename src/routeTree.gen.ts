@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as EvmRouteImport } from './routes/evm'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EvmRoute = EvmRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/evm': typeof EvmRoute
+  '/history': typeof HistoryRoute
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/evm': typeof EvmRoute
+  '/history': typeof HistoryRoute
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/evm': typeof EvmRoute
+  '/history': typeof HistoryRoute
   '/stats': typeof StatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/evm' | '/stats'
+  fullPaths: '/' | '/dashboard' | '/evm' | '/history' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/evm' | '/stats'
-  id: '__root__' | '/' | '/dashboard' | '/evm' | '/stats'
+  to: '/' | '/dashboard' | '/evm' | '/history' | '/stats'
+  id: '__root__' | '/' | '/dashboard' | '/evm' | '/history' | '/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   EvmRoute: typeof EvmRoute
+  HistoryRoute: typeof HistoryRoute
   StatsRoute: typeof StatsRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/stats'
       fullPath: '/stats'
       preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/evm': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   EvmRoute: EvmRoute,
+  HistoryRoute: HistoryRoute,
   StatsRoute: StatsRoute,
 }
 export const routeTree = rootRouteImport
