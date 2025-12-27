@@ -19,6 +19,7 @@ A modern **multi-chain** DeFi application SDK enabling users to interact with Mo
     - [EVM Withdrawal Flow Deep Dive](#evm-withdrawal-flow-deep-dive)
 - [Hook Architecture Documentation](#hook-architecture-documentation)
   - [useDelayedBalanceRefetch Pattern](#usedelayedbalancerefetch-pattern)
+  - [useGetUserAssetBalance Implementation](#usegetuserassetbalance-implementation)
   - [useGetTxInitializationAccountMutation Implementation](#usegettxinitializationaccountmutation-implementation)
   - [useDepositMutation Implementation](#usedepositmutation-implementation)
   - [useWithdrawMutation Implementation](#usewithdrawmutation-implementation)
@@ -1385,6 +1386,107 @@ export const useDelayedBalanceRefetch = () => {
 
   return { triggerDelayedRefetch, cleanup };
 };
+```
+
+### useGetUserAssetBalance Implementation
+
+A React Query hook that fetches user's token balance for a specific chain from the MoneyFi SDK.
+
+**Location**: `src/hooks/common/use-user-asset-balance.ts`
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | `string` | Yes | User's wallet address (EVM or Aptos) |
+| `chainId` | `number` | Yes | Chain ID (e.g., 42161 for Arbitrum) |
+| `tokenAddress` | `string` | No | Token contract address (e.g., USDC address) |
+
+#### Returns
+
+React Query result object with:
+- `data.balance` - Float in display units (e.g., `0.832372`, NOT smallest units)
+- `isLoading` - Loading state
+- `isError` - Error state
+- `error` - Error object if any
+- `refetch()` - Manual refetch function
+
+#### Important: Balance Format
+
+**The SDK returns balance as a float already in display units.** No BigInt conversion or division by 10^6 is needed.
+
+```typescript
+// ❌ WRONG - Don't do this
+const rawBalance = BigInt(data?.balance || 0); // Error: can't convert float to BigInt
+const display = Number(data?.balance) / 1e6;   // Wrong: double-dividing
+
+// ✅ CORRECT - Use balance directly
+const displayBalance = data?.balance?.toFixed(2); // "0.83"
+```
+
+#### Usage Example
+
+```typescript
+import { useGetUserAssetBalance } from "@/hooks/common";
+
+const MyComponent = () => {
+  const { data, isLoading, refetch } = useGetUserAssetBalance({
+    address: evmAddress,
+    chainId: 42161, // Arbitrum
+    tokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" // USDC
+  });
+
+  // data.balance = 0.832372 (already in display units)
+  const displayBalance = isLoading ? "..." : (data?.balance?.toFixed(2) || "0.00");
+
+  return <Text>Balance: {displayBalance}</Text>;
+};
+```
+
+#### Implementation
+
+```typescript
+export const useGetUserAssetBalance = ({
+  address,
+  chainId,
+  tokenAddress,
+}: UseGetUserAssetBalanceParams) => {
+  const { isAuthenticated, user } = useAuth();
+  const moneyFi = useMoneyFiProvider();
+
+  return useQuery({
+    queryKey: moneyFiQueryKeys.userAssetBalance(address, chainId, tokenAddress),
+    queryFn: async () => {
+      if (!isAuthenticated || !user || !address || !chainId) {
+        throw new Error("Missing required parameters");
+      }
+      const balance = await moneyFi.getUserAssetBalance({
+        sender: address,
+        chain_id: chainId,
+        token: tokenAddress,
+      });
+      return balance;
+    },
+    enabled: !!(isAuthenticated && user && address && chainId),
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+```
+
+#### Query Configuration
+
+| Config | Value | Description |
+|--------|-------|-------------|
+| `staleTime` | 30 seconds | Data considered fresh for 30s |
+| `gcTime` | 5 minutes | Cached data garbage collected after 5min |
+| `enabled` | Conditional | Only runs when authenticated + address + chainId provided |
+
+#### Query Key
+
+```typescript
+moneyFiQueryKeys.userAssetBalance(address, chainId, tokenAddress)
+// => ["moneyfi", "userAssetBalance", address, chainId, tokenAddress]
 ```
 
 ### useGetTxInitializationAccountMutation Implementation
