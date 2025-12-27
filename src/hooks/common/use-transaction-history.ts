@@ -93,7 +93,8 @@ function mapSdkResponse(
     if (Array.isArray(nodes)) {
       return {
         nodes: nodes.map(mapTransaction),
-        totalCount: (resp.totalCount as number) ?? nodes.length,
+        // API returns `total` field, fallback to `totalCount` then nodes.length
+        totalCount: (resp.total as number) ?? (resp.totalCount as number) ?? nodes.length,
         page,
         limit,
       };
@@ -114,6 +115,14 @@ function mapTransaction(tx: unknown): Transaction {
   // Get chain_id/network as number
   const chainId = Number(t.network ?? t.chain_id ?? -1);
   const networkName = CHAIN_ID_MAP[chainId] ?? String(chainId);
+
+  // Get to_network for cross-chain transactions
+  const toChainId = t.to_network !== null && t.to_network !== undefined
+    ? Number(t.to_network)
+    : null;
+  const toNetworkName = toChainId !== null
+    ? (CHAIN_ID_MAP[toChainId] ?? String(toChainId))
+    : null;
 
   // Get token address and resolve to symbol using token config
   const tokenAddressOrSymbol = String(t.token ?? t.token_symbol ?? "USDC");
@@ -136,6 +145,8 @@ function mapTransaction(tx: unknown): Transaction {
     fromAddress: t.from ? String(t.from) : undefined,
     toAddress: t.to ? String(t.to) : undefined,
     chainId, // Store original chain_id for explorer URL
+    toChainId, // Store target chain_id for cross-chain display
+    toNetwork: toNetworkName, // Store target network name
   };
 }
 

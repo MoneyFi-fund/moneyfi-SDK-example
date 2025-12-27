@@ -220,6 +220,8 @@ export function getTokenDecimals(
  * Maps lowercase address -> symbol (for cases where chain_id is not available)
  */
 export const TOKEN_SYMBOL_MAP: Record<string, string> = {
+  // Placeholder/generic token address (used by some chains as default USDC)
+  "0x0000000000000000000000000000000000000001": "USDC",
   // Aptos
   "0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b": "USDC",
   "0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b": "USDT",

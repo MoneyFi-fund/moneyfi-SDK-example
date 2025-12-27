@@ -122,14 +122,37 @@ const TransactionCard: React.FC<{
             <Text fontWeight="600" fontSize="sm" color={cardColors.text}>
               {config.label}
             </Text>
-            <Badge
-              variant="outline"
-              colorPalette="gray"
-              fontSize="xs"
-              fontWeight="normal"
-            >
-              {getNetworkName(tx.chainId)}
-            </Badge>
+            {/* Network badge - shows cross-chain format when toNetwork exists */}
+            {tx.toNetwork ? (
+              <HStack gap={1}>
+                <Badge
+                  variant="outline"
+                  colorPalette="gray"
+                  fontSize="xs"
+                  fontWeight="normal"
+                >
+                  {getNetworkName(tx.chainId)}
+                </Badge>
+                <Text fontSize="xs" color={cardColors.textSecondary}>→</Text>
+                <Badge
+                  variant="outline"
+                  colorPalette="primary"
+                  fontSize="xs"
+                  fontWeight="normal"
+                >
+                  {tx.toNetwork}
+                </Badge>
+              </HStack>
+            ) : (
+              <Badge
+                variant="outline"
+                colorPalette="gray"
+                fontSize="xs"
+                fontWeight="normal"
+              >
+                {getNetworkName(tx.chainId)}
+              </Badge>
+            )}
           </VStack>
         </HStack>
 
@@ -225,14 +248,37 @@ const TransactionRow: React.FC<{
               {config.label}
             </Text>
           </HStack>
-          <Badge
-            variant="outline"
-            colorPalette="gray"
-            fontSize="10px"
-            fontWeight="normal"
-          >
-            {getNetworkName(tx.chainId)}
-          </Badge>
+          {/* Network badge - shows cross-chain format when toNetwork exists */}
+          {tx.toNetwork ? (
+            <HStack gap={1}>
+              <Badge
+                variant="outline"
+                colorPalette="gray"
+                fontSize="10px"
+                fontWeight="normal"
+              >
+                {getNetworkName(tx.chainId)}
+              </Badge>
+              <Text fontSize="10px" color={cardColors.textSecondary}>→</Text>
+              <Badge
+                variant="outline"
+                colorPalette="primary"
+                fontSize="10px"
+                fontWeight="normal"
+              >
+                {tx.toNetwork}
+              </Badge>
+            </HStack>
+          ) : (
+            <Badge
+              variant="outline"
+              colorPalette="gray"
+              fontSize="10px"
+              fontWeight="normal"
+            >
+              {getNetworkName(tx.chainId)}
+            </Badge>
+          )}
         </VStack>
       </HStack>
 

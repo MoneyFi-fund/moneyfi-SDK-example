@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   VStack,
   Text,
   Box,
-  Alert,
   Container,
   HStack,
   Button,
@@ -12,7 +11,7 @@ import {
   Badge,
   Flex,
 } from "@chakra-ui/react";
-import { BiRefresh, BiWallet, BiHistory } from "react-icons/bi";
+import { BiRefresh, BiWallet, BiHistory, BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useThemeColors } from "@/provider/theme-provider";
 import { useAuth } from "@/provider/auth-provider";
@@ -22,8 +21,10 @@ import { TransactionHistoryTable } from "./components/transaction-table";
 export const HistoryPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { cardColors, colors, buttonColors } = useThemeColors();
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 20;
   const { data, isLoading, isError, refetch, isFetching } =
-    useTransactionHistoryQuery();
+    useTransactionHistoryQuery(currentPage, limit);
 
   // Not authenticated - show connect wallet message
   if (!isAuthenticated) {
@@ -100,7 +101,19 @@ export const HistoryPage: React.FC = () => {
     );
   }
 
-  const transactionCount = data?.nodes?.length ?? 0;
+  // Use totalCount from API (e.g., 29), fallback to nodes.length
+  const totalCount = data?.totalCount ?? data?.nodes?.length ?? 0;
+  const totalPages = Math.ceil(totalCount / limit);
+  const startItem = totalCount > 0 ? (currentPage - 1) * limit + 1 : 0;
+  const endItem = Math.min(currentPage * limit, totalCount);
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
 
   return (
     <VStack align="stretch" gap={6} p={{ base: 4, md: 6 }}>
@@ -129,12 +142,12 @@ export const HistoryPage: React.FC = () => {
             >
               Transaction History
             </Text>
-            {!isLoading && transactionCount > 0 && (
+            {!isLoading && totalCount > 0 && (
               <Text
                 fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
                 color={cardColors.textSecondary}
               >
-                {transactionCount} transaction{transactionCount !== 1 ? "s" : ""} found
+                {totalCount} transaction{totalCount !== 1 ? "s" : ""} found
               </Text>
             )}
           </VStack>
@@ -164,7 +177,7 @@ export const HistoryPage: React.FC = () => {
       </Flex>
 
       {/* Transaction Summary Cards - Only show when data available */}
-      {!isLoading && !isError && data?.nodes && data.nodes.length > 0 && (
+      {/* {!isLoading && !isError && data?.nodes && data.nodes.length > 0 && (
         <HStack gap={4} flexWrap="wrap">
           <SummaryBadge
             label="Deposits"
@@ -186,6 +199,55 @@ export const HistoryPage: React.FC = () => {
             colorScheme="neutral"
           />
         </HStack>
+      )} */}
+
+      {/* Pagination Controls - Top position */}
+      {!isLoading && !isError && totalCount > limit && (
+        <Flex
+          justify="space-between"
+          align="center"
+          p={4}
+          bg={cardColors.background}
+          borderRadius={materialDesign3Theme.borderRadius.md}
+          border="1px solid"
+          borderColor={cardColors.border}
+        >
+          {/* Page Info */}
+          <Text fontSize="sm" color={cardColors.textSecondary}>
+            Showing {startItem}-{endItem} of {totalCount}
+          </Text>
+
+          {/* Page Controls */}
+          <HStack gap={2}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1 || isFetching}
+              borderRadius={materialDesign3Theme.borderRadius.xs}
+              borderColor={cardColors.border}
+            >
+              <Icon as={BiChevronLeft} />
+              Prev
+            </Button>
+
+            <Text fontSize="sm" fontWeight="medium" px={3} color={cardColors.text}>
+              Page {currentPage} of {totalPages}
+            </Text>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || isFetching}
+              borderRadius={materialDesign3Theme.borderRadius.xs}
+              borderColor={cardColors.border}
+            >
+              Next
+              <Icon as={BiChevronRight} />
+            </Button>
+          </HStack>
+        </Flex>
       )}
 
       {/* Transaction Table Card */}

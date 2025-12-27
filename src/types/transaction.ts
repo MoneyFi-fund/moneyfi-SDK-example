@@ -18,6 +18,10 @@ export interface Transaction {
   toAddress?: string;
   /** Original chain ID from API (-1 for Aptos, 8453 for Base, etc.) */
   chainId?: number;
+  /** Target network for cross-chain transactions (e.g., -1 for Aptos, 8453 for Base) */
+  toChainId?: number | null;
+  /** Target network name for cross-chain transactions */
+  toNetwork?: string | null;
 }
 
 export interface TransactionHistoryResponse {
