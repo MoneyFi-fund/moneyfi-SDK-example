@@ -22,6 +22,16 @@ export interface Transaction {
   toChainId?: number | null;
   /** Target network name for cross-chain transactions */
   toNetwork?: string | null;
+  /** Strategy name for distribute/transfer_fund actions */
+  strategyName?: string;
+  /** Protocol name for distribute/transfer_fund actions */
+  protocolName?: string;
+  /** Address type for 'to' address (e.g., "MoneyFi", "Wallet") */
+  toAddressType?: string;
+  /** Address type for 'from' address */
+  fromAddressType?: string;
+  /** Receiver address for transfer transactions */
+  receiver?: string;
 }
 
 export interface TransactionHistoryResponse {

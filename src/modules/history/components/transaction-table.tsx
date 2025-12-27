@@ -3,9 +3,7 @@ import {
   Box,
   Text,
   Spinner,
-  Badge,
   VStack,
-  HStack,
   Button,
   Link as ChakraLink,
   Icon,
@@ -15,24 +13,18 @@ import {
 import {
   BiRefresh,
   BiLinkExternal,
-  BiDownArrowCircle,
-  BiUpArrowCircle,
-  BiTransfer,
-  BiGift,
-  BiCoinStack,
   BiErrorCircle,
   BiHistory,
 } from "react-icons/bi";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
-import type { Transaction, TransactionAction } from "@/types/transaction";
+import type { Transaction } from "@/types/transaction";
 import {
   shortenAddress,
   formatValue,
   formatTransactionDate,
   formatTokenSymbol,
   getExplorerUrl,
-  getNetworkName,
 } from "../utils";
 
 interface TransactionHistoryTableProps {
@@ -42,47 +34,186 @@ interface TransactionHistoryTableProps {
   refetch: () => void;
 }
 
-// Action configuration with colors and icons
-const ACTION_CONFIG: Record<
-  TransactionAction,
-  { icon: React.ElementType; color: string; bgColor: string; label: string }
-> = {
-  deposit: {
-    icon: BiDownArrowCircle,
-    color: "success.600",
-    bgColor: "success.50",
-    label: "Deposit",
-  },
-  withdraw: {
-    icon: BiUpArrowCircle,
-    color: "error.600",
-    bgColor: "error.50",
-    label: "Withdraw",
-  },
-  rebalance: {
-    icon: BiTransfer,
-    color: "tertiary.600",
-    bgColor: "tertiary.50",
-    label: "Rebalance",
-  },
-  claim: {
-    icon: BiGift,
-    color: "secondary.600",
-    bgColor: "secondary.50",
-    label: "Claim",
-  },
-  distribute: {
-    icon: BiCoinStack,
-    color: "warning.600",
-    bgColor: "warning.50",
-    label: "Distribute",
-  },
-  transfer_fund: {
-    icon: BiTransfer,
-    color: "primary.600",
-    bgColor: "primary.50",
-    label: "Transfer",
-  },
+/**
+ * Capitalize first character of a string
+ */
+const capitalize = (str: string): string => {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+/**
+ * Format activity text based on transaction type
+ * Follows moneyFi-dapp RecentTransaction.tsx format
+ */
+const formatActivity = (tx: Transaction): React.ReactNode => {
+  const amount = formatValue(tx.value);
+  const token = formatTokenSymbol(tx.token);
+  const fromAddr = tx.fromAddress ? shortenAddress(tx.fromAddress, 4) : "";
+  const toAddr = tx.toAddress ? shortenAddress(tx.toAddress, 4) : "";
+  const toNetwork = tx.toNetwork ? capitalize(tx.toNetwork) : null;
+
+  // Format protocol/strategy for transfer/distribute (capitalize protocol name)
+  const protocolName = tx.protocolName ? capitalize(tx.protocolName) : "";
+  const strategyInfo = protocolName && tx.strategyName
+    ? `${protocolName} - ${tx.strategyName}`
+    : tx.strategyName || protocolName || "";
+
+  // Destination description (MoneyFi, strategy, or address)
+  const destination = tx.toAddressType || (toAddr ? toAddr : "MoneyFi");
+
+  switch (tx.action) {
+    case "deposit":
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">Deposit</Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          from {fromAddr}{" "}
+          to {destination}
+        </Text>
+      );
+
+    case "withdraw":
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">Withdraw</Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          from {fromAddr}
+          {toNetwork && (
+            <>
+              {" "}to{" "}
+              <Text as="span" fontWeight="600" color="primary.500">{toNetwork}</Text>
+            </>
+          )}
+        </Text>
+      );
+
+    case "transfer_fund":
+    case "distribute":
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">
+            {tx.action === "transfer_fund" ? "Transfer" : "Distributed"}
+          </Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          ➜ {fromAddr}{" "}
+          {strategyInfo && (
+            <>
+              ➜ <Text as="span" fontWeight="600">{strategyInfo}</Text>
+            </>
+          )}
+          {toNetwork && !strategyInfo && (
+            <>
+              ➜ <Text as="span" fontWeight="600" color="primary.500">{toNetwork}</Text>
+            </>
+          )}
+        </Text>
+      );
+
+    case "rebalance":
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">Rebalance</Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          of {fromAddr || toAddr}
+        </Text>
+      );
+
+    case "claim":
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">Claim</Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          from {toAddr}{" "}
+          to {fromAddr}
+        </Text>
+      );
+
+    default:
+      return (
+        <Text as="span">
+          <Text as="span" fontWeight="600">{tx.action}</Text>{" "}
+          <Text as="span" fontWeight="700">{amount} {token}</Text>{" "}
+          {fromAddr && <>from {fromAddr}</>}
+        </Text>
+      );
+  }
+};
+
+/**
+ * Get text color based on action type
+ */
+const getActionTextColor = (action: string): string => {
+  switch (action) {
+    case "deposit":
+    case "claim":
+    case "distribute":
+    case "transfer_fund":
+      return "success.600";
+    case "withdraw":
+    case "rebalance":
+      return "error.600";
+    default:
+      return "inherit";
+  }
+};
+
+// Transaction Row for Desktop Table View
+const TransactionRow: React.FC<{
+  tx: Transaction;
+  index: number;
+  cardColors: ReturnType<typeof useThemeColors>["cardColors"];
+}> = ({ tx, index, cardColors }) => {
+  const explorerUrl = getExplorerUrl(tx.chainId, tx.hash);
+  const textColor = getActionTextColor(tx.action);
+
+  const rowContent = (
+    <Grid
+      templateColumns="1fr auto"
+      gap={4}
+      px={4}
+      py={3}
+      bg={index % 2 === 0 ? "transparent" : cardColors.background}
+      _hover={{
+        bg: "primary.50",
+        _dark: { bg: "whiteAlpha.50" },
+      }}
+      transition="background 0.2s"
+      alignItems="center"
+    >
+      {/* Activity */}
+      <Text fontSize="sm" color={textColor}>
+        {formatActivity(tx)}
+      </Text>
+
+      {/* Time */}
+      <Text
+        fontSize="sm"
+        color={cardColors.textSecondary}
+        textAlign="right"
+        whiteSpace="nowrap"
+      >
+        {formatTransactionDate(tx.time)}
+      </Text>
+    </Grid>
+  );
+
+  // Wrap in link if explorer URL available
+  if (explorerUrl) {
+    return (
+      <ChakraLink
+        href={explorerUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        _hover={{ textDecoration: "none" }}
+        display="block"
+      >
+        {rowContent}
+      </ChakraLink>
+    );
+  }
+
+  return rowContent;
 };
 
 // Transaction Card for Mobile View
@@ -90,12 +221,10 @@ const TransactionCard: React.FC<{
   tx: Transaction;
   cardColors: ReturnType<typeof useThemeColors>["cardColors"];
 }> = ({ tx, cardColors }) => {
-  const config = ACTION_CONFIG[tx.action] || ACTION_CONFIG.deposit;
   const explorerUrl = getExplorerUrl(tx.chainId, tx.hash);
-  const isDeposit = tx.action === "deposit";
-  const isWithdraw = tx.action === "withdraw";
+  const textColor = getActionTextColor(tx.action);
 
-  return (
+  const cardContent = (
     <Box
       bg={cardColors.background}
       borderRadius={materialDesign3Theme.borderRadius.md}
@@ -108,226 +237,55 @@ const TransactionCard: React.FC<{
         borderColor: "primary.200",
       }}
     >
-      <Flex justify="space-between" align="flex-start" mb={3}>
-        {/* Action Badge */}
-        <HStack gap={2}>
-          <Box
-            bg={config.bgColor}
-            p={2}
-            borderRadius={materialDesign3Theme.borderRadius.sm}
-          >
-            <Icon as={config.icon} color={config.color} boxSize={5} />
-          </Box>
-          <VStack align="start" gap={0}>
-            <Text fontWeight="600" fontSize="sm" color={cardColors.text}>
-              {config.label}
-            </Text>
-            {/* Network badge - shows cross-chain format when toNetwork exists */}
-            {tx.toNetwork ? (
-              <HStack gap={1}>
-                <Badge
-                  variant="outline"
-                  colorPalette="gray"
-                  fontSize="xs"
-                  fontWeight="normal"
-                >
-                  {getNetworkName(tx.chainId)}
-                </Badge>
-                <Text fontSize="xs" color={cardColors.textSecondary}>→</Text>
-                <Badge
-                  variant="outline"
-                  colorPalette="primary"
-                  fontSize="xs"
-                  fontWeight="normal"
-                >
-                  {tx.toNetwork}
-                </Badge>
-              </HStack>
-            ) : (
-              <Badge
-                variant="outline"
-                colorPalette="gray"
-                fontSize="xs"
-                fontWeight="normal"
-              >
-                {getNetworkName(tx.chainId)}
-              </Badge>
-            )}
-          </VStack>
-        </HStack>
+      {/* Activity */}
+      <Text fontSize="sm" color={textColor} mb={2}>
+        {formatActivity(tx)}
+      </Text>
 
-        {/* Amount */}
-        <VStack align="end" gap={0}>
+      {/* Time and Link */}
+      <Flex
+        justify="space-between"
+        align="center"
+        pt={2}
+        borderTop="1px solid"
+        borderColor={cardColors.border}
+      >
+        <Text fontSize="xs" color={cardColors.textSecondary}>
+          {formatTransactionDate(tx.time)}
+        </Text>
+        {tx.hash && explorerUrl && (
           <Text
-            fontWeight="700"
-            fontSize="md"
-            color={
-              isDeposit ? "success.600" : isWithdraw ? "error.600" : cardColors.text
-            }
-          >
-            {isDeposit ? "+" : isWithdraw ? "-" : ""}
-            {formatValue(tx.value)} {formatTokenSymbol(tx.token)}
-          </Text>
-          <Text fontSize="xs" color={cardColors.textSecondary}>
-            {formatTransactionDate(tx.time)}
-          </Text>
-        </VStack>
-      </Flex>
-
-      {/* Transaction Hash */}
-      {tx.hash && explorerUrl && (
-        <Flex
-          justify="space-between"
-          align="center"
-          pt={3}
-          borderTop="1px solid"
-          borderColor={cardColors.border}
-        >
-          <Text fontSize="xs" color={cardColors.textSecondary}>
-            Transaction
-          </Text>
-          <ChakraLink
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            color="primary.500"
             fontSize="xs"
             fontFamily="mono"
+            color="primary.500"
             display="inline-flex"
             alignItems="center"
             gap={1}
-            _hover={{ textDecoration: "underline" }}
           >
-            {shortenAddress(tx.hash, 8)}
+            {shortenAddress(tx.hash, 6)}
             <BiLinkExternal size={12} />
-          </ChakraLink>
-        </Flex>
-      )}
+          </Text>
+        )}
+      </Flex>
     </Box>
   );
-};
 
-// Transaction Row for Desktop Table View
-const TransactionRow: React.FC<{
-  tx: Transaction;
-  index: number;
-  cardColors: ReturnType<typeof useThemeColors>["cardColors"];
-}> = ({ tx, index, cardColors }) => {
-  const config = ACTION_CONFIG[tx.action] || ACTION_CONFIG.deposit;
-  const explorerUrl = getExplorerUrl(tx.chainId, tx.hash);
-  const isDeposit = tx.action === "deposit";
-  const isWithdraw = tx.action === "withdraw";
-
-  return (
-    <Grid
-      templateColumns="1fr 1fr 1.5fr 1fr"
-      gap={4}
-      px={4}
-      py={3}
-      bg={index % 2 === 0 ? "transparent" : cardColors.background}
-      _hover={{
-        bg: "primary.50",
-        _dark: { bg: "whiteAlpha.50" },
-      }}
-      transition="background 0.2s"
-      alignItems="center"
-    >
-      {/* Action */}
-      <HStack gap={3}>
-        <Box
-          bg={config.bgColor}
-          p={2}
-          borderRadius={materialDesign3Theme.borderRadius.xs}
-          display={{ base: "none", lg: "flex" }}
-        >
-          <Icon as={config.icon} color={config.color} boxSize={4} />
-        </Box>
-        <VStack align="start" gap={0}>
-          <HStack gap={2}>
-            <Text fontWeight="600" fontSize="sm" color={cardColors.text}>
-              {config.label}
-            </Text>
-          </HStack>
-          {/* Network badge - shows cross-chain format when toNetwork exists */}
-          {tx.toNetwork ? (
-            <HStack gap={1}>
-              <Badge
-                variant="outline"
-                colorPalette="gray"
-                fontSize="10px"
-                fontWeight="normal"
-              >
-                {getNetworkName(tx.chainId)}
-              </Badge>
-              <Text fontSize="10px" color={cardColors.textSecondary}>→</Text>
-              <Badge
-                variant="outline"
-                colorPalette="primary"
-                fontSize="10px"
-                fontWeight="normal"
-              >
-                {tx.toNetwork}
-              </Badge>
-            </HStack>
-          ) : (
-            <Badge
-              variant="outline"
-              colorPalette="gray"
-              fontSize="10px"
-              fontWeight="normal"
-            >
-              {getNetworkName(tx.chainId)}
-            </Badge>
-          )}
-        </VStack>
-      </HStack>
-
-      {/* Amount */}
-      <Text
-        fontWeight="600"
-        fontSize="sm"
-        color={
-          isDeposit ? "success.600" : isWithdraw ? "error.600" : cardColors.text
-        }
-        textAlign="left"
+  // Wrap in link if explorer URL available
+  if (explorerUrl) {
+    return (
+      <ChakraLink
+        href={explorerUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        _hover={{ textDecoration: "none" }}
+        display="block"
       >
-        {isDeposit ? "+" : isWithdraw ? "-" : ""}
-        {formatValue(tx.value)} {formatTokenSymbol(tx.token)}
-      </Text>
+        {cardContent}
+      </ChakraLink>
+    );
+  }
 
-      {/* Hash */}
-      <Box textAlign="left">
-        {tx.hash && explorerUrl ? (
-          <ChakraLink
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            color="primary.500"
-            fontSize="sm"
-            fontFamily="mono"
-            display="inline-flex"
-            alignItems="center"
-            gap={1}
-            _hover={{ textDecoration: "underline" }}
-          >
-            {shortenAddress(tx.hash, 8)}
-            <BiLinkExternal size={12} />
-          </ChakraLink>
-        ) : (
-          <Text color={cardColors.textSecondary}>-</Text>
-        )}
-      </Box>
-
-      {/* Time */}
-      <Text
-        fontSize="sm"
-        color={cardColors.textSecondary}
-        textAlign="right"
-      >
-        {formatTransactionDate(tx.time)}
-      </Text>
-    </Grid>
-  );
+  return cardContent;
 };
 
 export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = ({
@@ -349,15 +307,11 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         px={8}
         minH="300px"
       >
-        <Box
-          position="relative"
-          mb={4}
-        >
+        <Box position="relative" mb={4}>
           <Spinner
             size="xl"
             color="primary.500"
             borderWidth="4px"
-            speed="0.8s"
           />
         </Box>
         <Text
@@ -389,12 +343,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         px={8}
         minH="300px"
       >
-        <Box
-          bg="error.50"
-          p={4}
-          borderRadius="full"
-          mb={4}
-        >
+        <Box bg="error.50" p={4} borderRadius="full" mb={4}>
           <Icon as={BiErrorCircle} color="error.500" boxSize={10} />
         </Box>
         <Text
@@ -474,7 +423,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
       <Box display={{ base: "none", md: "block" }}>
         {/* Table Header */}
         <Grid
-          templateColumns="1fr 1fr 1.5fr 1fr"
+          templateColumns="1fr auto"
           gap={4}
           px={4}
           py={3}
@@ -489,27 +438,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
             textTransform="uppercase"
             letterSpacing="wider"
           >
-            Action
-          </Text>
-          <Text
-            fontSize="xs"
-            fontWeight="600"
-            color={cardColors.textSecondary}
-            textTransform="uppercase"
-            letterSpacing="wider"
-            textAlign="left"
-          >
-            Amount
-          </Text>
-          <Text
-            fontSize="xs"
-            fontWeight="600"
-            color={cardColors.textSecondary}
-            textTransform="uppercase"
-            letterSpacing="wider"
-            textAlign="left"
-          >
-            Transaction
+            System Activities
           </Text>
           <Text
             fontSize="xs"
