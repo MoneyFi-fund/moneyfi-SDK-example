@@ -29,7 +29,7 @@ import { CHAIN_ID_MAP } from "@/config/chains";
 import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
 import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 import { statsQueryKeys } from "@/hooks/common";
-import { useTokenBalance, validateBalance } from "@/hooks/evm/use-token-balance";
+import { useGetUserAssetBalance } from "@/hooks/common";
 
 export const EVMDepositComponent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -114,29 +114,31 @@ export const EVMDepositComponent: React.FC = () => {
     !!successData?.hash
   );
 
-  // Fetch token balance for selected token on selected chain
+  // Fetch user asset balance from SDK
   const {
-    displayBalance,
-    rawBalance,
+    data: assetBalance,
     isLoading: isBalanceLoading,
     refetch: refetchBalance,
-  } = useTokenBalance({
-    tokenAddress: selectedToken || undefined,
-    userAddress: evmAddress || undefined,
+  } = useGetUserAssetBalance({
+    address: evmAddress || undefined,
     chainId: selectedChainId,
-    enabled: !!selectedToken && !!evmAddress && !!selectedChainId,
+    tokenAddress: selectedToken || undefined,
   });
+
+  // Derive display values from SDK response (SDK returns balance in display units as float)
+  const balanceValue = Number(assetBalance?.balance) || 0;
+  const displayBalance = balanceValue.toFixed(2);
 
   // Validate balance
   const { isInsufficientBalance, maxAmount } = useMemo(() => {
-    return validateBalance(amount, rawBalance, 6);
-  }, [amount, rawBalance]);
+    const numAmount = Number(amount) || 0;
+    return { isInsufficientBalance: numAmount > balanceValue, maxAmount: balanceValue };
+  }, [amount, balanceValue]);
 
   // MAX button handler
   const handleMaxAmount = () => {
-    if (!rawBalance) return;
-    const max = (Number(rawBalance) / 1e6).toString();
-    setAmount(max);
+    if (!assetBalance?.balance) return;
+    setAmount(balanceValue.toString());
   };
 
   const handleDeposit = async () => {
@@ -486,7 +488,7 @@ export const EVMDepositComponent: React.FC = () => {
                   size="xs"
                   variant="outline"
                   onClick={handleMaxAmount}
-                  disabled={!rawBalance || isBalanceLoading}
+                  disabled={!assetBalance?.balance || isBalanceLoading}
                   borderRadius={materialDesign3Theme.borderRadius.sm}
                   fontSize="xs"
                   px={2}

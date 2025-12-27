@@ -23,6 +23,9 @@ importers:
       '@moneyfi/ts-sdk':
         specifier: 0.1.4
         version: 0.1.4
+      '@mvstp.3.fn/moneyfi-ts-sdk':
+        specifier: ^0.2.7
+        version: 0.2.7
       '@tailwindcss/vite':
         specifier: ^4.0.6
         version: 4.1.17(vite@6.4.1(@types/node@24.10.2)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.3)(sass@1.93.3)(tsx@4.21.0))
@@ -62,9 +65,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      moneyfi-ts-sdk:
-        specifier: ^0.2.6
-        version: 0.2.6
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -1848,6 +1848,10 @@ packages:
 
   '@moneyfi/ts-sdk@0.1.4':
     resolution: {integrity: sha512-kEwvT/5oV+78egtpb+Vl1xGKoTtLjhp1umcRUUVU/xUXiivaU2U5VGFq2dEhqCeNsWBY4PGuxRnpscAk000LGw==}
+    engines: {node: '>=20.0.0'}
+
+  '@mvstp.3.fn/moneyfi-ts-sdk@0.2.7':
+    resolution: {integrity: sha512-E7ZGESUt8//SrBGbR2smqywpedUYQ3fQ4cvGHuArANT4I/akIsHqO/bLif1lk8ueDW6GUTRMIq266dc6qyU08A==}
     engines: {node: '>=20.0.0'}
 
   '@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1':
@@ -5184,10 +5188,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  moneyfi-ts-sdk@0.2.6:
-    resolution: {integrity: sha512-Z/WK+x1cFdhBvPAo7mM2l+SIJD92+JYqUOtGYi67ScAU5MZoRpgiHmrWHV5wuJq2NLUxnxVHDSQHZCw2L84yAA==}
-    engines: {node: '>=20.0.0'}
 
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
@@ -8689,6 +8689,8 @@ snapshots:
       - supports-color
 
   '@moneyfi/ts-sdk@0.1.4': {}
+
+  '@mvstp.3.fn/moneyfi-ts-sdk@0.2.7': {}
 
   '@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1':
     dependencies:
@@ -13462,8 +13464,6 @@ snapshots:
   mipd@0.0.7(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
-
-  moneyfi-ts-sdk@0.2.6: {}
 
   ms@2.1.2: {}
 

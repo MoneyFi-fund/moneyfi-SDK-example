@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MoneyFi } from "moneyfi-ts-sdk";
+import { MoneyFi } from "@mvstp.3.fn/moneyfi-ts-sdk";
 
 /**
  * Provides memoized MoneyFi SDK instance

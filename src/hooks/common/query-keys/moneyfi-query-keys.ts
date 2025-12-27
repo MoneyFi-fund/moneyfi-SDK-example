@@ -34,4 +34,6 @@ export const moneyFiQueryKeys = {
     [...moneyFiQueryKeys.all, "bridgeStatus", txHash] as const,
   userAssetAllocation: (address?: string) =>
     [...moneyFiQueryKeys.all, "userAssetAllocation", address] as const,
+  userAssetBalance: (address?: string, chainId?: number, token?: string) =>
+    [...moneyFiQueryKeys.all, "userAssetBalance", address, chainId, token] as const,
 } as const;

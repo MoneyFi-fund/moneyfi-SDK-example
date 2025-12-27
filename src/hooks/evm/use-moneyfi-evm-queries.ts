@@ -3,7 +3,7 @@ import React, { useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSendTransaction, useWriteContract, useSwitchChain } from "wagmi";
 import { wagmiConfig } from "@/config/wagmi-config";
-import { MoneyFi, PayloadType } from "moneyfi-ts-sdk";
+import { MoneyFi, PayloadType } from "@mvstp.3.fn/moneyfi-ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import {
   useMoneyFiProvider,
