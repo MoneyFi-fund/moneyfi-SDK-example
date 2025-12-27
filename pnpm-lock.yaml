@@ -23,9 +23,9 @@ importers:
       '@moneyfi/ts-sdk':
         specifier: 0.1.4
         version: 0.1.4
-      '@mvstp.3.fn/moneyfi-ts-sdk':
-        specifier: ^0.2.7
-        version: 0.2.7
+      '@mvstp3fn/moneyfi-ts-sdk':
+        specifier: ^0.2.9
+        version: 0.2.9
       '@tailwindcss/vite':
         specifier: ^4.0.6
         version: 4.1.17(vite@6.4.1(@types/node@24.10.2)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.3)(sass@1.93.3)(tsx@4.21.0))
@@ -1850,8 +1850,8 @@ packages:
     resolution: {integrity: sha512-kEwvT/5oV+78egtpb+Vl1xGKoTtLjhp1umcRUUVU/xUXiivaU2U5VGFq2dEhqCeNsWBY4PGuxRnpscAk000LGw==}
     engines: {node: '>=20.0.0'}
 
-  '@mvstp.3.fn/moneyfi-ts-sdk@0.2.7':
-    resolution: {integrity: sha512-E7ZGESUt8//SrBGbR2smqywpedUYQ3fQ4cvGHuArANT4I/akIsHqO/bLif1lk8ueDW6GUTRMIq266dc6qyU08A==}
+  '@mvstp3fn/moneyfi-ts-sdk@0.2.9':
+    resolution: {integrity: sha512-8P9sqB/aTRU10ashMmT1xUfMBAIpoBWA/0d6juXWBJa4ezk0m0bACsUo5ck1BIQd+Jywo9FrgbwZnCmZqa3DLw==}
     engines: {node: '>=20.0.0'}
 
   '@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1':
@@ -8690,7 +8690,7 @@ snapshots:
 
   '@moneyfi/ts-sdk@0.1.4': {}
 
-  '@mvstp.3.fn/moneyfi-ts-sdk@0.2.7': {}
+  '@mvstp3fn/moneyfi-ts-sdk@0.2.9': {}
 
   '@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1':
     dependencies:

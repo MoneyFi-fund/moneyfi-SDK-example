@@ -152,7 +152,7 @@ The MoneyFi SDK implements a sophisticated multi-layer transaction processing ar
 
 1. **Presentation Layer**: React components (`src/modules/dashboard/components/transaction/` and `src/modules/evm/components/transaction/`)
 2. **Hook Layer**: Custom React hooks with TanStack Query integration (`src/hooks/`)
-3. **SDK Layer**: MoneyFi TypeScript SDK integration (`@moneyfi/ts-sdk`)
+3. **SDK Layer**: MoneyFi TypeScript SDK integration (`@mvstp3fn/moneyfi-ts-sdk`)
 
 ### Transaction Flow Architecture Diagram
 
@@ -1820,6 +1820,65 @@ export const useGetUserStatisticsQuery = (address?: string) => {
 };
 ```
 
+### useGetTransactionHistory Pattern (NEW in v0.2.9)
+
+A React Query hook pattern for fetching user's transaction history from the MoneyFi SDK.
+
+**SDK Method**: `moneyFi.getTransactionHistory(address)`
+
+#### Usage Example
+
+```typescript
+import { useGetTransactionHistory } from "@/hooks/common";
+
+const TransactionHistoryComponent = () => {
+  const { data, isLoading, refetch } = useGetTransactionHistory(userAddress);
+
+  if (isLoading) return <Spinner />;
+
+  return (
+    <VStack>
+      {data?.map((tx) => (
+        <TransactionRow key={tx.hash} {...tx} />
+      ))}
+    </VStack>
+  );
+};
+```
+
+#### Hook Implementation Pattern
+
+```typescript
+export const useGetTransactionHistory = (address?: string) => {
+  const { isAuthenticated, user } = useAuth();
+  const moneyFi = useMoneyFiProvider();
+
+  return useQuery({
+    queryKey: moneyFiQueryKeys.transactionHistory(address),
+    queryFn: async () => {
+      if (!isAuthenticated || !user || !address) {
+        throw new Error("Missing required parameters");
+      }
+      const history = await moneyFi.getTransactionHistory(address);
+      return history;
+    },
+    enabled: !!(isAuthenticated && user && address),
+    staleTime: 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+```
+
+#### Query Key
+
+```typescript
+moneyFiQueryKeys = {
+  // ... existing keys
+  transactionHistory: (address?: string) =>
+    [...moneyFiQueryKeys.all, "transactionHistory", address] as const,
+}
+```
+
 ### EVM Hooks Implementation
 
 EVM hooks are located in `src/hooks/evm/use-moneyfi-evm-queries.ts` and implement multi-chain support with wagmi integration.
@@ -2196,7 +2255,7 @@ The MoneyFi SDK is consistently instantiated across all hooks using the integrat
 const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
 ```
 
-**Note**: The SDK now uses `@moneyfi/ts-sdk` package (imported as `import { MoneyFi } from "@moneyfi/ts-sdk";`) and supports both Aptos and EVM operations via `PayloadType` enum.
+**Note**: The SDK uses `@mvstp3fn/moneyfi-ts-sdk` package v0.2.9 (imported as `import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";`) and supports both Aptos and EVM operations via `PayloadType` enum.
 
 ### Transaction Lifecycle Patterns
 

@@ -16,6 +16,8 @@ export interface Transaction {
   hash: string;
   fromAddress?: string;
   toAddress?: string;
+  /** Original chain ID from API (-1 for Aptos, 8453 for Base, etc.) */
+  chainId?: number;
 }
 
 export interface TransactionHistoryResponse {
