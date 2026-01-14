@@ -1,23 +1,16 @@
 import { useAuth } from "@/provider/auth-provider";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoneyFi } from "@moneyfi/ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
-
-export const statsQueryKeys = {
-  all: ["stats"] as const,
-  user: (address?: string) => [...statsQueryKeys.all, "user", address] as const,
-};
+import { useQuery } from "@tanstack/react-query";
+import { useMoneyFiProvider, validateAuth } from ".";
+import { statsQueryKeys } from "./query-keys/stats-query-keys";
 
 export const useGetUserStatisticsQuery = (address?: string) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useQuery({
     queryKey: statsQueryKeys.user(address),
     queryFn: async () => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!address) {
         throw new Error("Address is required");

@@ -3,9 +3,8 @@ import {
   useWallet,
   type InputTransactionData,
 } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFi } from "@moneyfi/ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
+import { useMoneyFiProvider, validateAuth } from "./common";
 
 export const createQueryKeys = {
   all: ["create"] as const,
@@ -20,7 +19,7 @@ export const createQueryKeys = {
 export const useGetOrCreateUserMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useMutation({
     mutationFn: async ({
@@ -30,9 +29,7 @@ export const useGetOrCreateUserMutation = () => {
       address: string;
       refBy?: string;
     }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!address) {
         throw new Error("Address is required");
@@ -79,13 +76,11 @@ export const useGetOrCreateUserMutation = () => {
 export const useGetOrCreatePartnershipMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!address) {
         throw new Error("Address is required");
@@ -131,13 +126,11 @@ export const useGetOrCreatePartnershipMutation = () => {
 export const useInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!address) {
         throw new Error("Address is required");
@@ -175,13 +168,11 @@ export const useGetTxInitializationAccountMutation = () => {
   const { isAuthenticated, user } = useAuth();
   const { signAndSubmitTransaction } = useWallet();
   const queryClient = useQueryClient();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useMutation({
     mutationFn: async ({ address }: { address: string }) => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!address) {
         throw new Error("Address is required");

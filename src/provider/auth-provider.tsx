@@ -6,6 +6,8 @@ import React, {
   useCallback,
 } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useEVM } from "@/provider/evm-provider";
+import { useAptos } from "@/provider/aptos-provider";
 import type {
   AuthState,
   AuthContextValue,
@@ -137,7 +139,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
-  const { connect, disconnect, account, connected, wallet } = useWallet();
+  const { connect, disconnect } = useWallet();
+  const { address: evmAddress, isConnected: isEVMConnected } = useEVM();
+  const {
+    address: aptosAddress,
+    publicKey: aptosPublicKey,
+    isConnected: isAptosConnected,
+    walletName: aptosWalletName
+  } = useAptos();
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -147,7 +156,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedSession = AuthStorage.getSession();
       const savedUser = AuthStorage.getUser();
 
-      if (savedSession && savedUser && connected && account) {
+      // Authenticate if EITHER Aptos or EVM wallet is connected
+      const hasAptosWallet = isAptosConnected && aptosAddress;
+      const hasEVMWallet = isEVMConnected && evmAddress;
+      const isWalletConnected = hasAptosWallet || hasEVMWallet;
+
+      if (savedSession && savedUser && isWalletConnected) {
         // Check if session is about to expire
         if (isSessionExpiring(new Date(savedSession.expiresAt))) {
           // Session is expiring soon, clear it
@@ -166,17 +180,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     initializeAuth();
-  }, [connected, account]);
+  }, [isAptosConnected, aptosAddress, isEVMConnected, evmAddress]);
 
-  // Monitor wallet connection changes
+  // Monitor wallet connection changes - authenticate on EITHER wallet connection
   useEffect(() => {
-    if (connected && account && wallet) {
-      // Wallet is connected, create user session automatically
-      const user: AuthUser = {
-        address: formatAddress(account.address.toString()),
-        publicKey: account.publicKey?.toString() || "",
-        walletName: wallet.name,
-      };
+    const hasAptosWallet = isAptosConnected && aptosAddress && aptosWalletName;
+    const hasEVMWallet = isEVMConnected && evmAddress;
+
+    if (hasAptosWallet || hasEVMWallet) {
+      // Create user session with whichever wallet is connected
+      let user: AuthUser;
+
+      if (hasAptosWallet) {
+        // Use Aptos wallet
+        user = {
+          address: formatAddress(aptosAddress),
+          publicKey: aptosPublicKey || "",
+          walletName: `Aptos - ${aptosWalletName}`,
+        };
+      } else {
+        // Use EVM wallet
+        user = {
+          // @ts-ignore
+          address: evmAddress,
+          publicKey: "", // EVM doesn't have explicit public key like Aptos
+          walletName: "EVM Wallet",
+        };
+      }
 
       // Create session with 24-hour expiration
       const expiresAt = new Date();
@@ -197,14 +227,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         type: "SET_AUTH_SUCCESS",
         payload: { user, session },
       });
-
-
-    } else if (!connected) {
-      // Wallet disconnected, clear auth state
+    } else if (!isAptosConnected && !isEVMConnected) {
+      // Both wallets disconnected, clear auth state
       AuthStorage.clearSession();
       dispatch({ type: "CLEAR_AUTH" });
     }
-  }, [connected, account, wallet]);
+  }, [isAptosConnected, aptosAddress, aptosPublicKey, aptosWalletName, isEVMConnected, evmAddress]);
 
   // Connect to specific wallet - this will open the wallet popup
   const signIn = useCallback(
@@ -284,7 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (!state.session) return;
 
-    const checkSessionExpiration = () => {
+  const checkSessionExpiration = () => {
       if (isSessionExpiring(new Date(state.session!.expiresAt))) {
         signOut();
       }

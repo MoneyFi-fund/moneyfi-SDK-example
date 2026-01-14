@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { groupAndSortWallets, useWallet } from '@aptos-labs/wallet-adapter-react';
-import { useAuth } from '@/provider/auth-provider';
+import { useAptos } from '@/provider/aptos-provider';
 import { APTOS_WALLET } from '@/constants/wallet';
 import { Box, Button, DialogBackdrop, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogPositioner, DialogRoot, DialogTitle, Flex, HStack, Image, Spinner, Text, VStack } from '@chakra-ui/react';
 import { isEqual, uniqWith } from 'lodash';
@@ -166,30 +166,38 @@ const WalletOption: React.FC<WalletOptionProps> = ({
     </Flex>
   );
 };const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose }) => {
-  const { signIn, isConnecting, error, clearError, isAuthenticated } = useAuth();
+  const { isConnected: isAptosConnected, isConnecting, connect } = useAptos();
   const { cardColors } = useThemeColors();
   const { wallets = [], notDetectedWallets = [] } = useWallet();
   const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Close modal when authentication succeeds
+  // Track previous Aptos connection state to detect new connections
+  const wasAptosConnected = useRef(isAptosConnected);
+
+  // Close modal only when Aptos wallet connects (not EVM)
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only close if Aptos just connected (transitioned from false to true)
+    if (isAptosConnected && !wasAptosConnected.current) {
       onClose();
     }
-  }, [isAuthenticated, onClose]);
+    wasAptosConnected.current = isAptosConnected;
+  }, [isAptosConnected, onClose]);
 
   // Clear error when modal closes
   useEffect(() => {
     if (!isOpen) {
-      clearError();
+      setError(null);
     }
-  }, [isOpen, clearError]);
+  }, [isOpen]);
 
   const handleWalletConnect = async (walletName: string) => {
     try {
-      await signIn(walletName);
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      setError(null);
+      await connect(walletName);
+    } catch (err) {
+      console.error('Failed to connect wallet:', err);
+      setError(err instanceof Error ? err.message : 'Failed to connect wallet');
     }
   };
 

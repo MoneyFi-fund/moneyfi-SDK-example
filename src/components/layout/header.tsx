@@ -1,4 +1,5 @@
 import WalletButton from "@/modules/dashboard/components/wallet-button";
+import EVMWalletButton from "@/modules/dashboard/components/evm-wallet-button";
 import { Box, Container, HStack, Text, Image, Link as ChakraLink } from "@chakra-ui/react";
 import { useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -7,11 +8,18 @@ import WalletConnectModal from "@/modules/dashboard/components/wallet-connect-mo
 import { CompactThemeToggle } from "@/components/theme-toggle";
 import { useThemeColors } from "@/provider/theme-provider";
 import { menuItems } from "@/utils/menu";
+import { useEVM } from "@/provider/evm-provider";
+import { useAptos } from "@/provider/aptos-provider";
 
 export default function Header() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const location = useLocation();
   const { colors, cardColors } = useThemeColors();
+  const { isConnected: isEVMConnected } = useEVM();
+  const { isConnected: isAptosConnected } = useAptos();
+
+  // Pages that show wallet button based on which wallet is connected
+  const isSharedPage = ['/stats', '/history'].includes(location.pathname);
 
   return (
     <Box 
@@ -55,7 +63,15 @@ export default function Header() {
 
           <HStack gap={3}>
             <CompactThemeToggle />
-            <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
+            {/* EVM page - always show EVM button */}
+            {location.pathname === '/evm' && <EVMWalletButton compact />}
+            {/* Aptos page - always show Aptos button */}
+            {location.pathname === '/' && <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />}
+            {/* Shared pages (Stats, History) - show based on connected wallet */}
+            {isSharedPage && isEVMConnected && <EVMWalletButton compact />}
+            {isSharedPage && isAptosConnected && !isEVMConnected && (
+              <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />
+            )}
           </HStack>
 
           <WalletConnectModal

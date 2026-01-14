@@ -7,19 +7,19 @@ import {
   HStack,
   Badge,
 } from "@chakra-ui/react";
-import { useAuth } from "@/provider/auth-provider";
+import { useAptos } from "@/provider/aptos-provider";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 
 export default function CheckWalletAccount() {
-  const { isAuthenticated, user, signOut, error } = useAuth();
+  const { address, isConnected, walletName, disconnect } = useAptos();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
   const { cardColors, colors, buttonColors } = useThemeColors();
 
   const handleDisconnectWallet = async () => {
     try {
-      await signOut();
+      await disconnect();
     } catch (error) {
       console.error("Failed to disconnect wallet:", error);
     }
@@ -41,9 +41,9 @@ export default function CheckWalletAccount() {
         <VStack align="stretch" gap={2}>
           <HStack justify="space-between" align="center" width="100%">
             <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
-              Wallet Connection
+              Aptos Wallet
             </Text>
-            {isAuthenticated && (
+            {isConnected && (
               <Badge
                 colorScheme="green"
                 variant="subtle"
@@ -60,45 +60,37 @@ export default function CheckWalletAccount() {
       
       <Card.Body>
         <VStack align="stretch" gap={4}>
-          {!isAuthenticated ? (
+          {!isConnected ? (
             <VStack align="stretch" gap={3}>
               <Alert.Root status="info">
                 <Alert.Description>
-                  Connect your wallet to access MoneyFi features
+                  Connect your Aptos wallet to access MoneyFi features
                 </Alert.Description>
               </Alert.Root>
-              
+
               <Text fontSize="sm" color={cardColors.textSecondary} textAlign="center">
                 Supported wallets: Petra, Martian, Pontem, Fewcha
               </Text>
-              
-              {error && (
-                <Alert.Root status="error">
-                  <Alert.Description>
-                    {error}
-                  </Alert.Description>
-                </Alert.Root>
-              )}
             </VStack>
           ) : (
             <VStack align="stretch" gap={3}>
               <Alert.Root status="success">
                 <Alert.Description>
-                  Wallet successfully connected
+                  Aptos wallet connected
                 </Alert.Description>
               </Alert.Root>
-              
-              {user && (
+
+              {address && (
                 <VStack align="stretch" gap={2}>
                   <Text fontSize="sm" color={cardColors.textSecondary}>
                     Connected Wallet:
                   </Text>
                   <Text fontSize="md" fontWeight="medium" color={cardColors.text} fontFamily="mono">
-                    {user.address.slice(0, 6)}...{user.address.slice(-4)}
+                    {address.slice(0, 6)}...{address.slice(-4)}
                   </Text>
-                  {user.walletName && (
+                  {walletName && (
                     <Text fontSize="sm" color={cardColors.textSecondary}>
-                      Wallet: {user.walletName}
+                      Wallet: {walletName}
                     </Text>
                   )}
                   

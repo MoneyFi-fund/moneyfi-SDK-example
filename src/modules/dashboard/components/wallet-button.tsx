@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, HStack, Text, Menu, Portal, Box } from '@chakra-ui/react';
-import { useAuth } from '@/provider/auth-provider';
+import { useAptos } from '@/provider/aptos-provider';
 import { truncateAddress } from '@/auth/utils';
 import { menuItems } from '@/utils/menu';
 import { useNavigate } from '@tanstack/react-router';
@@ -12,7 +12,7 @@ interface WalletButtonProps {
 }
 
 const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
-  const { isAuthenticated, user, isConnecting, signOut } = useAuth();
+  const { address, isConnected, isConnecting, disconnect } = useAptos();
   const { menuColors, buttonColors } = useThemeColors();
   const navigate = useNavigate();
 
@@ -37,8 +37,8 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
     );
   };
 
-  // If user is authenticated, show account info with dropdown
-  if (isAuthenticated && user) {
+  // If Aptos wallet is connected, show account info with dropdown
+  if (isConnected && address) {
     return (
       <Menu.Root positioning={{ placement: "bottom-end"}}>
         <Menu.Trigger asChild>
@@ -63,18 +63,18 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
             }}
           >
             <HStack gap={2}>
-              <SimpleAvatar name={user.address} size="sm" />
+              <SimpleAvatar name={address} size="sm" />
               <Text
                 fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
                 fontWeight="medium"
                 color="black"
               >
-                {truncateAddress(user.address)}
+                {truncateAddress(address)}
               </Text>
             </HStack>
           </Button>
         </Menu.Trigger>
-        
+
         <Portal>
           <Menu.Positioner>
             <Menu.Content
@@ -96,7 +96,7 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
                   borderRadius={materialDesign3Theme.borderRadius.xs}
                   fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                   color={menuColors.text}
-                  _hover={{ 
+                  _hover={{
                     bg: menuColors.hover,
                     color: menuColors.text
                   }}
@@ -108,13 +108,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
               <Menu.Separator borderColor={menuColors.separator} />
               <Menu.Item
                 value="copy"
-                onClick={() => navigator.clipboard.writeText(user.address)}
+                onClick={() => navigator.clipboard.writeText(address)}
                 px={4}
                 py={3}
                 borderRadius={materialDesign3Theme.borderRadius.xs}
                 fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                 color={menuColors.text}
-                _hover={{ 
+                _hover={{
                   bg: menuColors.hover,
                   color: menuColors.text
                 }}
@@ -124,7 +124,7 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
               </Menu.Item>
               <Menu.Item
                 value="disconnect"
-                onClick={signOut}
+                onClick={disconnect}
                 color="error.600"
                 px={4}
                 py={3}

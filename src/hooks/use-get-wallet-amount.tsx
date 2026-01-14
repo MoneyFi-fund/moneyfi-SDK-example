@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { MoneyFi } from "@moneyfi/ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
+import { useMoneyFiProvider, validateAuth } from "./common";
 
 export const walletAmountQueryKeys = {
   all: ["walletAmount"] as const,
@@ -10,14 +9,12 @@ export const walletAmountQueryKeys = {
 
 export const useGetWalletAmountQuery = (sender: string | null) => {
   const { isAuthenticated, user } = useAuth();
-  const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
+  const moneyFiAptos = useMoneyFiProvider();
 
   return useQuery({
     queryKey: walletAmountQueryKeys.assets(sender || undefined),
     queryFn: async () => {
-      if (!isAuthenticated || !user) {
-        throw new Error("Please connect your wallet first");
-      }
+      validateAuth(isAuthenticated, user);
 
       if (!sender) {
         throw new Error("Sender address is required");

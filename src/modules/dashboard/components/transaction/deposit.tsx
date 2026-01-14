@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Card,
   VStack,
@@ -19,8 +19,8 @@ import { useThemeColors } from "@/provider/theme-provider";
 import {
   useDepositMutation,
   moneyFiQueryKeys,
-} from "@/hooks/use-moneyfi-queries";
-import { statsQueryKeys } from "@/hooks/use-stats";
+} from "@/hooks/aptos/use-moneyfi-queries";
+import { statsQueryKeys } from "@/hooks/aptos/queries/use-stats";
 import { APTOS_ADDRESS } from "@/constants/address";
 import { useCheckWalletAccountQuery } from "@/hooks/use-check-wallet-account";
 import {
@@ -36,9 +36,9 @@ import {
   SignedTransaction,
   TransactionAuthenticatorMultiAgent,
 } from "@aptos-labs/ts-sdk";
-import { APTOS_CONFIG, aptosClient } from "@/constants/aptos";
-import { APTOS_ERROR_CODE } from "@/constants/error";
+import { APTOS_CONFIG } from "@/constants/aptos";
 import { MoneyFi } from "@moneyfi/ts-sdk";
+import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
 
 const tokens = createListCollection({
   items: [
@@ -82,6 +82,46 @@ export const DepositComponent: React.FC = () => {
     sender: userAddress || "",
     amount: BigInt(amount ? Math.floor(Number(amount) * 1_000_000) : 0),
   });
+
+  // Fetch wallet balance from MoneyFi SDK
+  const { data: walletAmount, isLoading: isWalletAmountLoading } =
+    useGetWalletAmountQuery(user?.address || null);
+
+  // Calculate balance for selected token
+  const tokenBalance = useMemo(() => {
+    if (!walletAmount) return { display: "0.00", raw: 0 };
+
+    const targetToken =
+      selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
+
+    // walletAmount returns array directly from SDK
+    const assets = Array.isArray(walletAmount) ? walletAmount : [];
+    const asset = assets.find(
+      (a: any) => a.token_address === targetToken || a.tokenAddress === targetToken
+    );
+
+    if (!asset) return { display: "0.00", raw: 0 };
+
+    const rawBalance = Number(asset.balance || asset.amount || 0);
+    return {
+      display: (rawBalance / 1e6).toFixed(2),
+      raw: rawBalance,
+    };
+  }, [walletAmount, selectedToken]);
+
+  // Validate balance
+  const isInsufficientBalance = useMemo(() => {
+    const numAmount = Number(amount) || 0;
+    const maxAmount = tokenBalance.raw / 1e6;
+    return numAmount > maxAmount;
+  }, [amount, tokenBalance]);
+
+  // MAX button handler
+  const handleMaxAmount = () => {
+    if (!tokenBalance.raw) return;
+    const max = (tokenBalance.raw / 1e6).toString();
+    setAmount(max);
+  };
 
   const checkOrCreateAptosAccount = async () => {
     if (!user?.address || !aptosAccount?.address) {
@@ -134,7 +174,7 @@ export const DepositComponent: React.FC = () => {
         transactionOrPayload: multiAgentTx,
       });
 
-      const submitTx = await aptosSubmitTransaction({
+      await aptosSubmitTransaction({
         transaction: multiAgentTx,
         senderAuthenticator: feepayerAuthenticator.authenticator,
         additionalSignersAuthenticators: [
@@ -177,7 +217,7 @@ export const DepositComponent: React.FC = () => {
           depositMutation.mutate(
             { amount, tokenAddress },
             {
-              onSuccess: async (data) => {
+              onSuccess: async (data: any) => {
                 queryClient.invalidateQueries({
                   queryKey: moneyFiQueryKeys.balance(user.address),
                 });
@@ -193,7 +233,7 @@ export const DepositComponent: React.FC = () => {
                 setCurrentStep("idle");
                 resolve(data);
               },
-              onError: (error) => {
+              onError: (error: Error) => {
                 reject(error);
               },
             }
@@ -248,7 +288,7 @@ export const DepositComponent: React.FC = () => {
           depositMutation.mutate(
             { amount, tokenAddress },
             {
-              onSuccess: async (data) => {
+              onSuccess: async (data: any) => {
                 queryClient.invalidateQueries({
                   queryKey: moneyFiQueryKeys.balance(user.address),
                 });
@@ -264,7 +304,7 @@ export const DepositComponent: React.FC = () => {
                 setCurrentStep("idle");
                 resolve(data);
               },
-              onError: (error) => {
+              onError: (error: Error) => {
                 reject(error);
               },
             }
@@ -466,14 +506,49 @@ export const DepositComponent: React.FC = () => {
               </Portal>
             </Select.Root>
           </VStack>
+          {/* Amount Input with Balance Display */}
           <VStack align="stretch" gap={2}>
-            <Text
-              fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
-              fontWeight="medium"
-              color={cardColors.textSecondary}
-            >
-              Amount
-            </Text>
+            <HStack justify="space-between" align="center">
+              <Text
+                fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                fontWeight="medium"
+                color={cardColors.textSecondary}
+              >
+                Amount
+              </Text>
+              <HStack gap={2}>
+                <Text
+                  fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                  color={cardColors.textSecondary}
+                >
+                  Balance:{" "}
+                  {isWalletAmountLoading ? "..." : tokenBalance.display}{" "}
+                  {selectedToken}
+                </Text>
+                <Button
+                  size="xs"
+                  variant="outline"
+                  onClick={handleMaxAmount}
+                  disabled={!tokenBalance.raw || isWalletAmountLoading}
+                  borderRadius={materialDesign3Theme.borderRadius.sm}
+                  fontSize="xs"
+                  px={2}
+                  minH="24px"
+                  borderColor={cardColors.border}
+                  color={cardColors.text}
+                  _hover={{
+                    bg: cardColors.background,
+                    borderColor: "primary.500",
+                  }}
+                  _disabled={{
+                    opacity: 0.5,
+                    cursor: "not-allowed",
+                  }}
+                >
+                  MAX
+                </Button>
+              </HStack>
+            </HStack>
             <Input
               type="number"
               placeholder="0.00"
@@ -482,7 +557,9 @@ export const DepositComponent: React.FC = () => {
               step="0.000001"
               min="0"
               border="1px solid"
-              borderColor={cardColors.border}
+              borderColor={
+                isInsufficientBalance ? "error.500" : cardColors.border
+              }
               borderRadius={materialDesign3Theme.borderRadius.sm}
               minH="48px"
               px={4}
@@ -491,20 +568,38 @@ export const DepositComponent: React.FC = () => {
               _placeholder={{ color: cardColors.textSecondary }}
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               _hover={{
-                borderColor: cardColors.border,
+                borderColor: isInsufficientBalance
+                  ? "error.500"
+                  : cardColors.border,
               }}
               _focus={{
-                borderColor: "primary.500",
-                boxShadow: `0 0 0 2px primary.200`,
+                borderColor: isInsufficientBalance ? "error.500" : "primary.500",
+                boxShadow: isInsufficientBalance
+                  ? "0 0 0 2px rgba(239, 68, 68, 0.1)"
+                  : "0 0 0 2px rgba(63, 81, 181, 0.1)",
                 outline: "none",
               }}
             />
+            {/* Insufficient Balance Warning */}
+            {isInsufficientBalance && (
+              <Text
+                fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
+                color="error.600"
+              >
+                Insufficient balance. Max: {(tokenBalance.raw / 1e6).toFixed(2)}
+              </Text>
+            )}
           </VStack>
 
           <Button
             onClick={handleDeposit}
             loading={currentStep !== "idle" || isCheckingAccount}
-            disabled={!amount || currentStep !== "idle" || isCheckingAccount}
+            disabled={
+              !amount ||
+              currentStep !== "idle" ||
+              isCheckingAccount ||
+              isInsufficientBalance
+            }
             bg={buttonColors.primary.background}
             color={buttonColors.primary.text}
             minH="48px"
@@ -536,12 +631,14 @@ export const DepositComponent: React.FC = () => {
               {isCheckingAccount
                 ? "Checking Account..."
                 : currentStep === "creating-user"
-                ? "Creating User..."
-                : currentStep === "initializing-account"
-                ? "Initializing Account..."
-                : currentStep === "depositing"
-                ? "Depositing..."
-                : "Deposit"}
+                  ? "Creating User..."
+                  : currentStep === "initializing-account"
+                    ? "Initializing Account..."
+                    : currentStep === "depositing"
+                      ? "Depositing..."
+                      : isInsufficientBalance
+                        ? "Insufficient Balance"
+                        : "Deposit"}
             </span>
           </Button>
 
