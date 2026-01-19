@@ -38,7 +38,7 @@ import {
 } from "@aptos-labs/ts-sdk";
 import { APTOS_CONFIG } from "@/constants/aptos";
 import { MoneyFi } from "@moneyfi/ts-sdk";
-import { useGetWalletAmountQuery } from "@/hooks/use-get-wallet-amount";
+import { useAptosWalletTokenBalance } from "@/hooks/aptos/queries/use-aptos-wallet-token-balance";
 
 const tokens = createListCollection({
   items: [
@@ -83,31 +83,21 @@ export const DepositComponent: React.FC = () => {
     amount: BigInt(amount ? Math.floor(Number(amount) * 1_000_000) : 0),
   });
 
-  // Fetch wallet balance from MoneyFi SDK
-  const { data: walletAmount, isLoading: isWalletAmountLoading } =
-    useGetWalletAmountQuery(user?.address || null);
+  // Fetch actual wallet token balance from Aptos blockchain
+  const { data: tokenBalanceData, isLoading: isWalletAmountLoading } =
+    useAptosWalletTokenBalance({
+      address: user?.address,
+      tokenAddress,
+    });
 
-  // Calculate balance for selected token
+  // Token balance from hook (already formatted)
   const tokenBalance = useMemo(() => {
-    if (!walletAmount) return { display: "0.00", raw: 0 };
-
-    const targetToken =
-      selectedToken === "USDC" ? APTOS_ADDRESS.USDC : APTOS_ADDRESS.USDT;
-
-    // walletAmount returns array directly from SDK
-    const assets = Array.isArray(walletAmount) ? walletAmount : [];
-    const asset = assets.find(
-      (a: any) => a.token_address === targetToken || a.tokenAddress === targetToken
-    );
-
-    if (!asset) return { display: "0.00", raw: 0 };
-
-    const rawBalance = Number(asset.balance || asset.amount || 0);
+    if (!tokenBalanceData) return { display: "0.00", raw: 0 };
     return {
-      display: (rawBalance / 1e6).toFixed(2),
-      raw: rawBalance,
+      display: tokenBalanceData.display,
+      raw: tokenBalanceData.balance,
     };
-  }, [walletAmount, selectedToken]);
+  }, [tokenBalanceData]);
 
   // Validate balance
   const isInsufficientBalance = useMemo(() => {
@@ -432,7 +422,7 @@ export const DepositComponent: React.FC = () => {
           fontWeight="medium"
           color={cardColors.text}
         >
-          Deposit Funds
+          Deposit Funds 1
         </Text>
       </Card.Header>
       <Card.Body px={6} pb={6}>

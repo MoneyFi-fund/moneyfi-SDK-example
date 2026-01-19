@@ -15,7 +15,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     <WagmiProvider config={wagmiConfig}>
       <EVMProvider>
         <AptosWalletAdapterProvider
-          autoConnect={false}
+          autoConnect={true}
           dappConfig={dappConfig}
           onError={(error) => {
             console.log("error", error);
