@@ -7,9 +7,11 @@ import { EVMWithdrawComponent } from "./components/transaction/evm-withdraw";
 import Stats from "../stats/stats";
 import CheckWalletAccount from "./components/check-wallet-account/check-wallet-account";
 import UserAssetAllocationComponent from "./components/user-asset-allication";
+import { useEVM } from "@/provider/evm-provider";
 
 export default function EVMPage() {
   const { colors } = useThemeColors();
+  const { address, isConnected } = useEVM();
 
   return (
     <Box minH="100vh" bg={colors.background}>
@@ -28,7 +30,7 @@ export default function EVMPage() {
             <EVMDepositComponent />
             <EVMWithdrawComponent />
           </SimpleGrid>
-          <UserAssetAllocationComponent />
+          <UserAssetAllocationComponent address={address} isConnected={isConnected} />
           <Stats />
 
           {/* <Supported /> */}

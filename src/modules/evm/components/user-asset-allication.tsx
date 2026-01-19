@@ -6,13 +6,17 @@ import {
   Spinner,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { useEVM } from "@/provider/evm-provider";
 import { useGetUserAssetAllocation } from "@/hooks/common/use-asset-allocation";
 import { useThemeColors } from "@/provider/theme-provider";
 import { materialDesign3Theme } from "@/theme/material-design-3";
 import { AllocationChartCard } from "./allocation-chart-card";
 import type { AssetAllocationResponse } from "@/types/asset-allocation";
 import { Token } from "@/utils/web3";
+
+interface UserAssetAllocationProps {
+  address?: string;
+  isConnected: boolean;
+}
 
 // Chart colors from Material Design 3 theme
 const CHART_COLORS = [
@@ -55,8 +59,10 @@ const transformTokenData = (data: AssetAllocationResponse['balance_by_token']) =
     color: CHART_COLORS[idx % CHART_COLORS.length],
   }));
 
-export default function UserAssetAllocationComponent() {
-  const { address, isConnected } = useEVM();
+export default function UserAssetAllocationComponent({
+  address,
+  isConnected,
+}: UserAssetAllocationProps) {
   const { cardColors } = useThemeColors();
   const allocationQuery = useGetUserAssetAllocation(address || "");
 
