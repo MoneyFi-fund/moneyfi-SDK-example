@@ -39,6 +39,7 @@ import {
 import { APTOS_CONFIG } from "@/constants/aptos";
 import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAptosWalletTokenBalance } from "@/hooks/aptos/queries/use-aptos-wallet-token-balance";
+import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
 
 const tokens = createListCollection({
   items: [
@@ -98,6 +99,10 @@ export const DepositComponent: React.FC = () => {
       raw: tokenBalanceData.balance,
     };
   }, [tokenBalanceData]);
+
+  // Poll bridge status for the transaction after deposit success
+  const { data: bridgeStatus, isLoading: isBridgeStatusLoading } =
+    useGetBridgeStatusQuery(successData?.hash, !!successData?.hash);
 
   // Validate balance
   const isInsufficientBalance = useMemo(() => {
@@ -422,7 +427,7 @@ export const DepositComponent: React.FC = () => {
           fontWeight="medium"
           color={cardColors.text}
         >
-          Deposit Funds 1
+          Deposit Funds
         </Text>
       </Card.Header>
       <Card.Body px={6} pb={6}>
@@ -677,6 +682,66 @@ export const DepositComponent: React.FC = () => {
                       {successData.hash.slice(-8)}
                     </Link>
                   </HStack>
+                  {isBridgeStatusLoading && (
+                    <HStack>
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Checking bridge status...
+                      </Text>
+                    </HStack>
+                  )}
+                  {bridgeStatus && (
+                    <HStack flexWrap="wrap" gap={1}>
+                      <Text
+                        fontSize={
+                          materialDesign3Theme.typography.bodySmall.fontSize
+                        }
+                        color="success.700"
+                      >
+                        Transfer Status:
+                      </Text>
+                      <HStack gap={1}>
+                        <Text
+                          fontSize={
+                            materialDesign3Theme.typography.bodySmall.fontSize
+                          }
+                          color={
+                            (typeof bridgeStatus === "string"
+                              ? bridgeStatus
+                              : (bridgeStatus as any)?.status_transfer_fund ||
+                                (bridgeStatus as any)?.status) === "done"
+                              ? "success.900"
+                              : "success.800"
+                          }
+                          fontWeight="medium"
+                          textTransform="capitalize"
+                        >
+                          {typeof bridgeStatus === "string"
+                            ? bridgeStatus
+                            : (bridgeStatus as any)?.status_transfer_fund ||
+                              (bridgeStatus as any)?.status ||
+                              "pending"}
+                        </Text>
+                        {(typeof bridgeStatus === "string"
+                          ? bridgeStatus
+                          : (bridgeStatus as any)?.status_transfer_fund ||
+                            (bridgeStatus as any)?.status) === "done" && (
+                          <Text
+                            fontSize={
+                              materialDesign3Theme.typography.bodySmall.fontSize
+                            }
+                            color="success.900"
+                          >
+                            ✓
+                          </Text>
+                        )}
+                      </HStack>
+                    </HStack>
+                  )}
                 </VStack>
               </Alert.Description>
             </Alert.Root>
