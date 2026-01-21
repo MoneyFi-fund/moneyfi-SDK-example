@@ -84,19 +84,14 @@ export const EVMWithdrawComponent: React.FC = () => {
     }
   };
 
-  // Allowed chains for EVM withdraw
-  const WITHDRAW_ALLOWED_CHAINS = ["Arbitrum", "Base"];
-
-  // Parse chains and tokens
+  // Parse chains into selectable format (Mainnet displays as Ethereum)
   const chainsList = useMemo(() => {
     if (!supportedChains) return [];
     return Array.isArray(supportedChains)
-      ? supportedChains
-          .filter((chain: any) => WITHDRAW_ALLOWED_CHAINS.includes(chain.name))
-          .map((chain: any) => ({
-            label: chain.name || String(chain.id),
-            value: chain.name || String(chain.id),
-          }))
+      ? supportedChains.map((chain: any) => ({
+          label: chain.name === "Mainnet" ? "Ethereum" : (chain.name || String(chain.id)),
+          value: chain.name || String(chain.id),
+        }))
       : [];
   }, [supportedChains]);
 
