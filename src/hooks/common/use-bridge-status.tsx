@@ -47,7 +47,14 @@ export const useGetBridgeStatusQuery = (txHash?: string, enabled: boolean = true
     refetchInterval: (query) => {
       // Stop refetching if status is "done" or "failed"
       const status = query.state.data as any;
-      if (status === "done" || status === "failed" || status?.status === "done" || status?.status === "failed") {
+      if (
+        status === "done" ||
+        status === "failed" ||
+        status?.status === "done" ||
+        status?.status === "failed" ||
+        status?.status_transfer_fund === "done" ||
+        status?.status_transfer_fund === "failed"
+      ) {
         return false;
       }
       // Poll every 10 seconds for pending transactions

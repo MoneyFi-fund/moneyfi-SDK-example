@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";
-
+// import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";
+import { MoneyFi } from "@moneyfi/ts-sdk"; 
 /**
  * Provides memoized MoneyFi SDK instance
  * Prevents re-instantiation on every render

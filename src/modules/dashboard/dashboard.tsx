@@ -16,12 +16,14 @@ import { materialDesign3Theme } from "@/theme/material-design-3";
 import { useAuth } from "@/provider/auth-provider";
 import Stats from "../stats/stats";
 import UserAssetAllocationComponent from "../evm/components/user-asset-allication";
+import { useWallet as useAptosWallet } from "@aptos-labs/wallet-adapter-react";
 // import { CreatePartnershipComponent } from "./components/account/create-partnership";
 // import { InitAccountComponent } from "./components/account/init-account";
 
 export const DashboardPage = () => {
   const { colors, cardColors, buttonColors } = useThemeColors();
   const { user } = useAuth();
+  const { connected: isAptosConnected } = useAptosWallet();
   const [networkMode, setNetworkMode] = useState<"aptos" | "evm">("aptos");
 
   // Persist network mode to localStorage
@@ -72,7 +74,10 @@ export const DashboardPage = () => {
               <DepositComponent />
               <WithdrawComponent />
             </SimpleGrid>
-            <UserAssetAllocationComponent />
+            <UserAssetAllocationComponent
+              address={user?.address}
+              isConnected={isAptosConnected}
+            />
             <Stats />
           </>
         </VStack>
