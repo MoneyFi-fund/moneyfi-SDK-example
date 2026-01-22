@@ -24,8 +24,8 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.68.0(react@19.2.1))
       '@moneyfi/ts-sdk':
-        specifier: 0.1.4
-        version: 0.1.4
+        specifier: ^0.1.6
+        version: 0.1.6
       '@tailwindcss/vite':
         specifier: ^4.0.6
         version: 4.1.17(vite@6.4.1(@types/node@24.10.2)(jiti@2.6.1)(lightningcss@1.30.2)(sass-embedded@1.93.3)(sass@1.93.3)(tsx@4.21.0))
@@ -1849,8 +1849,8 @@ packages:
     resolution: {integrity: sha512-w8CVbdkDrVXFJbfBSlDfafDR6BAkpDmv1bC1UJVCoVny5tW2RKAdn9i68Xf7asYT4TnUhl/hN4zfUiKQq9II4g==}
     engines: {node: '>=16.0.0'}
 
-  '@moneyfi/ts-sdk@0.1.4':
-    resolution: {integrity: sha512-kEwvT/5oV+78egtpb+Vl1xGKoTtLjhp1umcRUUVU/xUXiivaU2U5VGFq2dEhqCeNsWBY4PGuxRnpscAk000LGw==}
+  '@moneyfi/ts-sdk@0.1.6':
+    resolution: {integrity: sha512-HCygYuk4B/kystLim96xhWNiWVx0V4eMhXpTrZ0zfKxKNmWiiUsIvRQst2eZhA5H2rjIc+oznQM4xkBRwUUExw==}
     engines: {node: '>=20.0.0'}
 
   '@mvstp3fn/moneyfi-ts-sdk@0.2.9':
@@ -8691,7 +8691,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@moneyfi/ts-sdk@0.1.4': {}
+  '@moneyfi/ts-sdk@0.1.6': {}
 
   '@mvstp3fn/moneyfi-ts-sdk@0.2.9': {}
 

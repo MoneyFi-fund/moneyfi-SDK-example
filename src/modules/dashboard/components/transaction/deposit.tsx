@@ -37,8 +37,8 @@ import {
   TransactionAuthenticatorMultiAgent,
 } from "@aptos-labs/ts-sdk";
 import { APTOS_CONFIG } from "@/constants/aptos";
-import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";   
-// import { MoneyFi } from "@moneyfi/ts-sdk";
+// import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";   
+import { MoneyFi } from "@moneyfi/ts-sdk";
 import { useAptosWalletTokenBalance } from "@/hooks/aptos/queries/use-aptos-wallet-token-balance";
 import { useGetBridgeStatusQuery } from "@/hooks/common/use-bridge-status";
 

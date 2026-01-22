@@ -64,7 +64,8 @@ export const useGetUserAssetBalance = ({
       });
       return balance;
     },
-    enabled: !!(isAuthenticated && user && address && chainId),
+    // Only fetch when both Network (chainId) AND Token (tokenAddress) are selected
+    enabled: !!(isAuthenticated && user && address && chainId && tokenAddress),
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
