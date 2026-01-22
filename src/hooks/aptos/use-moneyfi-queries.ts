@@ -135,7 +135,7 @@ export const useDepositMutation = ({
         sender: userAddress,
         chain_id: -1,
         token_address: tokenAddress,
-        amount: amountInSmallestUnit,
+        amount: Number(amountInSmallestUnit),
       });
 
       // Decode base64 string to bytes
@@ -254,7 +254,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
-              amount: actualAmount as bigint,
+              amount: Number(actualAmount),
             });
 
             return { txPayload };
