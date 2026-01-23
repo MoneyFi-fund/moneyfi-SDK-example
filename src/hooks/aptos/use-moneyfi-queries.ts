@@ -8,6 +8,9 @@ import {
   RawTransaction,
   SimpleTransaction,
 } from "@aptos-labs/ts-sdk";
+import { statsQueryKeys } from "../common/query-keys/stats-query-keys";
+import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
+import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 
 // Configuration for delayed refetch timing
 export const BALANCE_REFETCH_CONFIG = {
@@ -191,6 +194,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
   const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   const { signTransaction, submitTransaction } = useWallet();
+  const queryClient = useQueryClient();
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -271,6 +275,19 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               amount: BigInt(actualAmount.toString()),
             });
 
+            // Invalidate stats queries after status is "done"
+            await Promise.all([
+              queryClient.invalidateQueries({
+                queryKey: statsQueryKeys.user(user.address),
+              }),
+              queryClient.invalidateQueries({
+                queryKey: walletAmountQueryKeys.assets(user.address),
+              }),
+              queryClient.invalidateQueries({
+                queryKey: maxQuoteQueryKeys.quote(user.address),
+              }),
+            ]);
+
             return { txPayload };
           }
 
@@ -284,11 +301,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
     onSuccess: async (data) => {
       const { txPayload } = data;
 
-      // Decode hex string to bytes (SDK returns hex-encoded transaction)
-      const hexString = txPayload.tx.startsWith('0x') ? txPayload.tx.slice(2) : txPayload.tx;
-      const bytes = new Uint8Array(hexString.length / 2);
-      for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
+      // Decode base64 string to bytes (SDK returns base64-encoded transaction for withdraw)
+      const binaryString = atob(txPayload.tx);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
       
       const de = new Deserializer(bytes);
