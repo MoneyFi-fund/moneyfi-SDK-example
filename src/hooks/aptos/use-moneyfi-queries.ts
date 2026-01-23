@@ -1,8 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { MoneyFi } from "@moneyfi/ts-sdk";
-// import { MoneyFi } from "@moneyfi/ts-sdk";
+import { MoneyFi, PayloadType } from "@moneyfi/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
 import {
   Deserializer,
@@ -132,22 +131,35 @@ export const useDepositMutation = ({
       );
 
       const payload = await moneyFiAptos.getDepositTxPayload({
+        type: PayloadType.Aptos,
         sender: userAddress,
         chain_id: -1,
         token_address: tokenAddress,
         amount: Number(amountInSmallestUnit),
       });
 
-      // Decode base64 string to bytes
-      const binaryString = atob(payload.tx);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      console.log("Deposit payload response:", payload);
 
-      const de = new Deserializer(bytes);
-      const depositTx = RawTransaction.deserialize(de);
-      const depoistTxSimple = new SimpleTransaction(depositTx);
+      // Handle Aptos transaction - check if response has function field (entry function format)
+      // or tx field (serialized transaction format)
+      let depoistTxSimple: SimpleTransaction;
+
+      if ((payload as any).function) {
+        // Entry function format - use signAndSubmitTransaction directly
+        throw new Error("Entry function format not supported in this hook. Use useGetTxInitializationAccountMutation pattern.");
+      } else if (payload.tx) {
+        // Serialized transaction format - decode hex string to bytes
+        const hexString = payload.tx.startsWith('0x') ? payload.tx.slice(2) : payload.tx;
+        const bytes = new Uint8Array(hexString.length / 2);
+        for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
+        }
+        const de = new Deserializer(bytes);
+        const depositTx = RawTransaction.deserialize(de);
+        depoistTxSimple = new SimpleTransaction(depositTx);
+      } else {
+        throw new Error(`Unexpected payload format: ${JSON.stringify(payload)}`);
+      }
       const submitTx = await signTransaction({
         transactionOrPayload: depoistTxSimple,
       });
@@ -254,7 +266,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
-              amount: Number(actualAmount),
+              amount: BigInt(actualAmount.toString()),
             });
 
             return { txPayload };

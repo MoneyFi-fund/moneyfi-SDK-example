@@ -116,7 +116,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               sender: user.address,
               chain_id: -1,
               token_address: tokenAddress,
-              amount: actualAmount as bigint,
+              amount: BigInt(actualAmount.toString()),
             });
 
             return { txPayload };
