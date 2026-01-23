@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Deserializer, RawTransaction, SimpleTransaction } from "@aptos-labs/ts-sdk";
 import { useAuth } from "@/provider/auth-provider";
@@ -8,9 +8,12 @@ import {
   moneyFiQueryKeys,
 } from "../../common";
 import { useDelayedBalanceRefetch } from "../queries/use-balance-query";
-// import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";   
+// import { MoneyFi } from "@mvstp3fn/moneyfi-ts-sdk";
 import { MoneyFi, PayloadType } from "@moneyfi/ts-sdk";
 import { useEffect } from "react";
+import { statsQueryKeys } from "../../common/query-keys/stats-query-keys";
+import { walletAmountQueryKeys } from "@/hooks/use-get-wallet-amount";
+import { maxQuoteQueryKeys } from "@/hooks/use-get-max-quote";
 
 interface WithdrawParams {
   address: string;
@@ -41,6 +44,7 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
   const { triggerDelayedRefetch, cleanup } = useDelayedBalanceRefetch();
   const moneyFiAptos = new MoneyFi(import.meta.env.VITE_INTEGRATION_CODE || "");
   const { signTransaction, submitTransaction } = useWallet();
+  const queryClient = useQueryClient();
 
   // Cleanup on unmount
   useEffect(() => {
@@ -121,6 +125,21 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
               amount: BigInt(actualAmount.toString()),
             });
 
+            console.log("Withdraw txPayload response:", JSON.stringify(txPayload));
+
+            // Invalidate stats queries after status is "done"
+            await Promise.all([
+              queryClient.invalidateQueries({
+                queryKey: statsQueryKeys.user(user.address),
+              }),
+              queryClient.invalidateQueries({
+                queryKey: walletAmountQueryKeys.assets(user.address),
+              }),
+              queryClient.invalidateQueries({
+                queryKey: maxQuoteQueryKeys.quote(user.address),
+              }),
+            ]);
+
             return { txPayload };
           }
 
@@ -134,11 +153,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
     onSuccess: async (data) => {
       const { txPayload } = data;
 
-      // Decode hex string to bytes (SDK returns hex-encoded transaction)
-      const hexString = txPayload.tx.startsWith('0x') ? txPayload.tx.slice(2) : txPayload.tx;
-      const bytes = new Uint8Array(hexString.length / 2);
-      for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
+      // Decode base64 string to bytes (SDK returns base64-encoded transaction for withdraw)
+      const binaryString = atob(txPayload.tx);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
       
       const de = new Deserializer(bytes);
