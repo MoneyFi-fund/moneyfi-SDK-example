@@ -217,16 +217,18 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
         throw new Error("Wallet account not connected");
       }
 
-      // Transform the payload to match ReqWithdrawPayload structure
+      // Transform the payload to match WithdrawRequestAptosPayload structure
+      // SDK v0.1.6: { type, address, payload: { signature, pubkey, message } }
       const transformedPayload = {
-        signature: payload.encoded_signature,
-        pubkey: payload.encoded_pubkey,
-        message: payload.full_message,
+        type: PayloadType.Aptos,
+        address: address,
+        payload: {
+          signature: payload.encoded_signature,
+          pubkey: payload.encoded_pubkey,
+          message: payload.full_message,
+        },
       };
-      await moneyFiAptos.reqWithdraw(
-        address,
-        transformedPayload
-      );
+      await moneyFiAptos.reqWithdraw(transformedPayload);
 
       // Poll for withdraw status until it's done
       const pollWithdrawStatus = async (): Promise<any> => {
@@ -282,11 +284,11 @@ export const useWithdrawMutation = (tokenAddress: string, amount: BigInt) => {
     onSuccess: async (data) => {
       const { txPayload } = data;
 
-      // Decode base64 string to bytes
-      const binaryString = atob(txPayload.tx);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      // Decode hex string to bytes (SDK returns hex-encoded transaction)
+      const hexString = txPayload.tx.startsWith('0x') ? txPayload.tx.slice(2) : txPayload.tx;
+      const bytes = new Uint8Array(hexString.length / 2);
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
       }
       
       const de = new Deserializer(bytes);
