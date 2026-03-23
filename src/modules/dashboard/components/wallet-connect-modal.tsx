@@ -48,8 +48,8 @@ const WalletOption: React.FC<WalletOptionProps> = ({
   isInstalled = false,
 }) => {
   const [isLocalLoading, setIsLocalLoading] = useState(false);
-  const { cardColors, buttonColors } = useThemeColors();
-  
+  const { cardColors, buttonColors, isDark } = useThemeColors();
+
   const handleAction = async () => {
     if (isInstalled) {
       setIsLocalLoading(true);
@@ -67,14 +67,17 @@ const WalletOption: React.FC<WalletOptionProps> = ({
     <Flex
       p={4}
       borderWidth="1px"
-      borderColor={cardColors.border}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       borderRadius={materialDesign3Theme.borderRadius.sm}
       alignItems="center"
       justifyContent="space-between"
       opacity={isInstalled ? 1 : 0.7}
-      _hover={{ bg: cardColors.background }}
+      bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
+      _hover={{
+        bg: isDark ? 'rgba(57,255,20,0.08)' : 'rgba(31,174,92,0.06)',
+        borderColor: isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)',
+      }}
       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-      bg={cardColors.background}
     >
       <HStack gap={3}>
         <Box
@@ -167,7 +170,7 @@ const WalletOption: React.FC<WalletOptionProps> = ({
   );
 };const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ isOpen, onClose }) => {
   const { isConnected: isAptosConnected, isConnecting, connect } = useAptos();
-  const { cardColors } = useThemeColors();
+  const { cardColors, isDark } = useThemeColors();
   const { wallets = [], notDetectedWallets = [] } = useWallet();
   const { availableWallets, installableWallets } = groupAndSortWallets([...wallets, ...notDetectedWallets]);
   const [error, setError] = useState<string | null>(null);
@@ -245,8 +248,10 @@ const WalletOption: React.FC<WalletOptionProps> = ({
         maxW="md"
         mx={4}
         borderRadius={materialDesign3Theme.borderRadius.lg}
-        boxShadow={materialDesign3Theme.elevation.level5}
-        bg={cardColors.background}
+        boxShadow={isDark ? '0 0 40px rgba(57,255,20,0.15)' : materialDesign3Theme.elevation.level5}
+        bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(255,255,255,0.12)' : '#E0E0E0'}
       >
           <DialogHeader p={6}>
             <DialogTitle
@@ -359,21 +364,21 @@ const WalletOption: React.FC<WalletOptionProps> = ({
             <Button
               onClick={onClose}
               w="full"
-              bg="neutral.100"
-              color="neutral.700"
+              bg={isDark ? 'rgba(255,255,255,0.06)' : '#F5F5F5'}
+              color={isDark ? '#D4E8D4' : '#1A1A1A'}
               border="1px solid"
-              borderColor="neutral.300"
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
               borderRadius="sm"
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               fontWeight="medium"
               fontSize="label-lg"
               minH="40px"
               _hover={{
-                bg: "neutral.200",
-                borderColor: "neutral.400",
+                bg: isDark ? 'rgba(255,255,255,0.1)' : '#EBEBEB',
+                borderColor: isDark ? 'rgba(255,255,255,0.25)' : '#CCCCCC',
               }}
               _active={{
-                bg: "neutral.300",
+                bg: isDark ? 'rgba(255,255,255,0.14)' : '#E0E0E0',
               }}
             >
               Cancel

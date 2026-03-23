@@ -15,7 +15,7 @@ import { materialDesign3Theme } from "@/theme/material-design-3";
 export default function CheckWalletAccount() {
   const { address, isConnected, disconnect } = useEVM();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } = useCheckWalletAccountQuery();
-  const { cardColors, colors, buttonColors } = useThemeColors();
+  const { cardColors, colors, buttonColors, isDark } = useThemeColors();
 
   const handleDisconnectWallet = async () => {
     try {
@@ -27,14 +27,15 @@ export default function CheckWalletAccount() {
 
   return (
     <Card.Root
-      bg={cardColors.background}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={cardColors.border}
-      borderRadius={materialDesign3Theme.borderRadius.md}
-      boxShadow={materialDesign3Theme.elevation.level1}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+      borderRadius="16px"
       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        boxShadow: materialDesign3Theme.elevation.level2,
+        boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.15)' : 'md',
       }}
     >
       <Card.Header>
@@ -45,8 +46,10 @@ export default function CheckWalletAccount() {
             </Text>
             {isConnected && (
               <Badge
-                colorScheme="green"
-                variant="subtle"
+                bg={isDark ? 'rgba(57,255,20,0.15)' : 'rgba(31,174,92,0.15)'}
+                color={isDark ? '#39FF14' : '#1FAE5C'}
+                border="1px solid"
+                borderColor={isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)'}
                 fontSize="xs"
                 py={1}
                 borderRadius="md"
@@ -81,7 +84,7 @@ export default function CheckWalletAccount() {
                   <Text fontSize="sm" color={cardColors.textSecondary}>
                     Connected Wallet:
                   </Text>
-                  <Text fontSize="md" fontWeight="medium" color={cardColors.text} fontFamily="mono">
+                  <Text fontSize="md" fontWeight="medium" color={isDark ? '#D4E8D4' : '#1A1A1A'} fontFamily="'JetBrains Mono', monospace">
                     {address.slice(0, 6)}...{address.slice(-4)}
                   </Text>
                   
@@ -95,8 +98,16 @@ export default function CheckWalletAccount() {
                       </Text>
                     ) : (
                       <Badge
-                        colorScheme={hasWalletAccount ? "green" : "orange"}
-                        variant="subtle"
+                        bg={hasWalletAccount
+                          ? (isDark ? 'rgba(57,255,20,0.15)' : 'rgba(31,174,92,0.15)')
+                          : (isDark ? 'rgba(255,184,0,0.15)' : 'rgba(217,119,6,0.15)')}
+                        color={hasWalletAccount
+                          ? (isDark ? '#39FF14' : '#1FAE5C')
+                          : (isDark ? '#FFB800' : '#D97706')}
+                        border="1px solid"
+                        borderColor={hasWalletAccount
+                          ? (isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)')
+                          : (isDark ? 'rgba(255,184,0,0.4)' : 'rgba(217,119,6,0.4)')}
                         fontSize="xs"
                         py={1}
                         borderRadius="md"

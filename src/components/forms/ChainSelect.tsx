@@ -2,6 +2,7 @@ import React from 'react';
 import { Field, NativeSelectRoot, NativeSelectField } from '@chakra-ui/react';
 import type { UseFormRegister, FieldErrors, FieldValues, Path } from 'react-hook-form';
 import { EVM_CHAINS } from '@/config/chains';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface ChainOption {
   chainId: number;
@@ -29,6 +30,7 @@ export function ChainSelect<T extends FieldValues>({
   errors,
   allowedChains,
 }: ChainSelectProps<T>) {
+  const { isDark } = useThemeColors();
   const error = errors[name];
 
   const chainOptions: ChainOption[] = Object.values(EVM_CHAINS)
@@ -46,6 +48,10 @@ export function ChainSelect<T extends FieldValues>({
         <NativeSelectField
           {...register(name)}
           placeholder="Select network"
+          _focus={{
+            borderColor: isDark ? '#39FF14' : '#1FAE5C',
+            boxShadow: isDark ? '0 0 0 2px rgba(57, 255, 20, 0.3)' : '0 0 0 2px rgba(31, 174, 92, 0.3)',
+          }}
         >
           {chainOptions.map((option) => (
             <option

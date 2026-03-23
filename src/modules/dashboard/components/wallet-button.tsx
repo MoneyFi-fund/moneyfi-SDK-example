@@ -13,7 +13,7 @@ interface WalletButtonProps {
 
 const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
   const { address, isConnected, isConnecting, disconnect } = useAptos();
-  const { menuColors, buttonColors } = useThemeColors();
+  const { menuColors, buttonColors, isDark } = useThemeColors();
   const navigate = useNavigate();
 
   // Simple avatar component
@@ -46,19 +46,19 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
             variant="outline"
             minH="40px"
             px={4}
-            borderColor="neutral.300"
+            borderColor={isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)'}
             border="1px solid"
             borderRadius="sm"
-            bg="surface.50"
+            bg={isDark ? 'rgba(57,255,20,0.08)' : 'rgba(31,174,92,0.08)'}
             boxShadow="sm"
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             _hover={{
-              bg: "neutral.100",
-              borderColor: "neutral.400",
-              boxShadow: "md",
+              bg: isDark ? 'rgba(57,255,20,0.15)' : 'rgba(31,174,92,0.15)',
+              borderColor: isDark ? '#39FF14' : '#1FAE5C',
+              boxShadow: isDark ? '0 0 12px rgba(57,255,20,0.3)' : 'md',
             }}
             _active={{
-              bg: "neutral.200",
+              bg: isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)',
               boxShadow: "sm",
             }}
           >
@@ -67,7 +67,8 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
               <Text
                 fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
                 fontWeight="medium"
-                color="black"
+                color={isDark ? '#39FF14' : '#1FAE5C'}
+                fontFamily="'JetBrains Mono', monospace"
               >
                 {truncateAddress(address)}
               </Text>
@@ -149,19 +150,19 @@ const WalletButton: React.FC<WalletButtonProps> = ({ onConnectClick }) => {
       loading={isConnecting}
       minH="40px"
       px={6}
-      bg={buttonColors.primary.background}
-      color={buttonColors.primary.text}
+      bg={isDark ? '#39FF14' : '#1FAE5C'}
+      color={isDark ? '#000000' : '#FFFFFF'}
       borderRadius="sm"
       boxShadow="sm"
       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-      fontWeight="medium"
+      fontWeight="600"
       fontSize="label-lg"
       _hover={{
-        bg: buttonColors.primary.hover,
-        boxShadow: "md",
+        bg: isDark ? '#5FFF42' : '#15803D',
+        boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.5)' : 'none',
       }}
       _active={{
-        bg: buttonColors.primary.active,
+        bg: isDark ? '#2ECC10' : '#166534',
         boxShadow: "sm",
       }}
       _loading={{

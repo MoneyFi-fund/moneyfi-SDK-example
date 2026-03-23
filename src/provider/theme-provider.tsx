@@ -29,7 +29,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  defaultMode = 'light'
+  defaultMode = 'dark'
 }) => {
   const [mode, setModeState] = useState<ThemeMode>(defaultMode);
 
@@ -44,11 +44,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         return;
       }
 
-      // Check system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        setModeState('dark');
-      } else {
+      // Check system preference, default to dark (web3 aesthetic)
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
         setModeState('light');
+      } else {
+        setModeState('dark');
       }
     };
 

@@ -1,8 +1,7 @@
 import { createSystem, defaultConfig } from "@chakra-ui/react"
 
-// Dynamic theme colors that will be updated by the theme provider
+// Dynamic theme colors resolved via CSS custom properties
 const createDynamicColors = () => ({
-  // Primary Colors (Green) - Light mode defaults
   primary: {
     50: 'var(--chakra-colors-primary-50)',
     100: 'var(--chakra-colors-primary-100)',
@@ -15,8 +14,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-primary-800)',
     900: 'var(--chakra-colors-primary-900)',
   },
-
-  // Secondary Colors (Purple)
   secondary: {
     50: 'var(--chakra-colors-secondary-50)',
     100: 'var(--chakra-colors-secondary-100)',
@@ -29,8 +26,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-secondary-800)',
     900: 'var(--chakra-colors-secondary-900)',
   },
-
-  // Tertiary Colors (Blue)
   tertiary: {
     50: 'var(--chakra-colors-tertiary-50)',
     100: 'var(--chakra-colors-tertiary-100)',
@@ -43,8 +38,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-tertiary-800)',
     900: 'var(--chakra-colors-tertiary-900)',
   },
-
-  // Error Colors (Red)
   error: {
     50: 'var(--chakra-colors-error-50)',
     100: 'var(--chakra-colors-error-100)',
@@ -57,8 +50,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-error-800)',
     900: 'var(--chakra-colors-error-900)',
   },
-
-  // Success Colors
   success: {
     50: 'var(--chakra-colors-success-50)',
     100: 'var(--chakra-colors-success-100)',
@@ -71,8 +62,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-success-800)',
     900: 'var(--chakra-colors-success-900)',
   },
-
-  // Warning Colors (Orange)
   warning: {
     50: 'var(--chakra-colors-warning-50)',
     100: 'var(--chakra-colors-warning-100)',
@@ -85,8 +74,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-warning-800)',
     900: 'var(--chakra-colors-warning-900)',
   },
-
-  // Neutral Colors
   neutral: {
     50: 'var(--chakra-colors-neutral-50)',
     100: 'var(--chakra-colors-neutral-100)',
@@ -99,8 +86,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-neutral-800)',
     900: 'var(--chakra-colors-neutral-900)',
   },
-
-  // Surface Colors
   surface: {
     50: 'var(--chakra-colors-surface-50)',
     100: 'var(--chakra-colors-surface-100)',
@@ -113,8 +98,6 @@ const createDynamicColors = () => ({
     800: 'var(--chakra-colors-surface-800)',
     900: 'var(--chakra-colors-surface-900)',
   },
-
-  // Semantic Colors
   background: 'var(--chakra-colors-background)',
   onBackground: 'var(--chakra-colors-on-background)',
   surfaceBg: 'var(--chakra-colors-surface-bg)',
@@ -125,18 +108,17 @@ const createDynamicColors = () => ({
   outlineVariant: 'var(--chakra-colors-outline-variant)',
 });
 
-// Material Design 3 Shadows (Elevation System)
-const materialDesign3Shadows = {
+// Cyberpunk neon glow shadow system
+const web3Shadows = {
   xs: 'none',
-  sm: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
-  md: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
-  lg: '0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)',
-  xl: '0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)',
-  '2xl': '0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15)',
+  sm: '0 0 12px rgba(57, 255, 20, 0.15), inset 0 0 20px rgba(57, 255, 20, 0.02)',
+  md: '0 0 24px rgba(57, 255, 20, 0.25), 0 0 4px rgba(57, 255, 20, 0.1)',
+  lg: '0 0 40px rgba(57, 255, 20, 0.35), 0 0 8px rgba(57, 255, 20, 0.15)',
+  xl: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(57, 255, 20, 0.1)',
+  '2xl': '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(57, 255, 20, 0.15)',
 }
 
-// Material Design 3 Border Radius
-const materialDesign3Radii = {
+const web3Radii = {
   none: '0px',
   xs: '4px',
   sm: '8px',
@@ -148,123 +130,123 @@ const materialDesign3Radii = {
   full: '9999px',
 }
 
-// Create the custom Chakra UI system with Material Design 3
+// Chakra UI system with Web3 dark+green tokens
 export const chakraTheme = createSystem(defaultConfig, {
   theme: {
     tokens: {
       colors: {
-        // Primary Colors (Green)
+        // Primary — Emerald/Neon green scale
         primary: {
-          50: { value: '#E8F5E8' },
-          100: { value: '#C8E6C8' },
-          200: { value: '#A5D6A5' },
-          300: { value: '#81C784' },
-          400: { value: '#66BB6A' },
-          500: { value: '#4CAF50' },
-          600: { value: '#43A047' },
-          700: { value: '#388E3C' },
-          800: { value: '#2E7D32' },
-          900: { value: '#1B5E20' },
+          50: { value: '#ECFDF5' },
+          100: { value: '#D1FAE5' },
+          200: { value: '#A7F3D0' },
+          300: { value: '#6EE7B7' },
+          400: { value: '#34D399' },
+          500: { value: '#1FAE5C' },
+          600: { value: '#15803D' },
+          700: { value: '#166534' },
+          800: { value: '#14532D' },
+          900: { value: '#052E16' },
         },
-        // Secondary Colors (Purple)
+        // Secondary — Dark emerald
         secondary: {
-          50: { value: '#F3E5F5' },
-          100: { value: '#E1BEE7' },
-          200: { value: '#CE93D8' },
-          300: { value: '#BA68C8' },
-          400: { value: '#AB47BC' },
-          500: { value: '#9C27B0' },
-          600: { value: '#8E24AA' },
-          700: { value: '#7B1FA2' },
-          800: { value: '#6A1B9A' },
-          900: { value: '#4A148C' },
+          50: { value: '#F0FDF4' },
+          100: { value: '#DCFCE7' },
+          200: { value: '#BBF7D0' },
+          300: { value: '#86EFAC' },
+          400: { value: '#4ADE80' },
+          500: { value: '#15803D' },
+          600: { value: '#166534' },
+          700: { value: '#14532D' },
+          800: { value: '#052E16' },
+          900: { value: '#022C22' },
         },
-        // Tertiary Colors (Blue)
+        // Tertiary — Teal green
         tertiary: {
-          50: { value: '#E8F4FD' },
-          100: { value: '#C5E4FB' },
-          200: { value: '#9FD3F8' },
-          300: { value: '#79C2F5' },
-          400: { value: '#5CB5F3' },
-          500: { value: '#42A5F5' },
-          600: { value: '#3D9BE9' },
-          700: { value: '#368FDC' },
-          800: { value: '#2F83CF' },
-          900: { value: '#1E6BB8' },
+          50: { value: '#ECFDF5' },
+          100: { value: '#D1FAE5' },
+          200: { value: '#A7F3D0' },
+          300: { value: '#6EE7B7' },
+          400: { value: '#34D399' },
+          500: { value: '#059669' },
+          600: { value: '#047857' },
+          700: { value: '#065F46' },
+          800: { value: '#064E3B' },
+          900: { value: '#022C22' },
         },
-        // Error Colors (Red)
+        // Error — Red
         error: {
-          50: { value: '#FFEBEE' },
-          100: { value: '#FFCDD2' },
-          200: { value: '#EF9A9A' },
-          300: { value: '#E57373' },
-          400: { value: '#EF5350' },
-          500: { value: '#F44336' },
-          600: { value: '#E53935' },
-          700: { value: '#D32F2F' },
-          800: { value: '#C62828' },
-          900: { value: '#B71C1C' },
+          50: { value: '#FEF2F2' },
+          100: { value: '#FEE2E2' },
+          200: { value: '#FECACA' },
+          300: { value: '#FCA5A5' },
+          400: { value: '#F87171' },
+          500: { value: '#DC2626' },
+          600: { value: '#B91C1C' },
+          700: { value: '#991B1B' },
+          800: { value: '#7F1D1D' },
+          900: { value: '#450A0A' },
         },
-        // Success Colors
+        // Success — matches primary green
         success: {
-          50: { value: '#E8F5E8' },
-          100: { value: '#C8E6C8' },
-          200: { value: '#A5D6A5' },
-          300: { value: '#81C784' },
-          400: { value: '#66BB6A' },
-          500: { value: '#4CAF50' },
-          600: { value: '#43A047' },
-          700: { value: '#388E3C' },
-          800: { value: '#2E7D32' },
-          900: { value: '#1B5E20' },
+          50: { value: '#ECFDF5' },
+          100: { value: '#D1FAE5' },
+          200: { value: '#A7F3D0' },
+          300: { value: '#6EE7B7' },
+          400: { value: '#34D399' },
+          500: { value: '#1FAE5C' },
+          600: { value: '#15803D' },
+          700: { value: '#166534' },
+          800: { value: '#14532D' },
+          900: { value: '#052E16' },
         },
-        // Warning Colors (Orange)
+        // Warning — Amber
         warning: {
-          50: { value: '#FFF3E0' },
-          100: { value: '#FFE0B2' },
-          200: { value: '#FFCC80' },
-          300: { value: '#FFB74D' },
-          400: { value: '#FFA726' },
-          500: { value: '#FF9800' },
-          600: { value: '#FB8C00' },
-          700: { value: '#F57C00' },
-          800: { value: '#EF6C00' },
-          900: { value: '#E65100' },
+          50: { value: '#FFFBEB' },
+          100: { value: '#FEF3C7' },
+          200: { value: '#FDE68A' },
+          300: { value: '#FCD34D' },
+          400: { value: '#FBBF24' },
+          500: { value: '#D97706' },
+          600: { value: '#B45309' },
+          700: { value: '#92400E' },
+          800: { value: '#78350F' },
+          900: { value: '#451A03' },
         },
-        // Neutral Colors
+        // Neutral — clean grays
         neutral: {
           50: { value: '#FAFAFA' },
           100: { value: '#F5F5F5' },
-          200: { value: '#EEEEEE' },
-          300: { value: '#E0E0E0' },
-          400: { value: '#BDBDBD' },
-          500: { value: '#9E9E9E' },
-          600: { value: '#757575' },
-          700: { value: '#616161' },
-          800: { value: '#424242' },
-          900: { value: '#212121' },
+          200: { value: '#E5E5E5' },
+          300: { value: '#D4D4D4' },
+          400: { value: '#A3A3A3' },
+          500: { value: '#737373' },
+          600: { value: '#525252' },
+          700: { value: '#404040' },
+          800: { value: '#262626' },
+          900: { value: '#171717' },
         },
-        // Surface Colors
+        // Surface — light mode defaults
         surface: {
           50: { value: '#FFFFFF' },
-          100: { value: '#FEFEFE' },
-          200: { value: '#FDFDFD' },
-          300: { value: '#FBFBFB' },
-          400: { value: '#F9F9F9' },
-          500: { value: '#F7F7F7' },
-          600: { value: '#F5F5F5' },
-          700: { value: '#F3F3F3' },
-          800: { value: '#F1F1F1' },
-          900: { value: '#EEEEEE' },
+          100: { value: '#FCFCFC' },
+          200: { value: '#FAFAFA' },
+          300: { value: '#F8F8F8' },
+          400: { value: '#F5F5F5' },
+          500: { value: '#F0F0F0' },
+          600: { value: '#EBEBEB' },
+          700: { value: '#E5E5E5' },
+          800: { value: '#E0E0E0' },
+          900: { value: '#D4D4D4' },
         },
       },
       shadows: {
         xs: { value: 'none' },
-        sm: { value: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)' },
-        md: { value: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)' },
-        lg: { value: '0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)' },
-        xl: { value: '0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)' },
-        '2xl': { value: '0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15)' },
+        sm: { value: web3Shadows.sm },
+        md: { value: web3Shadows.md },
+        lg: { value: web3Shadows.lg },
+        xl: { value: web3Shadows.xl },
+        '2xl': { value: web3Shadows['2xl'] },
       },
       radii: {
         none: { value: '0px' },
@@ -315,19 +297,19 @@ export const chakraTheme = createSystem(defaultConfig, {
   },
 })
 
-// Export theme tokens for backward compatibility
+// Export for backward compatibility
 export const materialDesign3Theme = {
-  shadows: materialDesign3Shadows,
-  radii: materialDesign3Radii,
+  shadows: web3Shadows,
+  radii: web3Radii,
   elevation: {
     level0: 'none',
-    level1: materialDesign3Shadows.sm,
-    level2: materialDesign3Shadows.md,
-    level3: materialDesign3Shadows.lg,
-    level4: materialDesign3Shadows.xl,
-    level5: materialDesign3Shadows['2xl'],
+    level1: web3Shadows.sm,
+    level2: web3Shadows.md,
+    level3: web3Shadows.lg,
+    level4: web3Shadows.xl,
+    level5: web3Shadows['2xl'],
   },
-  borderRadius: materialDesign3Radii,
+  borderRadius: web3Radii,
   typography: {
     displayLarge: { fontSize: '57px', lineHeight: '64px', fontWeight: '400' },
     displayMedium: { fontSize: '45px', lineHeight: '52px', fontWeight: '400' },

@@ -18,10 +18,10 @@ interface UserAssetAllocationProps {
   isConnected: boolean;
 }
 
-// Chart colors from Material Design 3 theme
+// Chart colors — Web3 dark+green palette
 const CHART_COLORS = [
-  '#4CAF50', '#9C27B0', '#42A5F5', '#FF9800',
-  '#F44336', '#66BB6A', '#AB47BC', '#5CB5F3',
+  '#39FF14', '#1FAE5C', '#15803D', '#0F5C2E', '#052E16',
+  '#5FFF42', '#2ECC11', '#166534', '#14532D', '#064E3B',
 ];
 
 // Token address to symbol mapping
@@ -63,17 +63,19 @@ export default function UserAssetAllocationComponent({
   address,
   isConnected,
 }: UserAssetAllocationProps) {
-  const { cardColors } = useThemeColors();
+  const { cardColors, isDark } = useThemeColors();
   const allocationQuery = useGetUserAssetAllocation(address || "");
 
   // Not connected state
   if (!isConnected) {
     return (
       <Card.Root
-        bg={cardColors.background}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={cardColors.border}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
       >
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
@@ -95,10 +97,12 @@ export default function UserAssetAllocationComponent({
   if (allocationQuery.isPending) {
     return (
       <Card.Root
-        bg={cardColors.background}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={cardColors.border}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
       >
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
@@ -107,7 +111,7 @@ export default function UserAssetAllocationComponent({
         </Card.Header>
         <Card.Body>
           <VStack py={8}>
-            <Spinner size="xl" color="primary.500" />
+            <Spinner size="xl" color={isDark ? '#39FF14' : '#1FAE5C'} />
             <Text color={cardColors.textSecondary}>
               Loading asset allocation...
             </Text>
@@ -121,10 +125,12 @@ export default function UserAssetAllocationComponent({
   if (allocationQuery.isError) {
     return (
       <Card.Root
-        bg={cardColors.background}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={cardColors.border}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
       >
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>
@@ -155,10 +161,12 @@ export default function UserAssetAllocationComponent({
   if (!allocation) {
     return (
       <Card.Root
-        bg={cardColors.background}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={cardColors.border}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
       >
         <Card.Header>
           <Text fontSize="lg" fontWeight="semibold" color={cardColors.text}>

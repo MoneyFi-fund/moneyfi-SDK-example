@@ -51,7 +51,7 @@ const tokens = createListCollection({
 
 export const DepositComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const { cardColors, buttonColors } = useThemeColors();
+  const { cardColors, buttonColors, isDark } = useThemeColors();
   const queryClient = useQueryClient();
   const {
     data: hasWalletAccount,
@@ -319,15 +319,17 @@ export const DepositComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
           boxShadow: materialDesign3Theme.elevation.level2,
         }}
-        border="1px solid"
-        borderColor={cardColors.border}
       >
         <Card.Header p={6}>
           <Text
@@ -411,15 +413,17 @@ export const DepositComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={cardColors.background}
-      borderRadius={materialDesign3Theme.borderRadius.md}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+      border="1px solid"
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+      borderRadius="16px"
       boxShadow={materialDesign3Theme.elevation.level1}
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
         boxShadow: materialDesign3Theme.elevation.level2,
       }}
-      border="1px solid"
-      borderColor={cardColors.border}
     >
       <Card.Header p={6}>
         <Text
@@ -478,9 +482,9 @@ export const DepositComponent: React.FC = () => {
               <Portal>
                 <Select.Positioner>
                   <Select.Content
-                    bg={cardColors.background}
+                    bg={isDark ? '#0A0A0A' : '#FFFFFF'}
                     border="1px solid"
-                    borderColor={cardColors.border}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
                     boxShadow={materialDesign3Theme.elevation.level3}
                   >
@@ -488,8 +492,8 @@ export const DepositComponent: React.FC = () => {
                       <Select.Item
                         item={token}
                         key={token.value}
-                        color={cardColors.text}
-                        _hover={{ bg: "neutral.100" }}
+                        color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                        _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                         px={4}
                         py={3}
                       >
@@ -516,6 +520,7 @@ export const DepositComponent: React.FC = () => {
                 <Text
                   fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
                   color={cardColors.textSecondary}
+                  fontFamily="'JetBrains Mono', monospace"
                 >
                   Balance:{" "}
                   {isWalletAmountLoading ? "..." : tokenBalance.display}{" "}
@@ -596,21 +601,21 @@ export const DepositComponent: React.FC = () => {
               isCheckingAccount ||
               isInsufficientBalance
             }
-            bg={buttonColors.primary.background}
-            color={buttonColors.primary.text}
+            bg={isDark ? '#39FF14' : '#1FAE5C'}
+            color={isDark ? '#000000' : '#FFFFFF'}
             minH="48px"
             px={6}
             borderRadius="sm"
-            fontWeight="medium"
+            fontWeight="600"
             fontSize="label-lg"
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             boxShadow="sm"
             _hover={{
-              bg: buttonColors.primary.hover,
-              boxShadow: "md",
+              bg: isDark ? '#5FFF42' : '#15803D',
+              boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.5)' : 'none',
             }}
             _active={{
-              bg: buttonColors.primary.active,
+              bg: isDark ? '#2ECC10' : '#166534',
               boxShadow: "sm",
             }}
             _loading={{

@@ -41,7 +41,7 @@ type CreateWithdrawRequestPayload = {
 
 export const WithdrawComponent: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const { cardColors, buttonColors } = useThemeColors();
+  const { cardColors, buttonColors, isDark } = useThemeColors();
   const queryClient = useQueryClient();
   const { data: hasWalletAccount, isLoading: isCheckingAccount } =
     useCheckWalletAccountQuery();
@@ -153,15 +153,17 @@ export const WithdrawComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
           boxShadow: materialDesign3Theme.elevation.level2,
         }}
-        border="1px solid"
-        borderColor={cardColors.border}
       >
         <Card.Header p={6}>
           <Text
@@ -189,15 +191,17 @@ export const WithdrawComponent: React.FC = () => {
   if (!hasWalletAccount && !isCheckingAccount) {
     return (
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
           boxShadow: materialDesign3Theme.elevation.level2,
         }}
-        border="1px solid"
-        borderColor={cardColors.border}
       >
         <Card.Header p={6}>
           <Text
@@ -245,15 +249,17 @@ export const WithdrawComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={cardColors.background}
-      borderRadius={materialDesign3Theme.borderRadius.md}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+      border="1px solid"
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+      borderRadius="16px"
       boxShadow={materialDesign3Theme.elevation.level1}
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
         boxShadow: materialDesign3Theme.elevation.level2,
       }}
-      border="1px solid"
-      borderColor={cardColors.border}
     >
       <Card.Header p={6}>
         <Text
@@ -269,9 +275,9 @@ export const WithdrawComponent: React.FC = () => {
         <VStack align="stretch" gap={6}>
           {walletAmountData && (
               <Card.Root
-                bg={cardColors.background}
+                bg={isDark ? 'rgba(57,255,20,0.06)' : 'rgba(31,174,92,0.06)'}
                 border="1px solid"
-                borderColor={cardColors.border}
+                borderColor={isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)'}
                 borderRadius={materialDesign3Theme.borderRadius.sm}
                 boxShadow={materialDesign3Theme.elevation.level1}
               >
@@ -293,7 +299,8 @@ export const WithdrawComponent: React.FC = () => {
                         materialDesign3Theme.typography.headlineSmall.fontSize
                       }
                       fontWeight="bold"
-                      color={cardColors.text}
+                      color={isDark ? '#39FF14' : '#1FAE5C'}
+                      fontFamily="'JetBrains Mono', monospace"
                     >
                       $
                       {maxWithdrawAmount > 0
@@ -350,9 +357,9 @@ export const WithdrawComponent: React.FC = () => {
               <Portal>
                 <Select.Positioner>
                   <Select.Content
-                    bg={cardColors.background}
+                    bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                     border="1px solid"
-                    borderColor="neutral.200"
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
                     boxShadow={materialDesign3Theme.elevation.level3}
                   >
@@ -360,8 +367,8 @@ export const WithdrawComponent: React.FC = () => {
                       <Select.Item
                         item={token}
                         key={token.value}
-                        color="neutral.100"
-                        _hover={{ bg: "neutral.100" }}
+                        color={isDark ? '#D4E8D4' : '#1A1A1A'}
+                        _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                         px={4}
                         py={3}
                       >
@@ -456,21 +463,21 @@ export const WithdrawComponent: React.FC = () => {
               isLoadingStats ||
               isLoadingWalletAmount
             }
-            bg={buttonColors.error.background}
-            color={buttonColors.error.text}
+            bg={isDark ? '#39FF14' : '#1FAE5C'}
+            color={isDark ? '#000000' : '#FFFFFF'}
             minH="48px"
             px={6}
             borderRadius="sm"
-            fontWeight="medium"
+            fontWeight="600"
             fontSize="label-lg"
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             boxShadow="sm"
             _hover={{
-              bg: buttonColors.error.hover,
-              boxShadow: "md",
+              bg: isDark ? '#5FFF42' : '#15803D',
+              boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.5)' : 'none',
             }}
             _active={{
-              bg: buttonColors.error.active,
+              bg: isDark ? '#2ECC10' : '#166534',
               boxShadow: "sm",
             }}
             _loading={{

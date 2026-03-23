@@ -8,21 +8,32 @@ import { useThemeColors } from '@/provider/theme-provider'
 interface ILayoutProps {
     children?: React.ReactNode
 }
-    
+
 export default function Layout({ children }: ILayoutProps) {
   const { isLoading } = useAuth();
-  const { colors } = useThemeColors();
+  const { colors, isDark } = useThemeColors();
 
   return (
-    <Box 
-      minH="100vh" 
-      bg={colors.background} 
+    <Box
+      minH="100vh"
+      bg={colors.background}
       color={colors.onBackground}
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+      position="relative"
     >
-      <Header />
-      {isLoading && <Loading message="Connecting wallet..." />}
-      {children}
+      {/* Cyberpunk background effects — dark mode only */}
+      {isDark && (
+        <>
+          <Box className="cyber-grid" />
+          <Box className="cyber-scanlines" />
+          <Box className="cyber-vignette" />
+        </>
+      )}
+      <Box position="relative" zIndex={2}>
+        <Header />
+        {isLoading && <Loading message="Connecting wallet..." />}
+        {children}
+      </Box>
     </Box>
   )
 }

@@ -55,6 +55,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       <Icon
         as={isDark ? BiSun : BiMoon}
         fontSize={size === 'sm' ? '16px' : size === 'md' ? '20px' : '24px'}
+        color={isDark ? '#39FF14' : '#666666'}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         transform={isDark ? 'rotate(0deg)' : 'rotate(180deg)'}
       />
@@ -69,8 +70,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         </Tooltip.Trigger>
         <Tooltip.Positioner>
           <Tooltip.Content
-            bg={isDark ? 'neutral.200' : 'neutral.800'}
-            color={isDark ? 'neutral.800' : 'neutral.100'}
+            bg={isDark ? '#0A0A0A' : '#1A1A1A'}
+            color={isDark ? '#E0E0E0' : '#FFFFFF'}
             fontSize={materialDesign3Theme.typography.labelSmall.fontSize}
             px={3}
             py={2}
@@ -105,7 +106,7 @@ export const CompactThemeToggle: React.FC = () => {
       color={isDark ? 'neutral.100' : 'neutral.800'}
       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        bg: isDark ? 'neutral.800' : 'neutral.100',
+        bg: isDark ? 'rgba(57,255,20,0.1)' : 'rgba(0,0,0,0.05)',
         transform: 'scale(1.1)',
       }}
       _active={{
@@ -116,6 +117,7 @@ export const CompactThemeToggle: React.FC = () => {
       <Icon
         as={isDark ? BiSun : BiMoon}
         fontSize="20px"
+        color={isDark ? '#39FF14' : '#666666'}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         transform={isDark ? 'rotate(0deg)' : 'rotate(0deg)'}
       />

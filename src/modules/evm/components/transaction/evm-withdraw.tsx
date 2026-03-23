@@ -28,7 +28,7 @@ import { statsQueryKeys } from "@/hooks/common";
 export const EVMWithdrawComponent: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { address: evmAddress, isConnected: isEVMConnected } = useEVM();
-  const { cardColors, buttonColors } = useThemeColors();
+  const { cardColors, buttonColors, isDark } = useThemeColors();
   const queryClient = useQueryClient();
 
   // Form state
@@ -187,15 +187,16 @@ export const EVMWithdrawComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
-        boxShadow={materialDesign3Theme.elevation.level1}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          boxShadow: materialDesign3Theme.elevation.level2,
+          boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.15)' : 'md',
         }}
-        border="1px solid"
-        borderColor={cardColors.border}
       >
         <Card.Header p={6}>
           <Text
@@ -224,15 +225,16 @@ export const EVMWithdrawComponent: React.FC = () => {
   if (!isEVMConnected) {
     return (
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
-        boxShadow={materialDesign3Theme.elevation.level1}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+        borderRadius="16px"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          boxShadow: materialDesign3Theme.elevation.level2,
+          boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.15)' : 'md',
         }}
-        border="1px solid"
-        borderColor={cardColors.border}
       >
         <Card.Header p={6}>
           <Text
@@ -259,15 +261,16 @@ export const EVMWithdrawComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={cardColors.background}
-      borderRadius={materialDesign3Theme.borderRadius.md}
-      boxShadow={materialDesign3Theme.elevation.level1}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+      border="1px solid"
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+      borderRadius="16px"
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
-        boxShadow: materialDesign3Theme.elevation.level2,
+        boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.15)' : 'md',
       }}
-      border="1px solid"
-      borderColor={cardColors.border}
     >
       <Card.Header p={6}>
         <Text
@@ -313,20 +316,19 @@ export const EVMWithdrawComponent: React.FC = () => {
                 <Select.Control>
                   <Select.Trigger
                     border="1px solid"
-                    borderColor={cardColors.border}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
-                    color={cardColors.text}
-                    bg={cardColors.background}
+                    color={isDark ? '#D4E8D4' : '#1A1A1A'}
+                    bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
                     minH="48px"
                     px={4}
                     transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     _hover={{
-                      borderColor: cardColors.border,
-                      boxShadow: materialDesign3Theme.elevation.level1,
+                      borderColor: isDark ? 'rgba(57,255,20,0.4)' : '#1FAE5C',
                     }}
                     _focus={{
-                      borderColor: "primary.500",
-                      boxShadow: `0 0 0 2px rgba(63, 81, 181, 0.1)`,
+                      borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                      boxShadow: isDark ? `0 0 0 2px rgba(57, 255, 20, 0.15)` : `0 0 0 2px rgba(31, 174, 92, 0.15)`,
                       outline: "none",
                     }}
                   >
@@ -339,9 +341,9 @@ export const EVMWithdrawComponent: React.FC = () => {
                 <Portal>
                   <Select.Positioner>
                     <Select.Content
-                      bg={cardColors.background}
+                      bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                       border="1px solid"
-                      borderColor={cardColors.border}
+                      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                       borderRadius={materialDesign3Theme.borderRadius.sm}
                       boxShadow={materialDesign3Theme.elevation.level3}
                     >
@@ -349,8 +351,8 @@ export const EVMWithdrawComponent: React.FC = () => {
                         <Select.Item
                           item={chain}
                           key={chain.value}
-                          color={cardColors.text}
-                          _hover={{ bg: "neutral.100" }}
+                          color={isDark ? '#D4E8D4' : '#1A1A1A'}
+                          _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                           px={4}
                           py={3}
                         >
@@ -397,20 +399,19 @@ export const EVMWithdrawComponent: React.FC = () => {
                 <Select.Control>
                   <Select.Trigger
                     border="1px solid"
-                    borderColor={cardColors.border}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
-                    color={cardColors.text}
-                    bg={cardColors.background}
+                    color={isDark ? '#D4E8D4' : '#1A1A1A'}
+                    bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
                     minH="48px"
                     px={4}
                     transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     _hover={{
-                      borderColor: cardColors.border,
-                      boxShadow: materialDesign3Theme.elevation.level1,
+                      borderColor: isDark ? 'rgba(57,255,20,0.4)' : '#1FAE5C',
                     }}
                     _focus={{
-                      borderColor: "primary.500",
-                      boxShadow: `0 0 0 2px rgba(63, 81, 181, 0.1)`,
+                      borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                      boxShadow: isDark ? `0 0 0 2px rgba(57, 255, 20, 0.15)` : `0 0 0 2px rgba(31, 174, 92, 0.15)`,
                       outline: "none",
                     }}
                     _disabled={{
@@ -427,9 +428,9 @@ export const EVMWithdrawComponent: React.FC = () => {
                 <Portal>
                   <Select.Positioner>
                     <Select.Content
-                      bg={cardColors.background}
+                      bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                       border="1px solid"
-                      borderColor={cardColors.border}
+                      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                       borderRadius={materialDesign3Theme.borderRadius.sm}
                       boxShadow={materialDesign3Theme.elevation.level3}
                     >
@@ -437,8 +438,8 @@ export const EVMWithdrawComponent: React.FC = () => {
                         <Select.Item
                           item={token}
                           key={token.value}
-                          color={cardColors.text}
-                          _hover={{ bg: "neutral.100" }}
+                          color={isDark ? '#D4E8D4' : '#1A1A1A'}
+                          _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                           px={4}
                           py={3}
                         >
@@ -468,12 +469,12 @@ export const EVMWithdrawComponent: React.FC = () => {
                   variant="surface"
                   size="sm"
                   onClick={handleMaxAmount}
-                  color="primary.600"
+                  color={isDark ? '#39FF14' : '#1FAE5C'}
                   fontSize={materialDesign3Theme.typography.labelSmall.fontSize}
                   fontWeight="medium"
                   loading={isMaxQuoteLoading}
                   disabled={maxWithdrawAmount <= 0 && !isMaxQuoteLoading}
-                  _hover={{ bg: "primary.900", color: "white" }}
+                  _hover={{ bg: isDark ? 'rgba(57,255,20,0.1)' : 'rgba(31,174,92,0.1)', color: isDark ? '#5FFF42' : '#15803D' }}
                 >
                   MAX {maxWithdrawAmount > 0 ? `(${maxWithdrawAmount.toFixed(2)})` : ""}
                 </Button>
@@ -487,24 +488,23 @@ export const EVMWithdrawComponent: React.FC = () => {
               step="0.000001"
               min="0"
               border="1px solid"
-              // borderColor={isAmountExceeded ? "error.500" : cardColors.border}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
               borderRadius={materialDesign3Theme.borderRadius.sm}
               minH="48px"
               px={4}
-              bg={cardColors.background}
-              color={cardColors.text}
-              _placeholder={{ color: cardColors.textSecondary }}
+              bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
+              color={isDark ? '#D4E8D4' : '#1A1A1A'}
+              fontFamily="'JetBrains Mono', monospace"
+              _placeholder={{ color: isDark ? '#999999' : '#666666' }}
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-              // _hover={{
-              //   borderColor: isAmountExceeded ? "error.500" : cardColors.border,
-              // }}
-              // _focus={{
-              //   borderColor: isAmountExceeded ? "error.500" : "primary.500",
-              //   boxShadow: isAmountExceeded
-              //     ? `0 0 0 2px rgba(229, 57, 53, 0.1)`
-              //     : `0 0 0 2px rgba(63, 81, 181, 0.1)`,
-              //   outline: "none",
-              // }}
+              _hover={{
+                borderColor: isDark ? 'rgba(57,255,20,0.4)' : '#1FAE5C',
+              }}
+              _focus={{
+                borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                boxShadow: isDark ? "0 0 0 2px rgba(57, 255, 20, 0.15)" : "0 0 0 2px rgba(31, 174, 92, 0.15)",
+                outline: "none",
+              }}
             />
             {/* {isAmountExceeded && (
               <Text
@@ -522,28 +522,24 @@ export const EVMWithdrawComponent: React.FC = () => {
             onClick={handleWithdraw}
             loading={currentStep !== "idle"}
             disabled={!amount || !selectedChain || !evmAddress || currentStep !== "idle"}
-            bg={buttonColors.error.background}
-            color={buttonColors.error.text}
+            bg={isDark ? '#39FF14' : '#1FAE5C'}
+            color={isDark ? '#000000' : '#FFFFFF'}
+            fontWeight="600"
             minH="48px"
             px={6}
             borderRadius="sm"
-            fontWeight="medium"
             fontSize="label-lg"
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-            boxShadow="sm"
-            _hover={{
-              bg: buttonColors.error.hover,
-              boxShadow: "md",
-            }}
+            _hover={{ bg: isDark ? '#5FFF42' : '#15803D', boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.5)' : 'none' }}
             _active={{
-              bg: buttonColors.error.active,
+              bg: isDark ? '#2ECC11' : '#166534',
               boxShadow: "sm",
             }}
             _loading={{
-              bg: buttonColors.error.disabled,
+              bg: isDark ? 'rgba(57,255,20,0.5)' : 'rgba(31,174,92,0.5)',
             }}
             _disabled={{
-              bg: buttonColors.error.disabled,
+              bg: isDark ? 'rgba(57,255,20,0.3)' : 'rgba(31,174,92,0.3)',
               color: cardColors.textSecondary,
               cursor: "not-allowed",
               boxShadow: "none",
@@ -558,9 +554,9 @@ export const EVMWithdrawComponent: React.FC = () => {
           {pollingStatus && currentStep === "withdrawing" && (
             <Alert.Root
               status="info"
-              bg="primary.50"
+              bg={isDark ? 'rgba(57,255,20,0.06)' : 'rgba(31,174,92,0.06)'}
               border="1px solid"
-              borderColor="primary.200"
+              borderColor={isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)'}
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
               overflow="hidden"
@@ -568,9 +564,9 @@ export const EVMWithdrawComponent: React.FC = () => {
             >
               <Alert.Description width="100%" overflow="hidden">
                 <HStack gap={3} flexWrap="wrap">
-                  <Spinner size="sm" color="primary.500" />
+                  <Spinner size="sm" color={isDark ? '#39FF14' : '#1FAE5C'} />
                   <Text
-                    color="primary.800"
+                    color={isDark ? '#D4E8D4' : '#1A1A1A'}
                     fontWeight="medium"
                     fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                     wordBreak="break-word"
@@ -586,9 +582,9 @@ export const EVMWithdrawComponent: React.FC = () => {
           {successData ? (
             <Alert.Root
               status="success"
-              bg="success.50"
+              bg={isDark ? 'rgba(57,255,20,0.08)' : 'rgba(31,174,92,0.08)'}
               border="1px solid"
-              borderColor="success.200"
+              borderColor={isDark ? 'rgba(57,255,20,0.3)' : 'rgba(31,174,92,0.3)'}
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
               overflow="hidden"
@@ -597,7 +593,7 @@ export const EVMWithdrawComponent: React.FC = () => {
               <Alert.Description width="100%" overflow="hidden">
                 <VStack align="stretch" gap={2} width="100%">
                   <Text
-                    color="success.800"
+                    color={isDark ? '#39FF14' : '#1FAE5C'}
                     fontWeight="medium"
                     fontSize={
                       materialDesign3Theme.typography.labelLarge.fontSize
@@ -610,7 +606,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                       fontSize={
                         materialDesign3Theme.typography.bodySmall.fontSize
                       }
-                      color="success.700"
+                      color={isDark ? '#D4E8D4' : '#1A1A1A'}
                     >
                       Transaction:
                     </Text>
@@ -619,13 +615,13 @@ export const EVMWithdrawComponent: React.FC = () => {
                         href={getTransactionExplorerUrl(successData.hash)!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        color="primary.600"
+                        color={isDark ? '#39FF14' : '#1FAE5C'}
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        fontFamily="mono"
+                        fontFamily="'JetBrains Mono', monospace"
                         textDecoration="underline"
-                        _hover={{ color: "primary.700" }}
+                        _hover={{ color: isDark ? '#5FFF42' : '#15803D' }}
                         wordBreak="break-all"
                       >
                         {successData.hash.slice(0, 8)}...
@@ -633,11 +629,11 @@ export const EVMWithdrawComponent: React.FC = () => {
                       </Link>
                     ) : (
                       <Text
-                        color="primary.600"
+                        color={isDark ? '#39FF14' : '#1FAE5C'}
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        fontFamily="mono"
+                        fontFamily="'JetBrains Mono', monospace"
                         wordBreak="break-all"
                       >
                         {successData.hash.slice(0, 8)}...
@@ -652,7 +648,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        color="success.700"
+                        color={isDark ? '#D4E8D4' : '#1A1A1A'}
                       >
                         Withdrawal Status:
                       </Text>
@@ -661,7 +657,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                           fontSize={
                             materialDesign3Theme.typography.bodySmall.fontSize
                           }
-                          color={pollingStatus === "done" ? "success.900" : "success.800"}
+                          color={isDark ? '#39FF14' : '#1FAE5C'}
                           fontWeight="medium"
                           textTransform="capitalize"
                         >
@@ -672,7 +668,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                             fontSize={
                               materialDesign3Theme.typography.bodySmall.fontSize
                             }
-                            color="success.900"
+                            color={isDark ? '#39FF14' : '#1FAE5C'}
                           >
                             ✓
                           </Text>
@@ -683,12 +679,12 @@ export const EVMWithdrawComponent: React.FC = () => {
                   {/* Bridge Status */}
                   {isBridgeStatusLoading && (
                     <HStack gap={2}>
-                      <Spinner size="xs" color="primary.500" />
+                      <Spinner size="xs" color={isDark ? '#39FF14' : '#1FAE5C'} />
                       <Text
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        color="success.700"
+                        color={isDark ? '#8AAA8A' : '#666666'}
                       >
                         Checking bridge status...
                       </Text>
@@ -700,7 +696,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        color="success.700"
+                        color={isDark ? '#D4E8D4' : '#1A1A1A'}
                       >
                         Bridge Status:
                       </Text>
@@ -709,11 +705,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                           fontSize={
                             materialDesign3Theme.typography.bodySmall.fontSize
                           }
-                          color={
-                            (typeof bridgeStatus === "string" ? bridgeStatus : (bridgeStatus as any)?.status) === "done"
-                              ? "success.900"
-                              : "success.800"
-                          }
+                          color={isDark ? '#39FF14' : '#1FAE5C'}
                           fontWeight="medium"
                           textTransform="capitalize"
                         >
@@ -726,7 +718,7 @@ export const EVMWithdrawComponent: React.FC = () => {
                             fontSize={
                               materialDesign3Theme.typography.bodySmall.fontSize
                             }
-                            color="success.900"
+                            color={isDark ? '#39FF14' : '#1FAE5C'}
                           >
                             ✓
                           </Text>
@@ -743,9 +735,9 @@ export const EVMWithdrawComponent: React.FC = () => {
           {(stepError || withdrawMutation.isError) && (
             <Alert.Root
               status="error"
-              bg="error.50"
+              bg={isDark ? 'rgba(255,68,68,0.08)' : 'rgba(220,38,38,0.08)'}
               border="1px solid"
-              borderColor="error.200"
+              borderColor={isDark ? 'rgba(255,68,68,0.3)' : 'rgba(220,38,38,0.3)'}
               borderRadius={materialDesign3Theme.borderRadius.sm}
               p={4}
               overflow="hidden"
@@ -753,7 +745,7 @@ export const EVMWithdrawComponent: React.FC = () => {
             >
               <Alert.Description width="100%" overflow="hidden">
                 <Text
-                  color="error.800"
+                  color={isDark ? '#FF4444' : '#DC2626'}
                   fontWeight="medium"
                   fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                   wordBreak="break-word"

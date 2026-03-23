@@ -10,7 +10,7 @@ import UserAssetAllocationComponent from "./components/user-asset-allication";
 import { useEVM } from "@/provider/evm-provider";
 
 export default function EVMPage() {
-  const { colors } = useThemeColors();
+  const { colors, isDark } = useThemeColors();
   const { address, isConnected } = useEVM();
 
   return (
