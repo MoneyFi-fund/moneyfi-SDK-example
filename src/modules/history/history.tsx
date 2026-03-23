@@ -20,7 +20,7 @@ import { TransactionHistoryTable } from "./components/transaction-table";
 
 export const HistoryPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const { cardColors, colors, buttonColors } = useThemeColors();
+  const { cardColors, colors, buttonColors, isDark } = useThemeColors();
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 20;
   const { data, isLoading, isError, refetch, isFetching } =
@@ -36,11 +36,11 @@ export const HistoryPage: React.FC = () => {
             <HStack justify="space-between" align="center">
               <HStack gap={3}>
                 <Box
-                  bg="primary.50"
+                  bg={isDark ? 'rgba(57,255,20,0.1)' : 'rgba(31,174,92,0.08)'}
                   p={2}
                   borderRadius={materialDesign3Theme.borderRadius.sm}
                 >
-                  <Icon as={BiHistory} color="primary.500" boxSize={6} />
+                  <Icon as={BiHistory} color={isDark ? '#39FF14' : '#1FAE5C'} boxSize={6} />
                 </Box>
                 <Text
                   as="h1"
@@ -55,11 +55,12 @@ export const HistoryPage: React.FC = () => {
 
             {/* Connect Wallet Alert */}
             <Card.Root
-              bg={cardColors.background}
-              borderRadius={materialDesign3Theme.borderRadius.md}
-              boxShadow={materialDesign3Theme.elevation.level1}
+              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(10px)' : 'none'}
+              css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+              borderRadius="16px"
               border="1px solid"
-              borderColor={cardColors.border}
+              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
               overflow="hidden"
             >
               <Flex
@@ -70,12 +71,12 @@ export const HistoryPage: React.FC = () => {
                 px={8}
               >
                 <Box
-                  bg="warning.50"
+                  bg={isDark ? 'rgba(255,184,0,0.1)' : 'rgba(255,184,0,0.08)'}
                   p={4}
                   borderRadius="full"
                   mb={4}
                 >
-                  <Icon as={BiWallet} color="warning.500" boxSize={10} />
+                  <Icon as={BiWallet} color="#FFB800" boxSize={10} />
                 </Box>
                 <Text
                   fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
@@ -126,12 +127,12 @@ export const HistoryPage: React.FC = () => {
       >
         <HStack gap={3}>
           <Box
-            bg="primary.50"
+            bg={isDark ? 'rgba(57,255,20,0.1)' : 'rgba(31,174,92,0.08)'}
             p={2}
             borderRadius={materialDesign3Theme.borderRadius.sm}
             display={{ base: "none", sm: "flex" }}
           >
-            <Icon as={BiHistory} color="primary.500" boxSize={6} />
+            <Icon as={BiHistory} color={isDark ? '#39FF14' : '#1FAE5C'} boxSize={6} />
           </Box>
           <VStack align="start" gap={0}>
             <Text
@@ -207,10 +208,12 @@ export const HistoryPage: React.FC = () => {
           justify="space-between"
           align="center"
           p={4}
-          bg={cardColors.background}
-          borderRadius={materialDesign3Theme.borderRadius.md}
+          bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+          backdropFilter={isDark ? 'blur(10px)' : 'none'}
+          css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+          borderRadius="16px"
           border="1px solid"
-          borderColor={cardColors.border}
+          borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
         >
           {/* Page Info */}
           <Text fontSize="sm" color={cardColors.textSecondary}>
@@ -225,13 +228,18 @@ export const HistoryPage: React.FC = () => {
               onClick={handlePrevPage}
               disabled={currentPage === 1 || isFetching}
               borderRadius={materialDesign3Theme.borderRadius.xs}
-              borderColor={cardColors.border}
+              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              color={isDark ? '#E0E0E0' : '#1A1A1A'}
+              _hover={{
+                borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                color: isDark ? '#39FF14' : '#1FAE5C',
+              }}
             >
               <Icon as={BiChevronLeft} />
               Prev
             </Button>
 
-            <Text fontSize="sm" fontWeight="medium" px={3} color={cardColors.text}>
+            <Text fontSize="sm" fontWeight="medium" px={3} color={isDark ? '#E0E0E0' : '#1A1A1A'}>
               Page {currentPage} of {totalPages}
             </Text>
 
@@ -241,7 +249,12 @@ export const HistoryPage: React.FC = () => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages || isFetching}
               borderRadius={materialDesign3Theme.borderRadius.xs}
-              borderColor={cardColors.border}
+              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              color={isDark ? '#E0E0E0' : '#1A1A1A'}
+              _hover={{
+                borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                color: isDark ? '#39FF14' : '#1FAE5C',
+              }}
             >
               Next
               <Icon as={BiChevronRight} />
@@ -252,16 +265,14 @@ export const HistoryPage: React.FC = () => {
 
       {/* Transaction Table Card */}
       <Card.Root
-        bg={cardColors.background}
-        borderRadius={materialDesign3Theme.borderRadius.md}
-        boxShadow={materialDesign3Theme.elevation.level1}
+        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+        borderRadius="16px"
         border="1px solid"
-        borderColor={cardColors.border}
+        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
         overflow="hidden"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        _hover={{
-          boxShadow: materialDesign3Theme.elevation.level2,
-        }}
       >
         <Card.Body p={0}>
           <TransactionHistoryTable

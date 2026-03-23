@@ -19,7 +19,7 @@ export function AllocationChartCard({
   countLabel = "Items",
   emptyMessage = "No data available",
 }: AllocationChartCardProps) {
-  const { cardColors } = useThemeColors();
+  const { cardColors, isDark } = useThemeColors();
   const total = data.reduce((sum, item) => sum + item.value, 0);
   const isEmpty = data.length === 0 || total === 0;
 
@@ -28,18 +28,19 @@ export function AllocationChartCard({
 
   return (
     <Card.Root
-      bg={cardColors.background}
+      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={cardColors.border}
-      borderRadius={materialDesign3Theme.borderRadius.md}
-      boxShadow={materialDesign3Theme.elevation.level1}
+      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderRadius="16px"
       height="100%"
     >
       <Card.Header pb={2}>
         <Text fontSize="md" fontWeight="semibold" color={cardColors.text}>
           {title}
         </Text>
-        <Text fontSize="xs" color={cardColors.textSecondary}>
+        <Text fontSize="xs" color={isDark ? '#999999' : '#666666'} fontFamily="'JetBrains Mono', monospace">
           {totalLabel}: {formatBalance(total)} • {countLabel}: {data.length}
         </Text>
       </Card.Header>
@@ -72,10 +73,12 @@ export function AllocationChartCard({
                   <Tooltip
                     formatter={(value: number) => formatBalance(value)}
                     contentStyle={{
-                      backgroundColor: cardColors.background,
-                      border: `1px solid ${cardColors.border}`,
+                      backgroundColor: isDark ? '#0A0A0A' : '#FFFFFF',
+                      border: '1px solid ' + (isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'),
                       borderRadius: "8px",
+                      color: isDark ? '#FFFFFF' : '#1A1A1A',
                       fontSize: "12px",
+                      fontFamily: "'JetBrains Mono', monospace",
                     }}
                   />
                 </PieChart>
@@ -96,7 +99,7 @@ export function AllocationChartCard({
                       {item.name}
                     </Text>
                   </HStack>
-                  <Text color={cardColors.textSecondary} fontFamily="mono">
+                  <Text color={isDark ? '#999999' : '#666666'} fontFamily="'JetBrains Mono', monospace">
                     {formatBalance(item.value)}
                   </Text>
                 </HStack>

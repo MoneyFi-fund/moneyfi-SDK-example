@@ -135,7 +135,7 @@ const statsConfig = [
 
 export default function Stats() {
   const { isAuthenticated, user } = useAuth();
-  const { cardColors, colors, buttonColors } = useThemeColors();
+  const { cardColors, colors, buttonColors, isDark } = useThemeColors();
   const queryClient = useQueryClient();
   const getUserStatsQuery = useGetUserStatisticsQuery(user?.address);
   const handleRefreshStats = async () => {
@@ -168,15 +168,14 @@ export default function Stats() {
             </Text>
             <Alert.Root
               status="warning"
-              bg="warning.50"
-              borderRadius={materialDesign3Theme.borderRadius.sm}
-              border="1px solid"
-              borderColor="warning.200"
+              bg="rgba(255,184,0,0.1)"
+              borderRadius="16px"
+              border="1px solid rgba(255,184,0,0.2)"
               p={4}
             >
               <Alert.Description>
                 <Text
-                  color="warning.800"
+                  color="#FFB800"
                   fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                 >
                   Please connect your wallet to view your statistics.
@@ -241,17 +240,18 @@ export default function Stats() {
               alignItems="center"
               justifyContent="center"
               p={8}
-              bg={cardColors.background}
+              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(10px)' : 'none'}
               border="1px solid"
-              borderColor={cardColors.border}
-              borderRadius={materialDesign3Theme.borderRadius.md}
+              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              borderRadius="16px"
             >
-              <Spinner size="xl" color="primary.500" borderWidth="4px" />
+              <Spinner size="xl" color={isDark ? '#39FF14' : '#1FAE5C'} borderWidth="4px" />
               <Text
                 mt={4}
                 fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
                 fontWeight="medium"
-                color={cardColors.textSecondary}
+                color={isDark ? '#999999' : '#666666'}
               >
                 Loading your statistics...
               </Text>
@@ -261,23 +261,22 @@ export default function Stats() {
           {getUserStatsQuery.isError && (
             <Alert.Root
               status="error"
-              bg="error.50"
-              borderRadius={materialDesign3Theme.borderRadius.sm}
-              border="1px solid"
-              borderColor="error.200"
+              bg="rgba(255,68,68,0.1)"
+              borderRadius="16px"
+              border="1px solid rgba(255,68,68,0.2)"
               p={4}
             >
               <Alert.Description>
                 <VStack align="stretch" gap={2}>
                   <Text
-                    color="error.800"
+                    color="#FF4444"
                     fontWeight="medium"
                     fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
                   >
                     Failed to Load Statistics
                   </Text>
                   <Text
-                    color="error.700"
+                    color="#FF4444"
                     fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
                   >
                     {getUserStatsQuery.error instanceof Error
@@ -303,40 +302,42 @@ export default function Stats() {
                 return (
                   <Card.Root
                     key={stat.key}
-                    bg="surface.50"
+                    bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+                    backdropFilter={isDark ? 'blur(10px)' : 'none'}
+                    css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
                     border="1px solid"
-                    borderColor={stat.borderColor}
-                    borderRadius={materialDesign3Theme.borderRadius.md}
-                    boxShadow={materialDesign3Theme.elevation.level1}
+                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderRadius="16px"
                     transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     _hover={{
-                      boxShadow: materialDesign3Theme.elevation.level2,
+                      borderColor: isDark ? 'rgba(57,255,20,0.3)' : 'rgba(31,174,92,0.3)',
+                      bg: isDark ? 'rgba(255,255,255,0.10)' : '#FAFAFA',
                     }}
                     overflow="hidden"
                   >
-                    {/* Card Header with Icon and Color */}
+                    {/* Card Header with Icon and Label */}
                     <Box
-                      bg={stat.bgColor}
+                      bg={isDark ? 'rgba(255,255,255,0.03)' : '#F8F8F8'}
                       borderBottom="1px solid"
-                      borderBottomColor={stat.borderColor}
+                      borderBottomColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
                       p={4}
                     >
                       <HStack gap={3}>
                         <Box
-                          bg={stat.color}
+                          bg={stat.bgColor}
                           p={2}
                           borderRadius={materialDesign3Theme.borderRadius.xs}
                         >
                           <Icon
                             as={IconComponent}
-                            color="white"
+                            color={stat.color}
                             fontSize="20px"
                           />
                         </Box>
                         <Text
-                          fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
+                          fontSize="12px"
                           fontWeight="medium"
-                          color="neutral.700"
+                          color={isDark ? '#999999' : '#666666'}
                           lineHeight="1.2"
                         >
                           {stat.label}
@@ -347,9 +348,10 @@ export default function Stats() {
                     {/* Card Body with Value */}
                     <Card.Body p={6}>
                       <Text
-                        fontSize={materialDesign3Theme.typography.headlineMedium.fontSize}
+                        fontSize="24px"
                         fontWeight="bold"
-                        color={stat.color}
+                        fontFamily="'JetBrains Mono', monospace"
+                        color={isDark ? '#FFFFFF' : '#0A0A0A'}
                         lineHeight="1.1"
                         letterSpacing="-0.02em"
                       >
@@ -367,21 +369,22 @@ export default function Stats() {
             <Box
               textAlign="center"
               p={12}
-              bg="surface.50"
+              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(10px)' : 'none'}
               border="1px solid"
-              borderColor="neutral.200"
-              borderRadius={materialDesign3Theme.borderRadius.md}
+              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              borderRadius="16px"
             >
               <Text
                 fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
                 fontWeight="medium"
-                color="neutral.700"
+                color={isDark ? '#E0E0E0' : '#1A1A1A'}
                 mb={2}
               >
                 No Statistics Available
               </Text>
               <Text
-                color="neutral.600"
+                color={isDark ? '#999999' : '#666666'}
                 fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
               >
                 Click "Refresh Statistics" to load your statistics.

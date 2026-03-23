@@ -11,7 +11,7 @@ interface ILayoutProps {
     
 export default function Layout({ children }: ILayoutProps) {
   const { isLoading } = useAuth();
-  const { colors } = useThemeColors();
+  const { colors, isDark } = useThemeColors();
 
   return (
     <Box 

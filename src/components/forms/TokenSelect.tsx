@@ -1,5 +1,6 @@
 import { Field, NativeSelectRoot, NativeSelectField } from '@chakra-ui/react';
 import type { UseFormRegister, FieldErrors, FieldValues, Path } from 'react-hook-form';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface TokenOption {
   value: string; // Token address
@@ -26,6 +27,7 @@ export function TokenSelect<T extends FieldValues>({
   register,
   errors,
 }: TokenSelectProps<T>) {
+  const { isDark } = useThemeColors();
   const error = errors[name];
 
   return (
@@ -35,6 +37,10 @@ export function TokenSelect<T extends FieldValues>({
         <NativeSelectField
           {...register(name)}
           placeholder="Select token"
+          _focus={{
+            borderColor: isDark ? '#39FF14' : '#1FAE5C',
+            boxShadow: isDark ? '0 0 0 2px rgba(57, 255, 20, 0.3)' : '0 0 0 2px rgba(31, 174, 92, 0.3)',
+          }}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>

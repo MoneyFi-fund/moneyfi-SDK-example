@@ -1,4 +1,5 @@
 import { Box, Spinner, VStack, Text } from '@chakra-ui/react';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface LoadingProps {
   message?: string;
@@ -6,6 +7,8 @@ interface LoadingProps {
 }
 
 export default function Loading({ message = "Loading...", size = "lg" }: LoadingProps) {
+  const { isDark } = useThemeColors();
+
   return (
     <Box
       position="fixed"
@@ -13,7 +16,7 @@ export default function Loading({ message = "Loading...", size = "lg" }: Loading
       left={0}
       right={0}
       bottom={0}
-      bg="rgba(255, 255, 255, 0.9)"
+      bg={isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)'}
       zIndex={9999}
       display="flex"
       alignItems="center"
@@ -22,10 +25,10 @@ export default function Loading({ message = "Loading...", size = "lg" }: Loading
       <VStack gap={4}>
         <Spinner
           size={size}
-          color="blue.500"
+          color={isDark ? '#39FF14' : '#1FAE5C'}
           borderWidth="2px"
         />
-        <Text fontSize="md" color="gray.600" fontWeight="medium">
+        <Text fontSize="md" color={isDark ? '#E0E0E0' : '#666666'} fontWeight="medium">
           {message}
         </Text>
       </VStack>

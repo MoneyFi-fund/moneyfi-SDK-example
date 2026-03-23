@@ -1,367 +1,332 @@
-// Material Design 3 Theme Configuration
+// Web3 Dark+Green Theme Configuration
+// Preserves all MD3 helper function signatures for backward compatibility
 export const materialDesign3Theme = {
-  // Color Tokens - Material Design 3 Color System
+  // Light Mode — clean minimal with emerald green
   light: {
-    // Primary Colors
     primary: {
-      50: '#E8F5E8',
-      100: '#C8E6C8',
-      200: '#A5D6A5',
-      300: '#81C784',
-      400: '#66BB6A',
-      500: '#4CAF50', // Primary
-      600: '#43A047',
-      700: '#388E3C',
-      800: '#2E7D32',
-      900: '#1B5E20',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#1FAE5C',
+      600: '#15803D',
+      700: '#166534',
+      800: '#14532D',
+      900: '#052E16',
     },
-
-    // Secondary Colors
     secondary: {
-      50: '#F3E5F5',
-      100: '#E1BEE7',
-      200: '#CE93D8',
-      300: '#BA68C8',
-      400: '#AB47BC',
-      500: '#9C27B0', // Secondary
-      600: '#8E24AA',
-      700: '#7B1FA2',
-      800: '#6A1B9A',
-      900: '#4A148C',
+      50: '#F0FDF4',
+      100: '#DCFCE7',
+      200: '#BBF7D0',
+      300: '#86EFAC',
+      400: '#4ADE80',
+      500: '#15803D',
+      600: '#166534',
+      700: '#14532D',
+      800: '#052E16',
+      900: '#022C22',
     },
-
-    // Tertiary Colors
     tertiary: {
-      50: '#E8F4FD',
-      100: '#C5E4FB',
-      200: '#9FD3F8',
-      300: '#79C2F5',
-      400: '#5CB5F3',
-      500: '#42A5F5', // Tertiary
-      600: '#3D9BE9',
-      700: '#368FDC',
-      800: '#2F83CF',
-      900: '#1E6BB8',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#059669',
+      600: '#047857',
+      700: '#065F46',
+      800: '#064E3B',
+      900: '#022C22',
     },
-
-    // Error Colors
     error: {
-      50: '#FFEBEE',
-      100: '#FFCDD2',
-      200: '#EF9A9A',
-      300: '#E57373',
-      400: '#EF5350',
-      500: '#F44336', // Error
-      600: '#E53935',
-      700: '#D32F2F',
-      800: '#C62828',
-      900: '#B71C1C',
+      50: '#FEF2F2',
+      100: '#FEE2E2',
+      200: '#FECACA',
+      300: '#FCA5A5',
+      400: '#F87171',
+      500: '#DC2626',
+      600: '#B91C1C',
+      700: '#991B1B',
+      800: '#7F1D1D',
+      900: '#450A0A',
     },
-
-    // Success Colors (Green)
     success: {
-      50: '#E8F5E8',
-      100: '#C8E6C8',
-      200: '#A5D6A5',
-      300: '#81C784',
-      400: '#66BB6A',
-      500: '#4CAF50',
-      600: '#43A047',
-      700: '#388E3C',
-      800: '#2E7D32',
-      900: '#1B5E20',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#1FAE5C',
+      600: '#15803D',
+      700: '#166534',
+      800: '#14532D',
+      900: '#052E16',
     },
-
-    // Warning Colors (Orange)
     warning: {
-      50: '#FFF3E0',
-      100: '#FFE0B2',
-      200: '#FFCC80',
-      300: '#FFB74D',
-      400: '#FFA726',
-      500: '#FF9800',
-      600: '#FB8C00',
-      700: '#F57C00',
-      800: '#EF6C00',
-      900: '#E65100',
+      50: '#FFFBEB',
+      100: '#FEF3C7',
+      200: '#FDE68A',
+      300: '#FCD34D',
+      400: '#FBBF24',
+      500: '#D97706',
+      600: '#B45309',
+      700: '#92400E',
+      800: '#78350F',
+      900: '#451A03',
     },
-
-    // Neutral Colors
     neutral: {
       50: '#FAFAFA',
       100: '#F5F5F5',
-      200: '#EEEEEE',
-      300: '#E0E0E0',
-      400: '#BDBDBD',
-      500: '#9E9E9E',
-      600: '#757575',
-      700: '#616161',
-      800: '#424242',
-      900: '#212121',
+      200: '#E5E5E5',
+      300: '#D4D4D4',
+      400: '#A3A3A3',
+      500: '#737373',
+      600: '#525252',
+      700: '#404040',
+      800: '#262626',
+      900: '#171717',
     },
-
-    // Surface Colors
     surface: {
       50: '#FFFFFF',
-      100: '#FEFEFE',
-      200: '#FDFDFD',
-      300: '#FBFBFB',
-      400: '#F9F9F9',
-      500: '#F7F7F7',
-      600: '#F5F5F5',
-      700: '#F3F3F3',
-      800: '#F1F1F1',
-      900: '#EEEEEE',
+      100: '#FCFCFC',
+      200: '#FAFAFA',
+      300: '#F8F8F8',
+      400: '#F5F5F5',
+      500: '#F0F0F0',
+      600: '#EBEBEB',
+      700: '#E5E5E5',
+      800: '#E0E0E0',
+      900: '#D4D4D4',
     },
-
-    // Semantic Colors for Light Mode
-    background: '#FFFFFF',
-    onBackground: '#1A1C1E',
+    background: '#F8F8F8',
+    onBackground: '#0A0A0A',
     surfaceBg: '#FFFFFF',
-    onSurface: '#1A1C1E',
-    surfaceVariant: '#F2F2F2',
-    onSurfaceVariant: '#49454F',
-    outline: '#79757F',
-    outlineVariant: '#CAC4D0',
+    onSurface: '#1A1A1A',
+    surfaceVariant: '#F0F0F0',
+    onSurfaceVariant: '#666666',
+    outline: '#E0E0E0',
+    outlineVariant: '#EEEEEE',
   },
 
-  // Dark Mode Colors
+  // Dark Mode — primary experience, neon green on black
   dark: {
-    // Primary Colors (adjusted for dark mode)
     primary: {
-      50: '#1B5E20',
-      100: '#2E7D32',
-      200: '#388E3C',
-      300: '#43A047',
-      400: '#4CAF50',
-      500: '#66BB6A', // Primary in dark mode
-      600: '#81C784',
-      700: '#A5D6A5',
-      800: '#C8E6C8',
-      900: '#E8F5E8',
+      50: '#052E16',
+      100: '#0A3D1E',
+      200: '#0F5C2E',
+      300: '#15803D',
+      400: '#1FAE5C',
+      500: '#39FF14',
+      600: '#5FFF42',
+      700: '#85FF70',
+      800: '#ABFF9E',
+      900: '#D1FFCC',
     },
-
-    // Secondary Colors (adjusted for dark mode)
     secondary: {
-      50: '#4A148C',
-      100: '#6A1B9A',
-      200: '#7B1FA2',
-      300: '#8E24AA',
-      400: '#9C27B0',
-      500: '#AB47BC', // Secondary in dark mode
-      600: '#BA68C8',
-      700: '#CE93D8',
-      800: '#E1BEE7',
-      900: '#F3E5F5',
+      50: '#022C22',
+      100: '#064E3B',
+      200: '#065F46',
+      300: '#047857',
+      400: '#059669',
+      500: '#1FAE5C',
+      600: '#34D399',
+      700: '#6EE7B7',
+      800: '#A7F3D0',
+      900: '#D1FAE5',
     },
-
-    // Tertiary Colors (adjusted for dark mode)
     tertiary: {
-      50: '#1E6BB8',
-      100: '#2F83CF',
-      200: '#368FDC',
-      300: '#3D9BE9',
-      400: '#42A5F5',
-      500: '#5CB5F3', // Tertiary in dark mode
-      600: '#79C2F5',
-      700: '#9FD3F8',
-      800: '#C5E4FB',
-      900: '#E8F4FD',
+      50: '#022C22',
+      100: '#052E16',
+      200: '#0A3D1E',
+      300: '#0F5C2E',
+      400: '#15803D',
+      500: '#00FF00',
+      600: '#39FF14',
+      700: '#5FFF42',
+      800: '#85FF70',
+      900: '#ABFF9E',
     },
-
-    // Error Colors (adjusted for dark mode)
     error: {
-      50: '#B71C1C',
-      100: '#C62828',
-      200: '#D32F2F',
-      300: '#E53935',
-      400: '#F44336',
-      500: '#EF5350', // Error in dark mode
-      600: '#E57373',
-      700: '#EF9A9A',
-      800: '#FFCDD2',
-      900: '#FFEBEE',
+      50: '#450A0A',
+      100: '#7F1D1D',
+      200: '#991B1B',
+      300: '#B91C1C',
+      400: '#DC2626',
+      500: '#FF4444',
+      600: '#F87171',
+      700: '#FCA5A5',
+      800: '#FECACA',
+      900: '#FEF2F2',
     },
-
-    // Success Colors (adjusted for dark mode)
     success: {
-      50: '#1B5E20',
-      100: '#2E7D32',
-      200: '#388E3C',
-      300: '#43A047',
-      400: '#4CAF50',
-      500: '#66BB6A',
-      600: '#81C784',
-      700: '#A5D6A5',
-      800: '#C8E6C8',
-      900: '#E8F5E8',
+      50: '#052E16',
+      100: '#0A3D1E',
+      200: '#0F5C2E',
+      300: '#15803D',
+      400: '#1FAE5C',
+      500: '#39FF14',
+      600: '#5FFF42',
+      700: '#85FF70',
+      800: '#ABFF9E',
+      900: '#D1FFCC',
     },
-
-    // Warning Colors (adjusted for dark mode)
     warning: {
-      50: '#E65100',
-      100: '#EF6C00',
-      200: '#F57C00',
-      300: '#FB8C00',
-      400: '#FF9800',
-      500: '#FFA726', // Warning in dark mode
-      600: '#FFB74D',
-      700: '#FFCC80',
-      800: '#FFE0B2',
-      900: '#FFF3E0',
+      50: '#451A03',
+      100: '#78350F',
+      200: '#92400E',
+      300: '#B45309',
+      400: '#D97706',
+      500: '#FFB800',
+      600: '#FBBF24',
+      700: '#FCD34D',
+      800: '#FDE68A',
+      900: '#FEF3C7',
     },
-
-    // Neutral Colors (inverted for dark mode)
     neutral: {
-      50: '#212121',
-      100: '#424242',
-      200: '#616161',
-      300: '#757575',
-      400: '#9E9E9E',
-      500: '#BDBDBD',
-      600: '#E0E0E0',
-      700: '#EEEEEE',
-      800: '#F5F5F5',
+      50: '#0A0A0A',
+      100: '#171717',
+      200: '#262626',
+      300: '#404040',
+      400: '#525252',
+      500: '#737373',
+      600: '#A3A3A3',
+      700: '#D4D4D4',
+      800: '#E5E5E5',
       900: '#FAFAFA',
     },
-
-    // Surface Colors (dark surfaces)
     surface: {
-      50: '#0F0F0F',
-      100: '#161618',
-      200: '#1D1B20',
-      300: '#2B2930',
-      400: '#322F35',
-      500: '#3A3740',
-      600: '#433F4B',
-      700: '#4C4756',
-      800: '#555061',
-      900: '#5E596C',
+      50: '#000000',
+      100: '#0A0A0A',
+      200: '#111111',
+      300: '#1A1A1A',
+      400: '#222222',
+      500: '#2A2A2A',
+      600: '#333333',
+      700: '#3D3D3D',
+      800: '#474747',
+      900: '#525252',
     },
-
-    // Semantic Colors for Dark Mode
-    background: '#0F0F0F',
-    onBackground: '#E6E0E9',
-    surfaceBg: '#161618',
-    onSurface: '#E6E0E9',
-    surfaceVariant: '#2B2930',
-    onSurfaceVariant: '#CAC4D0',
-    outline: '#938F99',
-    outlineVariant: '#49454F',
+    background: '#000000',
+    onBackground: '#FFFFFF',
+    surfaceBg: '#0A0A0A',
+    onSurface: '#E0E0E0',
+    surfaceVariant: '#0A0A0A',
+    onSurfaceVariant: '#999999',
+    outline: 'rgba(255, 255, 255, 0.15)',
+    outlineVariant: 'rgba(255, 255, 255, 0.08)',
   },
 
-  // Common colors for both modes
+  // Common colors — defaults to light for backward compat
   colors: {
-    // Default to light mode for backward compatibility
     primary: {
-      50: '#E8F5E8',
-      100: '#C8E6C8',
-      200: '#A5D6A5',
-      300: '#81C784',
-      400: '#66BB6A',
-      500: '#4CAF50',
-      600: '#43A047',
-      700: '#388E3C',
-      800: '#2E7D32',
-      900: '#1B5E20',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#1FAE5C',
+      600: '#15803D',
+      700: '#166534',
+      800: '#14532D',
+      900: '#052E16',
     },
     secondary: {
-      50: '#F3E5F5',
-      100: '#E1BEE7',
-      200: '#CE93D8',
-      300: '#BA68C8',
-      400: '#AB47BC',
-      500: '#9C27B0',
-      600: '#8E24AA',
-      700: '#7B1FA2',
-      800: '#6A1B9A',
-      900: '#4A148C',
+      50: '#F0FDF4',
+      100: '#DCFCE7',
+      200: '#BBF7D0',
+      300: '#86EFAC',
+      400: '#4ADE80',
+      500: '#15803D',
+      600: '#166534',
+      700: '#14532D',
+      800: '#052E16',
+      900: '#022C22',
     },
     tertiary: {
-      50: '#E8F4FD',
-      100: '#C5E4FB',
-      200: '#9FD3F8',
-      300: '#79C2F5',
-      400: '#5CB5F3',
-      500: '#42A5F5',
-      600: '#3D9BE9',
-      700: '#368FDC',
-      800: '#2F83CF',
-      900: '#1E6BB8',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#059669',
+      600: '#047857',
+      700: '#065F46',
+      800: '#064E3B',
+      900: '#022C22',
     },
     error: {
-      50: '#FFEBEE',
-      100: '#FFCDD2',
-      200: '#EF9A9A',
-      300: '#E57373',
-      400: '#EF5350',
-      500: '#F44336',
-      600: '#E53935',
-      700: '#D32F2F',
-      800: '#C62828',
-      900: '#B71C1C',
+      50: '#FEF2F2',
+      100: '#FEE2E2',
+      200: '#FECACA',
+      300: '#FCA5A5',
+      400: '#F87171',
+      500: '#DC2626',
+      600: '#B91C1C',
+      700: '#991B1B',
+      800: '#7F1D1D',
+      900: '#450A0A',
     },
     success: {
-      50: '#E8F5E8',
-      100: '#C8E6C8',
-      200: '#A5D6A5',
-      300: '#81C784',
-      400: '#66BB6A',
-      500: '#4CAF50',
-      600: '#43A047',
-      700: '#388E3C',
-      800: '#2E7D32',
-      900: '#1B5E20',
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#1FAE5C',
+      600: '#15803D',
+      700: '#166534',
+      800: '#14532D',
+      900: '#052E16',
     },
     warning: {
-      50: '#FFF3E0',
-      100: '#FFE0B2',
-      200: '#FFCC80',
-      300: '#FFB74D',
-      400: '#FFA726',
-      500: '#FF9800',
-      600: '#FB8C00',
-      700: '#F57C00',
-      800: '#EF6C00',
-      900: '#E65100',
+      50: '#FFFBEB',
+      100: '#FEF3C7',
+      200: '#FDE68A',
+      300: '#FCD34D',
+      400: '#FBBF24',
+      500: '#D97706',
+      600: '#B45309',
+      700: '#92400E',
+      800: '#78350F',
+      900: '#451A03',
     },
     neutral: {
       50: '#FAFAFA',
       100: '#F5F5F5',
-      200: '#EEEEEE',
-      300: '#E0E0E0',
-      400: '#BDBDBD',
-      500: '#9E9E9E',
-      600: '#757575',
-      700: '#616161',
-      800: '#424242',
-      900: '#212121',
+      200: '#E5E5E5',
+      300: '#D4D4D4',
+      400: '#A3A3A3',
+      500: '#737373',
+      600: '#525252',
+      700: '#404040',
+      800: '#262626',
+      900: '#171717',
     },
     surface: {
       50: '#FFFFFF',
-      100: '#FEFEFE',
-      200: '#FDFDFD',
-      300: '#FBFBFB',
-      400: '#F9F9F9',
-      500: '#F7F7F7',
-      600: '#F5F5F5',
-      700: '#F3F3F3',
-      800: '#F1F1F1',
-      900: '#EEEEEE',
-    }
+      100: '#FCFCFC',
+      200: '#FAFAFA',
+      300: '#F8F8F8',
+      400: '#F5F5F5',
+      500: '#F0F0F0',
+      600: '#EBEBEB',
+      700: '#E5E5E5',
+      800: '#E0E0E0',
+      900: '#D4D4D4',
+    },
   },
 
-  // Elevation System (Material Design 3)
+  // Elevation — glow-based for dark, subtle for light
   elevation: {
     level0: 'none',
-    level1: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
-    level2: '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
-    level3: '0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)',
-    level4: '0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)',
-    level5: '0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15)',
+    level1: '0 0 10px rgba(57, 255, 20, 0.15)',
+    level2: '0 0 20px rgba(57, 255, 20, 0.25)',
+    level3: '0 0 35px rgba(57, 255, 20, 0.4)',
+    level4: '0 4px 15px rgba(0, 0, 0, 0.3)',
+    level5: '0 8px 30px rgba(0, 0, 0, 0.4)',
   },
 
-  // Border Radius Scale
   borderRadius: {
     none: '0px',
     xs: '4px',
@@ -374,7 +339,6 @@ export const materialDesign3Theme = {
     full: '9999px',
   },
 
-  // Spacing Scale (4px base)
   spacing: {
     0: '0px',
     1: '4px',
@@ -396,150 +360,40 @@ export const materialDesign3Theme = {
     32: '128px',
   },
 
-  // Typography Scale
   typography: {
-    // Display
-    displayLarge: {
-      fontSize: '57px',
-      lineHeight: '64px',
-      fontWeight: '400',
-      letterSpacing: '-0.25px',
-    },
-    displayMedium: {
-      fontSize: '45px',
-      lineHeight: '52px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-    displaySmall: {
-      fontSize: '36px',
-      lineHeight: '44px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-
-    // Headline
-    headlineLarge: {
-      fontSize: '32px',
-      lineHeight: '40px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-    headlineMedium: {
-      fontSize: '28px',
-      lineHeight: '36px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-    headlineSmall: {
-      fontSize: '24px',
-      lineHeight: '32px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-
-    // Title
-    titleLarge: {
-      fontSize: '22px',
-      lineHeight: '28px',
-      fontWeight: '400',
-      letterSpacing: '0px',
-    },
-    titleMedium: {
-      fontSize: '16px',
-      lineHeight: '24px',
-      fontWeight: '500',
-      letterSpacing: '0.15px',
-    },
-    titleSmall: {
-      fontSize: '14px',
-      lineHeight: '20px',
-      fontWeight: '500',
-      letterSpacing: '0.1px',
-    },
-
-    // Label
-    labelLarge: {
-      fontSize: '14px',
-      lineHeight: '20px',
-      fontWeight: '500',
-      letterSpacing: '0.1px',
-    },
-    labelMedium: {
-      fontSize: '12px',
-      lineHeight: '16px',
-      fontWeight: '500',
-      letterSpacing: '0.5px',
-    },
-    labelSmall: {
-      fontSize: '11px',
-      lineHeight: '16px',
-      fontWeight: '500',
-      letterSpacing: '0.5px',
-    },
-
-    // Body
-    bodyLarge: {
-      fontSize: '16px',
-      lineHeight: '24px',
-      fontWeight: '400',
-      letterSpacing: '0.5px',
-    },
-    bodyMedium: {
-      fontSize: '14px',
-      lineHeight: '20px',
-      fontWeight: '400',
-      letterSpacing: '0.25px',
-    },
-    bodySmall: {
-      fontSize: '12px',
-      lineHeight: '16px',
-      fontWeight: '400',
-      letterSpacing: '0.4px',
-    },
+    displayLarge: { fontSize: '57px', lineHeight: '64px', fontWeight: '400', letterSpacing: '-0.25px' },
+    displayMedium: { fontSize: '45px', lineHeight: '52px', fontWeight: '400', letterSpacing: '0px' },
+    displaySmall: { fontSize: '36px', lineHeight: '44px', fontWeight: '400', letterSpacing: '0px' },
+    headlineLarge: { fontSize: '32px', lineHeight: '40px', fontWeight: '400', letterSpacing: '0px' },
+    headlineMedium: { fontSize: '28px', lineHeight: '36px', fontWeight: '400', letterSpacing: '0px' },
+    headlineSmall: { fontSize: '24px', lineHeight: '32px', fontWeight: '400', letterSpacing: '0px' },
+    titleLarge: { fontSize: '22px', lineHeight: '28px', fontWeight: '400', letterSpacing: '0px' },
+    titleMedium: { fontSize: '16px', lineHeight: '24px', fontWeight: '500', letterSpacing: '0.15px' },
+    titleSmall: { fontSize: '14px', lineHeight: '20px', fontWeight: '500', letterSpacing: '0.1px' },
+    labelLarge: { fontSize: '14px', lineHeight: '20px', fontWeight: '500', letterSpacing: '0.1px' },
+    labelMedium: { fontSize: '12px', lineHeight: '16px', fontWeight: '500', letterSpacing: '0.5px' },
+    labelSmall: { fontSize: '11px', lineHeight: '16px', fontWeight: '500', letterSpacing: '0.5px' },
+    bodyLarge: { fontSize: '16px', lineHeight: '24px', fontWeight: '400', letterSpacing: '0.5px' },
+    bodyMedium: { fontSize: '14px', lineHeight: '20px', fontWeight: '400', letterSpacing: '0.25px' },
+    bodySmall: { fontSize: '12px', lineHeight: '16px', fontWeight: '400', letterSpacing: '0.4px' },
   },
 
-  // Interactive States
   states: {
-    hover: {
-      opacity: 0.08,
-    },
-    focus: {
-      opacity: 0.12,
-    },
-    pressed: {
-      opacity: 0.12,
-    },
-    disabled: {
-      opacity: 0.38,
-    },
+    hover: { opacity: 0.08 },
+    focus: { opacity: 0.12 },
+    pressed: { opacity: 0.12 },
+    disabled: { opacity: 0.38 },
   },
 
-  // Component-specific tokens
   components: {
-    card: {
-      borderRadius: '12px',
-      elevation: 'level1',
-      padding: '16px',
-    },
-    button: {
-      borderRadius: '8px',
-      padding: '12px 24px',
-      minHeight: '40px',
-    },
-    input: {
-      borderRadius: '8px',
-      padding: '12px 16px',
-      minHeight: '40px',
-    },
-    modal: {
-      borderRadius: '16px',
-      elevation: 'level5',
-    },
+    card: { borderRadius: '12px', elevation: 'level1', padding: '16px' },
+    button: { borderRadius: '8px', padding: '12px 24px', minHeight: '40px' },
+    input: { borderRadius: '8px', padding: '12px 16px', minHeight: '40px' },
+    modal: { borderRadius: '16px', elevation: 'level5' },
   },
 };
 
-// Theme helper functions
+// Theme helper functions — signatures preserved for backward compat
 export const getElevationStyle = (level: keyof typeof materialDesign3Theme.elevation) => ({
   boxShadow: materialDesign3Theme.elevation[level],
 });
@@ -550,7 +404,6 @@ export const getTypographyStyle = (variant: keyof typeof materialDesign3Theme.ty
 export const getColorWithOpacity = (color: string, opacity: number) =>
   `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
 
-// Theme mode helper functions
 export const getThemeColors = (mode: 'light' | 'dark') => {
   return mode === 'dark' ? materialDesign3Theme.dark : materialDesign3Theme.light;
 };
@@ -559,24 +412,23 @@ export const getThemedColor = (mode: 'light' | 'dark', colorPath: string): strin
   const colors = getThemeColors(mode);
   const pathParts = colorPath.split('.');
   let result: any = colors;
-  
+
   for (const part of pathParts) {
     if (result && typeof result === 'object' && part in result) {
       result = result[part];
     } else {
-      // Fallback to light mode if color not found
       result = materialDesign3Theme.light;
       for (const fallbackPart of pathParts) {
         if (result && typeof result === 'object' && fallbackPart in result) {
           result = result[fallbackPart];
         } else {
-          return '#000000'; // Ultimate fallback
+          return '#000000';
         }
       }
       break;
     }
   }
-  
+
   return typeof result === 'string' ? result : '#000000';
 };
 
@@ -584,8 +436,8 @@ export const getThemedColor = (mode: 'light' | 'dark', colorPath: string): strin
 export const getCardColors = (mode: 'light' | 'dark') => {
   const colors = getThemeColors(mode);
   return {
-    background: colors.surfaceBg,
-    border: mode === 'dark' ? colors.outline : colors.outlineVariant,
+    background: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : colors.surfaceBg,
+    border: mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : colors.outlineVariant,
     text: colors.onSurface,
     textSecondary: colors.onSurfaceVariant,
   };
@@ -594,24 +446,25 @@ export const getCardColors = (mode: 'light' | 'dark') => {
 export const getButtonColors = (mode: 'light' | 'dark', variant: 'primary' | 'secondary' | 'error') => {
   const colors = getThemeColors(mode);
   const variantColors = colors[variant];
-  
+
   return {
     background: variantColors[500],
     hover: variantColors[mode === 'dark' ? 400 : 600],
     active: variantColors[mode === 'dark' ? 300 : 700],
-    disabled: colors.neutral[mode === 'dark' ? 700 : 300],
-    text: mode === 'dark' ? colors.neutral[900] : '#FFFFFF',
+    disabled: colors.neutral[mode === 'dark' ? 300 : 300],
+    // Black text on neon green in dark mode for high contrast
+    text: mode === 'dark' && variant === 'primary' ? '#000000' : mode === 'dark' ? colors.neutral[900] : '#FFFFFF',
   };
 };
 
 export const getMenuColors = (mode: 'light' | 'dark') => {
   const colors = getThemeColors(mode);
   return {
-    background: colors.surfaceBg,
+    background: mode === 'dark' ? '#0A0A0A' : colors.surfaceBg,
     border: colors.outline,
     text: colors.onSurface,
     textSecondary: colors.onSurfaceVariant,
-    hover: colors.surfaceVariant,
+    hover: mode === 'dark' ? 'rgba(57, 255, 20, 0.05)' : colors.surfaceVariant,
     separator: colors.outlineVariant,
   };
 };

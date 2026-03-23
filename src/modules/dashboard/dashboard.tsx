@@ -21,7 +21,7 @@ import { useWallet as useAptosWallet } from "@aptos-labs/wallet-adapter-react";
 // import { InitAccountComponent } from "./components/account/init-account";
 
 export const DashboardPage = () => {
-  const { colors, cardColors, buttonColors } = useThemeColors();
+  const { colors, cardColors, buttonColors, isDark } = useThemeColors();
   const { user } = useAuth();
   const { connected: isAptosConnected } = useAptosWallet();
   const [networkMode, setNetworkMode] = useState<"aptos" | "evm">("aptos");
@@ -58,8 +58,9 @@ export const DashboardPage = () => {
                 <Text
                   fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
                   color={colors.onBackgroundVariant}
+                  fontFamily="'JetBrains Mono', monospace"
                 >
-                  Address: {user.address.slice(0, 10)}...
+                  {user.address.slice(0, 10)}...
                   {user.address.slice(-8)}
                 </Text>
               )}

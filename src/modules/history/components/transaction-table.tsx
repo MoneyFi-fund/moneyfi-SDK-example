@@ -46,12 +46,13 @@ const capitalize = (str: string): string => {
  * Format activity text based on transaction type
  * Follows moneyFi-dapp RecentTransaction.tsx format
  */
-const formatActivity = (tx: Transaction): React.ReactNode => {
+const formatActivity = (tx: Transaction, isDark?: boolean): React.ReactNode => {
   const amount = formatValue(tx.value);
   const token = formatTokenSymbol(tx.token);
   const fromAddr = tx.fromAddress ? shortenAddress(tx.fromAddress, 4) : "";
   const toAddr = tx.toAddress ? shortenAddress(tx.toAddress, 4) : "";
   const toNetwork = tx.toNetwork ? capitalize(tx.toNetwork) : null;
+  const networkColor = isDark ? '#39FF14' : '#1FAE5C';
 
   // Format protocol/strategy for transfer/distribute (capitalize protocol name)
   const protocolName = tx.protocolName ? capitalize(tx.protocolName) : "";
@@ -82,7 +83,7 @@ const formatActivity = (tx: Transaction): React.ReactNode => {
           {toNetwork && (
             <>
               {" "}to{" "}
-              <Text as="span" fontWeight="600" color="primary.500">{toNetwork}</Text>
+              <Text as="span" fontWeight="600" color={networkColor}>{toNetwork}</Text>
             </>
           )}
         </Text>
@@ -104,7 +105,7 @@ const formatActivity = (tx: Transaction): React.ReactNode => {
           )}
           {toNetwork && !strategyInfo && (
             <>
-              ➜ <Text as="span" fontWeight="600" color="primary.500">{toNetwork}</Text>
+              ➜ <Text as="span" fontWeight="600" color={networkColor}>{toNetwork}</Text>
             </>
           )}
         </Text>
@@ -140,21 +141,22 @@ const formatActivity = (tx: Transaction): React.ReactNode => {
   }
 };
 
+
 /**
- * Get text color based on action type
+ * Get themed color for action text
  */
-const getActionTextColor = (action: string): string => {
+const getActionColor = (action: string, isDark: boolean): string => {
   switch (action) {
     case "deposit":
     case "claim":
     case "distribute":
     case "transfer_fund":
-      return "success.600";
+      return isDark ? '#39FF14' : '#1FAE5C';
     case "withdraw":
     case "rebalance":
-      return "error.600";
+      return '#FF4444';
     default:
-      return "inherit";
+      return isDark ? '#E0E0E0' : '#1A1A1A';
   }
 };
 
@@ -163,9 +165,10 @@ const TransactionRow: React.FC<{
   tx: Transaction;
   index: number;
   cardColors: ReturnType<typeof useThemeColors>["cardColors"];
-}> = ({ tx, index, cardColors }) => {
+  isDark: boolean;
+}> = ({ tx, index, cardColors, isDark }) => {
   const explorerUrl = getExplorerUrl(tx.chainId, tx.hash);
-  const textColor = getActionTextColor(tx.action);
+  const textColor = getActionColor(tx.action, isDark);
 
   const rowContent = (
     <Grid
@@ -173,23 +176,24 @@ const TransactionRow: React.FC<{
       gap={4}
       px={4}
       py={3}
-      bg={index % 2 === 0 ? "transparent" : cardColors.background}
+      bg="transparent"
+      borderBottom="1px solid"
+      borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
       _hover={{
-        bg: "primary.50",
-        _dark: { bg: "whiteAlpha.50" },
+        bg: isDark ? 'rgba(57,255,20,0.03)' : 'rgba(31,174,92,0.03)',
       }}
       transition="background 0.2s"
       alignItems="center"
     >
       {/* Activity */}
-      <Text fontSize="sm" color={textColor}>
-        {formatActivity(tx)}
+      <Text fontSize="sm" color={textColor} fontFamily="'JetBrains Mono', monospace">
+        {formatActivity(tx, isDark)}
       </Text>
 
       {/* Time */}
       <Text
         fontSize="sm"
-        color={cardColors.textSecondary}
+        color={isDark ? '#999999' : '#666666'}
         textAlign="right"
         whiteSpace="nowrap"
       >
@@ -220,26 +224,29 @@ const TransactionRow: React.FC<{
 const TransactionCard: React.FC<{
   tx: Transaction;
   cardColors: ReturnType<typeof useThemeColors>["cardColors"];
-}> = ({ tx, cardColors }) => {
+  isDark: boolean;
+}> = ({ tx, cardColors, isDark }) => {
   const explorerUrl = getExplorerUrl(tx.chainId, tx.hash);
-  const textColor = getActionTextColor(tx.action);
+  const textColor = getActionColor(tx.action, isDark);
 
   const cardContent = (
     <Box
-      bg={cardColors.background}
-      borderRadius={materialDesign3Theme.borderRadius.md}
+      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+      borderRadius="16px"
       border="1px solid"
-      borderColor={cardColors.border}
+      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
       p={4}
       transition="all 0.2s"
       _hover={{
-        boxShadow: materialDesign3Theme.elevation.level2,
-        borderColor: "primary.200",
+        borderColor: isDark ? 'rgba(57,255,20,0.3)' : 'rgba(31,174,92,0.3)',
+        bg: isDark ? 'rgba(255,255,255,0.10)' : '#FAFAFA',
       }}
     >
       {/* Activity */}
-      <Text fontSize="sm" color={textColor} mb={2}>
-        {formatActivity(tx)}
+      <Text fontSize="sm" color={textColor} mb={2} fontFamily="'JetBrains Mono', monospace">
+        {formatActivity(tx, isDark)}
       </Text>
 
       {/* Time and Link */}
@@ -248,19 +255,20 @@ const TransactionCard: React.FC<{
         align="center"
         pt={2}
         borderTop="1px solid"
-        borderColor={cardColors.border}
+        borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
       >
-        <Text fontSize="xs" color={cardColors.textSecondary}>
+        <Text fontSize="xs" color={isDark ? '#999999' : '#666666'}>
           {formatTransactionDate(tx.time)}
         </Text>
         {tx.hash && explorerUrl && (
           <Text
             fontSize="xs"
-            fontFamily="mono"
-            color="primary.500"
+            fontFamily="'JetBrains Mono', monospace"
+            color={isDark ? '#999999' : '#666666'}
             display="inline-flex"
             alignItems="center"
             gap={1}
+            _hover={{ color: isDark ? '#39FF14' : '#1FAE5C' }}
           >
             {shortenAddress(tx.hash, 6)}
             <BiLinkExternal size={12} />
@@ -294,7 +302,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
   isError,
   refetch,
 }) => {
-  const { cardColors } = useThemeColors();
+  const { cardColors, isDark } = useThemeColors();
 
   // Loading state
   if (isLoading) {
@@ -310,21 +318,21 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         <Box position="relative" mb={4}>
           <Spinner
             size="xl"
-            color="primary.500"
+            color={isDark ? '#39FF14' : '#1FAE5C'}
             borderWidth="4px"
           />
         </Box>
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={cardColors.text}
+          color={isDark ? '#E0E0E0' : '#1A1A1A'}
           mb={1}
         >
           Loading Transactions
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={cardColors.textSecondary}
+          color={isDark ? '#999999' : '#666666'}
         >
           Fetching your transaction history...
         </Text>
@@ -343,20 +351,20 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         px={8}
         minH="300px"
       >
-        <Box bg="error.50" p={4} borderRadius="full" mb={4}>
-          <Icon as={BiErrorCircle} color="error.500" boxSize={10} />
+        <Box bg="rgba(255,68,68,0.1)" p={4} borderRadius="full" mb={4}>
+          <Icon as={BiErrorCircle} color="#FF4444" boxSize={10} />
         </Box>
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={cardColors.text}
+          color={isDark ? '#E0E0E0' : '#1A1A1A'}
           mb={1}
         >
           Failed to Load
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={cardColors.textSecondary}
+          color={isDark ? '#999999' : '#666666'}
           mb={4}
           textAlign="center"
         >
@@ -365,9 +373,10 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         <Button
           onClick={() => refetch()}
           size="sm"
-          bg="error.500"
-          color="white"
-          _hover={{ bg: "error.600" }}
+          bg="rgba(255,68,68,0.1)"
+          color="#FF4444"
+          border="1px solid rgba(255,68,68,0.2)"
+          _hover={{ bg: "rgba(255,68,68,0.2)" }}
           borderRadius={materialDesign3Theme.borderRadius.sm}
         >
           <Icon as={BiRefresh} mr={2} />
@@ -389,25 +398,24 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         minH="300px"
       >
         <Box
-          bg="neutral.100"
-          _dark={{ bg: "neutral.800" }}
+          bg={isDark ? 'rgba(255,255,255,0.05)' : '#F8F8F8'}
           p={4}
           borderRadius="full"
           mb={4}
         >
-          <Icon as={BiHistory} color="neutral.400" boxSize={10} />
+          <Icon as={BiHistory} color={isDark ? '#999999' : '#666666'} boxSize={10} />
         </Box>
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={cardColors.text}
+          color={isDark ? '#E0E0E0' : '#1A1A1A'}
           mb={1}
         >
           No Transactions Yet
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={cardColors.textSecondary}
+          color={isDark ? '#999999' : '#666666'}
           textAlign="center"
           maxW="280px"
         >
@@ -427,25 +435,25 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
           gap={4}
           px={4}
           py={3}
-          bg={cardColors.background}
+          bg={isDark ? 'rgba(255,255,255,0.05)' : '#F8F8F8'}
           borderBottom="1px solid"
-          borderColor={cardColors.border}
+          borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
         >
           <Text
-            fontSize="xs"
+            fontSize="12px"
             fontWeight="600"
-            color={cardColors.textSecondary}
+            color={isDark ? '#999999' : '#666666'}
             textTransform="uppercase"
-            letterSpacing="wider"
+            letterSpacing="0.5px"
           >
             System Activities
           </Text>
           <Text
-            fontSize="xs"
+            fontSize="12px"
             fontWeight="600"
-            color={cardColors.textSecondary}
+            color={isDark ? '#999999' : '#666666'}
             textTransform="uppercase"
-            letterSpacing="wider"
+            letterSpacing="0.5px"
             textAlign="right"
           >
             Time
@@ -460,6 +468,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
               tx={tx}
               index={index}
               cardColors={cardColors}
+              isDark={isDark}
             />
           ))}
         </Box>
@@ -469,7 +478,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
       <Box display={{ base: "block", md: "none" }} p={4}>
         <VStack gap={3} align="stretch">
           {data.map((tx) => (
-            <TransactionCard key={tx.id} tx={tx} cardColors={cardColors} />
+            <TransactionCard key={tx.id} tx={tx} cardColors={cardColors} isDark={isDark} />
           ))}
         </VStack>
       </Box>

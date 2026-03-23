@@ -2,6 +2,7 @@ import React from 'react';
 import { Input, HStack, Text, Field } from '@chakra-ui/react';
 import type { UseFormRegister, UseFormWatch, FieldErrors, FieldValues, Path } from 'react-hook-form';
 import { aptosAddressValidator, evmAddressValidator } from '@/validation/utils/address-validators';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface AddressInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -24,6 +25,7 @@ export function AddressInput<T extends FieldValues>({
   watch,
   errors,
 }: AddressInputProps<T>) {
+  const { isDark } = useThemeColors();
   const error = errors[name];
   const value = watch(name);
 
@@ -50,10 +52,14 @@ export function AddressInput<T extends FieldValues>({
         disabled={disabled}
         fontFamily="monospace"
         fontSize="sm"
+        _focus={{
+          borderColor: isDark ? '#39FF14' : '#1FAE5C',
+          boxShadow: isDark ? '0 0 0 2px rgba(57, 255, 20, 0.3)' : '0 0 0 2px rgba(31, 174, 92, 0.3)',
+        }}
       />
       {value && isValidFormat !== null && (
         <HStack mt={1} fontSize="xs">
-          <Text color={isValidFormat ? 'green.600' : 'red.600'}>
+          <Text color={isValidFormat ? (isDark ? '#39FF14' : '#1FAE5C') : (isDark ? '#FF4444' : '#DC2626')}>
             {isValidFormat ? '✓ Valid format' : '✗ Invalid format'}
           </Text>
         </HStack>

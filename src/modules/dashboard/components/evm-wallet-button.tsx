@@ -23,7 +23,7 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
   const { address, isConnected, isConnecting, connect } = useEVM();
   const { connectors } = useConnect();
   const { disconnectAsync } = useDisconnect();
-  const { menuColors, buttonColors } = useThemeColors();
+  const { menuColors, buttonColors, isDark } = useThemeColors();
 
   const handleDisconnect = async () => {
     await disconnectAsync();
@@ -63,19 +63,19 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
               variant="outline"
               minH="40px"
               px={4}
-              borderColor="cyan.300"
+              borderColor={isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)'}
               border="1px solid"
               borderRadius="sm"
-              bg="cyan.50"
+              bg={isDark ? 'rgba(57,255,20,0.08)' : 'rgba(31,174,92,0.08)'}
               boxShadow="sm"
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               _hover={{
-                bg: "cyan.100",
-                borderColor: "cyan.400",
-                boxShadow: "md",
+                bg: isDark ? 'rgba(57,255,20,0.15)' : 'rgba(31,174,92,0.15)',
+                borderColor: isDark ? '#39FF14' : '#1FAE5C',
+                boxShadow: isDark ? '0 0 12px rgba(57,255,20,0.3)' : 'md',
               }}
               _active={{
-                bg: "cyan.200",
+                bg: isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)',
                 boxShadow: "sm",
               }}
             >
@@ -84,7 +84,8 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
                 <Text
                   fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
                   fontWeight="medium"
-                  color="cyan.900"
+                  color={isDark ? '#39FF14' : '#1FAE5C'}
+                  fontFamily="'JetBrains Mono', monospace"
                 >
                   {truncateAddress(address)}
                 </Text>
@@ -173,19 +174,19 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
             variant="outline"
             minH="44px"
             px={6}
-            borderColor="cyan.300"
+            borderColor={isDark ? 'rgba(57,255,20,0.4)' : 'rgba(31,174,92,0.4)'}
             border="2px solid"
             borderRadius="sm"
-            bg="cyan.50"
+            bg={isDark ? 'rgba(57,255,20,0.08)' : 'rgba(31,174,92,0.08)'}
             boxShadow="md"
             transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             _hover={{
-              bg: "cyan.100",
-              borderColor: "cyan.500",
-              boxShadow: "lg",
+              bg: isDark ? 'rgba(57,255,20,0.15)' : 'rgba(31,174,92,0.15)',
+              borderColor: isDark ? '#39FF14' : '#1FAE5C',
+              boxShadow: isDark ? '0 0 16px rgba(57,255,20,0.4)' : 'lg',
             }}
             _active={{
-              bg: "cyan.200",
+              bg: isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)',
               boxShadow: "md",
             }}
           >
@@ -193,8 +194,8 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
               <SimpleAvatar address={address} size="sm" />
               <VStack align="start" gap={0}>
                 <Badge
-                  bg="cyan.500"
-                  color="white"
+                  bg={isDark ? 'rgba(57,255,20,0.2)' : 'rgba(31,174,92,0.2)'}
+                  color={isDark ? '#39FF14' : '#1FAE5C'}
                   fontSize="10px"
                   fontWeight="bold"
                   px={2}
@@ -205,7 +206,8 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
                 <Text
                   fontSize={materialDesign3Theme.typography.labelLarge.fontSize}
                   fontWeight="medium"
-                  color="cyan.900"
+                  color={isDark ? '#39FF14' : '#1FAE5C'}
+                  fontFamily="'JetBrains Mono', monospace"
                 >
                   {truncateAddress(address)}
                 </Text>
@@ -293,19 +295,19 @@ const EVMWalletButton: React.FC<EVMWalletButtonProps> = ({ compact = false }) =>
           loading={isConnecting}
           minH={compact ? "40px" : "44px"}
           px={compact ? 4 : 6}
-          bg={buttonColors.secondary.background}
-          color={buttonColors.secondary.text}
+          bg={isDark ? '#39FF14' : '#1FAE5C'}
+          color={isDark ? '#000000' : '#FFFFFF'}
           borderRadius="sm"
           boxShadow="sm"
           transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-          fontWeight="medium"
+          fontWeight="600"
           fontSize={compact ? "label-md" : "label-lg"}
           _hover={{
-            bg: buttonColors.secondary.hover,
-            boxShadow: "md",
+            bg: isDark ? '#5FFF42' : '#15803D',
+            boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.5)' : 'none',
           }}
           _active={{
-            bg: buttonColors.secondary.active,
+            bg: isDark ? '#2ECC10' : '#166534',
             boxShadow: "sm",
           }}
           _loading={{

@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, HStack, Input, Text, VStack } from '@chakra-ui/react';
 import { Field } from '@chakra-ui/react';
 import type { UseFormRegister, UseFormSetValue, FieldErrors, FieldValues, Path } from 'react-hook-form';
+import { useThemeColors } from '@/provider/theme-provider';
 
 interface AmountInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -30,6 +31,7 @@ export function AmountInput<T extends FieldValues>({
   errors,
   showMaxButton = true,
 }: AmountInputProps<T>) {
+  const { isDark } = useThemeColors();
   const error = errors[name];
 
   const handleMaxClick = () => {
@@ -51,6 +53,11 @@ export function AmountInput<T extends FieldValues>({
           placeholder="0.00"
           disabled={disabled}
           inputMode="decimal"
+          fontFamily="'JetBrains Mono', monospace"
+          _focus={{
+            borderColor: isDark ? '#39FF14' : '#1FAE5C',
+            boxShadow: isDark ? '0 0 0 2px rgba(57, 255, 20, 0.3)' : '0 0 0 2px rgba(31, 174, 92, 0.3)',
+          }}
         />
         {error && <Field.ErrorText>{error.message as string}</Field.ErrorText>}
       </Field.Root>
@@ -63,9 +70,10 @@ export function AmountInput<T extends FieldValues>({
           <Button
             size="xs"
             variant="ghost"
-            colorPalette="blue"
             onClick={handleMaxClick}
             disabled={disabled}
+            color={isDark ? '#39FF14' : '#1FAE5C'}
+            _hover={{ bg: isDark ? 'rgba(57,255,20,0.1)' : 'rgba(31,174,92,0.1)' }}
           >
             MAX
           </Button>

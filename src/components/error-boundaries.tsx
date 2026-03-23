@@ -6,16 +6,13 @@
 
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import {
-  Alert,
-  AlertTitle,
-  AlertDescription,
   Button,
   VStack,
   Text,
   Heading,
   Box,
-  Link,
 } from '@chakra-ui/react';
+import { useThemeColors } from '@/provider/theme-provider';
 
 /**
  * Error boundary props
@@ -53,42 +50,58 @@ function DefaultErrorFallback({
   errorInfo: ErrorInfo;
   reset: () => void;
 }) {
+  const { isDark } = useThemeColors();
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   return (
     <Box p={8} minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Alert.Root status="error" maxW="600px" w="full">
-        <Alert.Title>Something went wrong</Alert.Title>
-        <Alert.Description>
-          <VStack gap={4} align="stretch">
-            <Text>
-              We're sorry, but something unexpected happened. Please try again or contact support if the problem persists.
-            </Text>
+      <Box
+        maxW="600px"
+        w="full"
+        p={6}
+        borderRadius="md"
+        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        boxShadow="md"
+      >
+        <VStack gap={4} align="stretch">
+          <Heading size="md" color={isDark ? '#FF4444' : '#DC2626'}>
+            Something went wrong
+          </Heading>
+          <Text color={isDark ? '#E0E0E0' : '#666666'}>
+            We're sorry, but something unexpected happened. Please try again or contact support if the problem persists.
+          </Text>
 
-            {isDevelopment && (
-              <VStack gap={2} align="stretch" bg="red.50" p={4} borderRadius="md">
-                <Heading size="sm" color="red.800">
-                  Error Details (Development Mode)
-                </Heading>
-                <Text fontFamily="mono" fontSize="sm" color="red.700" bg="white" p={2} borderRadius="sm">
-                  {error.message}
+          {isDevelopment && (
+            <VStack gap={2} align="stretch" bg={isDark ? 'rgba(255,68,68,0.1)' : 'rgba(220,38,38,0.05)'} p={4} borderRadius="md" border="1px solid" borderColor={isDark ? 'rgba(255,68,68,0.3)' : 'rgba(220,38,38,0.2)'}>
+              <Heading size="sm" color={isDark ? '#FF4444' : '#DC2626'}>
+                Error Details (Development Mode)
+              </Heading>
+              <Text fontFamily="mono" fontSize="sm" color={isDark ? '#FF4444' : '#DC2626'} bg={isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'} p={2} borderRadius="sm">
+                {error.message}
+              </Text>
+              {errorInfo && (
+                <Text fontFamily="mono" fontSize="xs" color={isDark ? '#E0E0E0' : '#666666'}>
+                  Component Stack Trace:
+                  <br />
+                  {errorInfo.componentStack}
                 </Text>
-                {errorInfo && (
-                  <Text fontFamily="mono" fontSize="xs" color="red.600">
-                    Component Stack Trace:
-                    <br />
-                    {errorInfo.componentStack}
-                  </Text>
-                )}
-              </VStack>
-            )}
+              )}
+            </VStack>
+          )}
 
-            <Button onClick={reset} colorScheme="red" alignSelf="flex-start">
-              Try Again
-            </Button>
-          </VStack>
-        </Alert.Description>
-      </Alert.Root>
+          <Button
+            onClick={reset}
+            alignSelf="flex-start"
+            bg={isDark ? '#39FF14' : '#1FAE5C'}
+            color={isDark ? '#000000' : '#FFFFFF'}
+            _hover={{ opacity: 0.85 }}
+          >
+            Try Again
+          </Button>
+        </VStack>
+      </Box>
     </Box>
   );
 }
@@ -181,43 +194,64 @@ export function TransactionErrorFallback({
   reset: () => void;
   retryTransaction?: () => Promise<void>;
 }) {
+  const { isDark } = useThemeColors();
+
   return (
     <Box p={8} minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Alert.Root status="error" maxW="600px" w="full">
-        <Alert.Title>Transaction Failed</Alert.Title>
-        <Alert.Description>
-          <VStack gap={4} align="stretch">
-            <Text>
-              {error.message || 'The transaction could not be completed. Please check your wallet and try again.'}
-            </Text>
+      <Box
+        maxW="600px"
+        w="full"
+        p={6}
+        borderRadius="md"
+        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        boxShadow="md"
+      >
+        <VStack gap={4} align="stretch">
+          <Heading size="md" color={isDark ? '#FF4444' : '#DC2626'}>
+            Transaction Failed
+          </Heading>
+          <Text color={isDark ? '#E0E0E0' : '#666666'}>
+            {error.message || 'The transaction could not be completed. Please check your wallet and try again.'}
+          </Text>
 
-            <VStack gap={2} direction="row" justify="flex-start">
-              <Button onClick={reset} colorScheme="gray">
-                Close
+          <VStack gap={2} align="flex-start">
+            <Button
+              onClick={reset}
+              bg={isDark ? 'rgba(255,255,255,0.1)' : '#F0F0F0'}
+              color={isDark ? '#E0E0E0' : '#333333'}
+              _hover={{ opacity: 0.85 }}
+            >
+              Close
+            </Button>
+            {retryTransaction && (
+              <Button
+                onClick={retryTransaction}
+                bg={isDark ? '#39FF14' : '#1FAE5C'}
+                color={isDark ? '#000000' : '#FFFFFF'}
+                _hover={{ opacity: 0.85 }}
+              >
+                Retry Transaction
               </Button>
-              {retryTransaction && (
-                <Button onClick={retryTransaction} colorScheme="blue">
-                  Retry Transaction
-                </Button>
-              )}
-            </VStack>
-
-            {process.env.NODE_ENV === 'development' && (
-              <VStack gap={2} align="stretch" bg="red.50" p={4} borderRadius="md">
-                <Heading size="sm" color="red.800">
-                  Debug Information
-                </Heading>
-                <Text fontFamily="mono" fontSize="sm" color="red.700" bg="white" p={2} borderRadius="sm">
-                  {error.message}
-                </Text>
-                <Text fontFamily="mono" fontSize="xs" color="red.600">
-                  Stack: {errorInfo.componentStack}
-                </Text>
-              </VStack>
             )}
           </VStack>
-        </Alert.Description>
-      </Alert.Root>
+
+          {process.env.NODE_ENV === 'development' && (
+            <VStack gap={2} align="stretch" bg={isDark ? 'rgba(255,68,68,0.1)' : 'rgba(220,38,38,0.05)'} p={4} borderRadius="md" border="1px solid" borderColor={isDark ? 'rgba(255,68,68,0.3)' : 'rgba(220,38,38,0.2)'}>
+              <Heading size="sm" color={isDark ? '#FF4444' : '#DC2626'}>
+                Debug Information
+              </Heading>
+              <Text fontFamily="mono" fontSize="sm" color={isDark ? '#FF4444' : '#DC2626'} bg={isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'} p={2} borderRadius="sm">
+                {error.message}
+              </Text>
+              <Text fontFamily="mono" fontSize="xs" color={isDark ? '#E0E0E0' : '#666666'}>
+                Stack: {errorInfo.componentStack}
+              </Text>
+            </VStack>
+          )}
+        </VStack>
+      </Box>
     </Box>
   );
 }
@@ -332,26 +366,43 @@ export function NetworkErrorFallback({
   errorInfo: ErrorInfo;
   reset: () => void;
 }) {
+  const { isDark } = useThemeColors();
+
   return (
     <Box p={8} minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Alert.Root status="warning" maxW="600px" w="full">
-        <Alert.Title>Network Connection Issue</Alert.Title>
-        <Alert.Description>
-          <VStack gap={4} align="stretch">
-            <Text>
-              {error.message || 'Unable to connect to the network. Please check your internet connection and try again.'}
-            </Text>
+      <Box
+        maxW="600px"
+        w="full"
+        p={6}
+        borderRadius="md"
+        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
+        border="1px solid"
+        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        boxShadow="md"
+      >
+        <VStack gap={4} align="stretch">
+          <Heading size="md" color={isDark ? '#FF4444' : '#DC2626'}>
+            Network Connection Issue
+          </Heading>
+          <Text color={isDark ? '#E0E0E0' : '#666666'}>
+            {error.message || 'Unable to connect to the network. Please check your internet connection and try again.'}
+          </Text>
 
-            <Button onClick={reset} colorScheme="orange" alignSelf="flex-start">
-              Reconnect
-            </Button>
+          <Button
+            onClick={reset}
+            alignSelf="flex-start"
+            bg={isDark ? '#39FF14' : '#1FAE5C'}
+            color={isDark ? '#000000' : '#FFFFFF'}
+            _hover={{ opacity: 0.85 }}
+          >
+            Reconnect
+          </Button>
 
-            <Text fontSize="sm" color="gray.600">
-              If the problem persists, your wallet may need to be refreshed or reconnected.
-            </Text>
-          </VStack>
-        </Alert.Description>
-      </Alert.Root>
+          <Text fontSize="sm" color={isDark ? '#E0E0E0' : '#666666'}>
+            If the problem persists, your wallet may need to be refreshed or reconnected.
+          </Text>
+        </VStack>
+      </Box>
     </Box>
   );
 }

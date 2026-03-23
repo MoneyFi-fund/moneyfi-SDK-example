@@ -1,56 +1,64 @@
-/* Global theme variables for dynamic color switching */
+/* Global theme variables — Web3 dark+green design system */
 :root {
-  /* CSS custom properties will be dynamically updated by JavaScript */
-  --theme-background: #FFFFFF;
-  --theme-on-background: #1A1C1E;
+  --theme-background: #F8F8F8;
+  --theme-on-background: #0A0A0A;
   --theme-surface: #FFFFFF;
-  --theme-on-surface: #1A1C1E;
-  --theme-surface-variant: #F2F2F2;
-  --theme-on-surface-variant: #49454F;
-  --theme-outline: #79757F;
-  --theme-outline-variant: #CAC4D0;
-  --theme-primary: #4CAF50;
-  --theme-secondary: #9C27B0;
-  --theme-tertiary: #42A5F5;
-  --theme-error: #F44336;
-  --theme-success: #4CAF50;
-  --theme-warning: #FF9800;
+  --theme-on-surface: #1A1A1A;
+  --theme-surface-variant: #F0F0F0;
+  --theme-on-surface-variant: #666666;
+  --theme-outline: #E0E0E0;
+  --theme-outline-variant: #EEEEEE;
+  --theme-primary: #1FAE5C;
+  --theme-secondary: #15803D;
+  --theme-tertiary: #059669;
+  --theme-error: #DC2626;
+  --theme-success: #1FAE5C;
+  --theme-warning: #D97706;
+  --theme-glow-primary: rgba(31, 174, 92, 0.3);
+  --theme-glass-bg: rgba(0, 0, 0, 0.03);
+  --theme-glass-border: rgba(0, 0, 0, 0.08);
 }
 
-/* Light mode (default) */
+/* Light mode */
 .light {
-  --theme-background: #FFFFFF;
-  --theme-on-background: #1A1C1E;
+  --theme-background: #F8F8F8;
+  --theme-on-background: #0A0A0A;
   --theme-surface: #FFFFFF;
-  --theme-on-surface: #1A1C1E;
-  --theme-surface-variant: #F2F2F2;
-  --theme-on-surface-variant: #49454F;
-  --theme-outline: #79757F;
-  --theme-outline-variant: #CAC4D0;
-  --theme-primary: #4CAF50;
-  --theme-secondary: #9C27B0;
-  --theme-tertiary: #42A5F5;
-  --theme-error: #F44336;
-  --theme-success: #4CAF50;
-  --theme-warning: #FF9800;
+  --theme-on-surface: #1A1A1A;
+  --theme-surface-variant: #F0F0F0;
+  --theme-on-surface-variant: #666666;
+  --theme-outline: #E0E0E0;
+  --theme-outline-variant: #EEEEEE;
+  --theme-primary: #1FAE5C;
+  --theme-secondary: #15803D;
+  --theme-tertiary: #059669;
+  --theme-error: #DC2626;
+  --theme-success: #1FAE5C;
+  --theme-warning: #D97706;
+  --theme-glow-primary: rgba(31, 174, 92, 0.3);
+  --theme-glass-bg: rgba(0, 0, 0, 0.03);
+  --theme-glass-border: rgba(0, 0, 0, 0.08);
 }
 
-/* Dark mode */
+/* Dark mode — primary experience */
 .dark {
-  --theme-background: #0F0F0F;
-  --theme-on-background: #E6E0E9;
-  --theme-surface: #161618;
-  --theme-on-surface: #E6E0E9;
-  --theme-surface-variant: #2B2930;
-  --theme-on-surface-variant: #CAC4D0;
-  --theme-outline: #938F99;
-  --theme-outline-variant: #49454F;
-  --theme-primary: #66BB6A;
-  --theme-secondary: #AB47BC;
-  --theme-tertiary: #5CB5F3;
-  --theme-error: #EF5350;
-  --theme-success: #66BB6A;
-  --theme-warning: #FFA726;
+  --theme-background: #000000;
+  --theme-on-background: #FFFFFF;
+  --theme-surface: #0A0A0A;
+  --theme-on-surface: #E0E0E0;
+  --theme-surface-variant: #0A0A0A;
+  --theme-on-surface-variant: #999999;
+  --theme-outline: rgba(255, 255, 255, 0.15);
+  --theme-outline-variant: rgba(255, 255, 255, 0.08);
+  --theme-primary: #39FF14;
+  --theme-secondary: #1FAE5C;
+  --theme-tertiary: #00FF00;
+  --theme-error: #FF4444;
+  --theme-success: #39FF14;
+  --theme-warning: #FFB800;
+  --theme-glow-primary: rgba(57, 255, 20, 0.5);
+  --theme-glass-bg: rgba(255, 255, 255, 0.08);
+  --theme-glass-border: rgba(255, 255, 255, 0.15);
 }
 
 /* Smooth transitions for theme changes */
@@ -61,14 +69,13 @@
               box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Ensure proper text contrast in all modes */
 body {
   background-color: var(--theme-background);
   color: var(--theme-on-background);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom scrollbar styling for dark mode */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -87,35 +94,49 @@ body {
   background: var(--theme-primary);
 }
 
-/* Dark mode specific adjustments */
 .dark ::-webkit-scrollbar-track {
-  background: var(--theme-surface);
+  background: #0A0A0A;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: var(--theme-outline);
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Selection colors */
+/* Selection */
 ::selection {
   background-color: var(--theme-primary);
-  color: var(--theme-on-background);
+  color: #000000;
 }
 
-/* Focus ring styling */
+/* Focus ring */
 :focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
 
-/* Smooth theme toggle animation */
+/* Glassmorphism utility */
+.glass-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--theme-glass-bg);
+  border: 1px solid var(--theme-glass-border);
+  border-radius: 12px;
+}
+
+/* Neon glow animation */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(57, 255, 20, 0.6); }
+}
+
+.neon-pulse {
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* Theme toggle animation */
 @keyframes themeTransition {
-  from {
-    opacity: 0.8;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0.8; }
+  to { opacity: 1; }
 }
 
 .theme-transition {
