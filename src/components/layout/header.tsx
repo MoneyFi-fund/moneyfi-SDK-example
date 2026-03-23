@@ -43,7 +43,7 @@ export default function Header() {
 
   return (
     <Box
-      bg={isDark ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)'}
+      bg={isDark ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)'}
       backdropFilter="blur(16px)"
       css={{ WebkitBackdropFilter: 'blur(16px)' }}
       borderBottom="1px solid"
@@ -64,20 +64,20 @@ export default function Header() {
             <Text
               fontSize={{ base: "lg", md: "2xl" }}
               fontWeight="bold"
-              color={isDark ? '#E8FFE8' : '#0A0A0A'}
+              // color={isDark ? '#E8FFE8' : '#0A0A0A'}
               letterSpacing={isDark ? '0.05em' : 'normal'}
-              textTransform={isDark ? 'uppercase' : 'none'}
-              css={isDark ? {
-                textShadow: '0 0 8px rgba(57, 255, 20, 0.3)',
-              } : {}}
-              className={isDark ? 'glitch-hover' : undefined}
+              textTransform={isDark ? 'capitalize' : 'none'}
+              // css={isDark ? {
+              //   textShadow: '0 0 8px rgba(57, 255, 20, 0.3)',
+              // } : {}}
+              // className={isDark ? 'glitch-hover' : undefined}
             >
               MoneyFi SDK
             </Text>
           </HStack>
 
           {/* Desktop nav - hidden on mobile */}
-          <HStack gap={8} display={{ base: "none", md: "flex" }}>
+          <HStack gap={8} display={{ base: "none", lg: "flex" }}>
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -107,10 +107,10 @@ export default function Header() {
           </HStack>
 
           {/* Right side: theme toggle, wallet, hamburger */}
-          <HStack gap={{ base: 1, md: 3 }} flexShrink={0}>
+          <HStack gap={{ base: 1, lg: 3 }} flexShrink={0}>
             <CompactThemeToggle />
             {/* Wallet buttons - hidden on mobile, shown in mobile menu instead */}
-            <Box display={{ base: "none", md: "flex" }} gap={3}>
+            <Box display={{ base: "none", lg: "flex" }} gap={3}>
               {location.pathname === '/evm' && <EVMWalletButton compact />}
               {location.pathname === '/' && <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />}
               {isSharedPage && isEVMConnected && <EVMWalletButton compact />}
@@ -121,13 +121,28 @@ export default function Header() {
             {/* Hamburger button - mobile only */}
             <IconButton
               aria-label="Toggle menu"
-              display={{ base: "flex", md: "none" }}
+              display={{ base: "flex", lg: "none" }}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               variant="ghost"
               size="sm"
               color={colors.onSurface}
+              css={{
+                '& svg': {
+                  transition: 'transform 0.2s ease',
+                },
+                '&:active svg': {
+                  transform: 'scale(0.85)',
+                },
+              }}
             >
-              {isMobileMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+              <Box
+                as="span"
+                display="inline-flex"
+                transform={isMobileMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)'}
+                transition="transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
+                {isMobileMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+              </Box>
             </IconButton>
           </HStack>
 
@@ -137,19 +152,23 @@ export default function Header() {
           />
         </HStack>
 
-        {/* Mobile menu dropdown */}
-        {isMobileMenuOpen && (
+        {/* Mobile menu dropdown - always rendered, animated via CSS */}
+        <Box
+          display={{ base: "block", lg: "none" }}
+          overflow="hidden"
+          maxH={isMobileMenuOpen ? '500px' : '0'}
+          opacity={isMobileMenuOpen ? 1 : 0}
+          transition="max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease"
+        >
           <VStack
-            display={{ base: "flex", md: "none" }}
             align="stretch"
             mt={4}
             pt={4}
             borderTop="1px solid"
             borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
             gap={1}
-            className={isDark ? 'cyber-accent-line' : undefined}
           >
-            {menuItems.map((item) => {
+            {menuItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link key={item.path} to={item.path}>
@@ -159,10 +178,12 @@ export default function Header() {
                     borderRadius="md"
                     bg={isActive ? (isDark ? 'rgba(57,255,20,0.06)' : 'rgba(31,174,92,0.08)') : "transparent"}
                     _hover={{ bg: isDark ? 'rgba(57,255,20,0.06)' : 'rgba(31,174,92,0.08)' }}
-                    transition="all 0.2s"
                     cursor="pointer"
                     borderLeft={isActive && isDark ? '2px solid' : 'none'}
                     borderLeftColor={isActive && isDark ? 'rgba(57,255,20,0.5)' : 'transparent'}
+                    transform={isMobileMenuOpen ? 'translateY(0)' : 'translateY(-8px)'}
+                    opacity={isMobileMenuOpen ? 1 : 0}
+                    transition={`transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) ${index * 50}ms, opacity 0.2s ease ${index * 50}ms, background 0.2s`}
                   >
                     <Text
                       color={isActive ? (isDark ? '#39FF14' : '#1FAE5C') : (isDark ? '#8AAA8A' : '#666666')}
@@ -181,7 +202,13 @@ export default function Header() {
               );
             })}
             {/* Wallet button in mobile menu */}
-            <Box px={3} py={2}>
+            <Box
+              px={3}
+              py={2}
+              transform={isMobileMenuOpen ? 'translateY(0)' : 'translateY(-8px)'}
+              opacity={isMobileMenuOpen ? 1 : 0}
+              transition={`transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) ${menuItems.length * 50}ms, opacity 0.2s ease ${menuItems.length * 50}ms`}
+            >
               {location.pathname === '/evm' && <EVMWalletButton compact />}
               {location.pathname === '/' && <WalletButton onConnectClick={() => setIsWalletModalOpen(true)} />}
               {isSharedPage && isEVMConnected && <EVMWalletButton compact />}
@@ -190,7 +217,7 @@ export default function Header() {
               )}
             </Box>
           </VStack>
-        )}
+        </Box>
       </Container>
     </Box>
   );
