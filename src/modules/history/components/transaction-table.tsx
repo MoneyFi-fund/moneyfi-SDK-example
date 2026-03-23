@@ -178,7 +178,7 @@ const TransactionRow: React.FC<{
       py={3}
       bg="transparent"
       borderBottom="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.06)' : '#F0F0F0'}
       _hover={{
         bg: isDark ? 'rgba(57,255,20,0.03)' : 'rgba(31,174,92,0.03)',
       }}
@@ -193,7 +193,7 @@ const TransactionRow: React.FC<{
       {/* Time */}
       <Text
         fontSize="sm"
-        color={isDark ? '#999999' : '#666666'}
+        color={isDark ? '#8AAA8A' : '#666666'}
         textAlign="right"
         whiteSpace="nowrap"
       >
@@ -231,12 +231,12 @@ const TransactionCard: React.FC<{
 
   const cardContent = (
     <Box
-      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
       css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       borderRadius="16px"
       border="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       p={4}
       transition="all 0.2s"
       _hover={{
@@ -255,16 +255,16 @@ const TransactionCard: React.FC<{
         align="center"
         pt={2}
         borderTop="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.06)' : '#F0F0F0'}
       >
-        <Text fontSize="xs" color={isDark ? '#999999' : '#666666'}>
+        <Text fontSize="xs" color={isDark ? '#8AAA8A' : '#666666'}>
           {formatTransactionDate(tx.time)}
         </Text>
         {tx.hash && explorerUrl && (
           <Text
             fontSize="xs"
             fontFamily="'JetBrains Mono', monospace"
-            color={isDark ? '#999999' : '#666666'}
+            color={isDark ? '#8AAA8A' : '#666666'}
             display="inline-flex"
             alignItems="center"
             gap={1}
@@ -325,14 +325,14 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={isDark ? '#E0E0E0' : '#1A1A1A'}
+          color={isDark ? '#D4E8D4' : '#1A1A1A'}
           mb={1}
         >
           Loading Transactions
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={isDark ? '#999999' : '#666666'}
+          color={isDark ? '#8AAA8A' : '#666666'}
         >
           Fetching your transaction history...
         </Text>
@@ -357,14 +357,14 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={isDark ? '#E0E0E0' : '#1A1A1A'}
+          color={isDark ? '#D4E8D4' : '#1A1A1A'}
           mb={1}
         >
           Failed to Load
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={isDark ? '#999999' : '#666666'}
+          color={isDark ? '#8AAA8A' : '#666666'}
           mb={4}
           textAlign="center"
         >
@@ -398,24 +398,24 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
         minH="300px"
       >
         <Box
-          bg={isDark ? 'rgba(255,255,255,0.05)' : '#F8F8F8'}
+          bg={isDark ? 'rgba(57,255,20,0.03)' : '#F8F8F8'}
           p={4}
           borderRadius="full"
           mb={4}
         >
-          <Icon as={BiHistory} color={isDark ? '#999999' : '#666666'} boxSize={10} />
+          <Icon as={BiHistory} color={isDark ? '#8AAA8A' : '#666666'} boxSize={10} />
         </Box>
         <Text
           fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
           fontWeight="medium"
-          color={isDark ? '#E0E0E0' : '#1A1A1A'}
+          color={isDark ? '#D4E8D4' : '#1A1A1A'}
           mb={1}
         >
           No Transactions Yet
         </Text>
         <Text
           fontSize={materialDesign3Theme.typography.bodySmall.fontSize}
-          color={isDark ? '#999999' : '#666666'}
+          color={isDark ? '#8AAA8A' : '#666666'}
           textAlign="center"
           maxW="280px"
         >
@@ -435,14 +435,14 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
           gap={4}
           px={4}
           py={3}
-          bg={isDark ? 'rgba(255,255,255,0.05)' : '#F8F8F8'}
+          bg={isDark ? 'rgba(57,255,20,0.03)' : '#F8F8F8'}
           borderBottom="1px solid"
-          borderColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
+          borderColor={isDark ? 'rgba(57,255,20,0.06)' : '#F0F0F0'}
         >
           <Text
             fontSize="12px"
             fontWeight="600"
-            color={isDark ? '#999999' : '#666666'}
+            color={isDark ? '#8AAA8A' : '#666666'}
             textTransform="uppercase"
             letterSpacing="0.5px"
           >
@@ -451,7 +451,7 @@ export const TransactionHistoryTable: React.FC<TransactionHistoryTableProps> = (
           <Text
             fontSize="12px"
             fontWeight="600"
-            color={isDark ? '#999999' : '#666666'}
+            color={isDark ? '#8AAA8A' : '#666666'}
             textTransform="uppercase"
             letterSpacing="0.5px"
             textAlign="right"

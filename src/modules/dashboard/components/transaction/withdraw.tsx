@@ -153,11 +153,11 @@ export const WithdrawComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -191,11 +191,11 @@ export const WithdrawComponent: React.FC = () => {
   if (!hasWalletAccount && !isCheckingAccount) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -249,11 +249,11 @@ export const WithdrawComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
       css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       borderRadius="16px"
       boxShadow={materialDesign3Theme.elevation.level1}
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -357,9 +357,9 @@ export const WithdrawComponent: React.FC = () => {
               <Portal>
                 <Select.Positioner>
                   <Select.Content
-                    bg={isDark ? '#0A0A0A' : '#FFFFFF'}
+                    bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                     border="1px solid"
-                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
                     boxShadow={materialDesign3Theme.elevation.level3}
                   >
@@ -367,7 +367,7 @@ export const WithdrawComponent: React.FC = () => {
                       <Select.Item
                         item={token}
                         key={token.value}
-                        color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                        color={isDark ? '#D4E8D4' : '#1A1A1A'}
                         _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                         px={4}
                         py={3}

@@ -319,11 +319,11 @@ export const DepositComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
         boxShadow={materialDesign3Theme.elevation.level1}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -413,11 +413,11 @@ export const DepositComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
       css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       borderRadius="16px"
       boxShadow={materialDesign3Theme.elevation.level1}
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -484,7 +484,7 @@ export const DepositComponent: React.FC = () => {
                   <Select.Content
                     bg={isDark ? '#0A0A0A' : '#FFFFFF'}
                     border="1px solid"
-                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
                     boxShadow={materialDesign3Theme.elevation.level3}
                   >

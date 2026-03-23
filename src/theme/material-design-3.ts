@@ -109,13 +109,13 @@ export const materialDesign3Theme = {
     outlineVariant: '#EEEEEE',
   },
 
-  // Dark Mode — primary experience, neon green on black
+  // Dark Mode — cyberpunk neon green on black
   dark: {
     primary: {
-      50: '#052E16',
-      100: '#0A3D1E',
-      200: '#0F5C2E',
-      300: '#15803D',
+      50: '#031A0B',
+      100: '#052E16',
+      200: '#0A4D22',
+      300: '#12753A',
       400: '#1FAE5C',
       500: '#39FF14',
       600: '#5FFF42',
@@ -124,8 +124,8 @@ export const materialDesign3Theme = {
       900: '#D1FFCC',
     },
     secondary: {
-      50: '#022C22',
-      100: '#064E3B',
+      50: '#011A12',
+      100: '#033D2B',
       200: '#065F46',
       300: '#047857',
       400: '#059669',
@@ -136,12 +136,12 @@ export const materialDesign3Theme = {
       900: '#D1FAE5',
     },
     tertiary: {
-      50: '#022C22',
-      100: '#052E16',
+      50: '#011A12',
+      100: '#031A0B',
       200: '#0A3D1E',
       300: '#0F5C2E',
       400: '#15803D',
-      500: '#00FF00',
+      500: '#00FF41',
       600: '#39FF14',
       700: '#5FFF42',
       800: '#85FF70',
@@ -197,24 +197,24 @@ export const materialDesign3Theme = {
     },
     surface: {
       50: '#000000',
-      100: '#0A0A0A',
-      200: '#111111',
-      300: '#1A1A1A',
-      400: '#222222',
-      500: '#2A2A2A',
-      600: '#333333',
-      700: '#3D3D3D',
-      800: '#474747',
-      900: '#525252',
+      100: '#060808',
+      200: '#0C1010',
+      300: '#121616',
+      400: '#181E1E',
+      500: '#1E2626',
+      600: '#252E2E',
+      700: '#2E3838',
+      800: '#384242',
+      900: '#424E4E',
     },
     background: '#000000',
-    onBackground: '#FFFFFF',
-    surfaceBg: '#0A0A0A',
-    onSurface: '#E0E0E0',
-    surfaceVariant: '#0A0A0A',
-    onSurfaceVariant: '#999999',
-    outline: 'rgba(255, 255, 255, 0.15)',
-    outlineVariant: 'rgba(255, 255, 255, 0.08)',
+    onBackground: '#E8FFE8',
+    surfaceBg: '#060808',
+    onSurface: '#D4E8D4',
+    surfaceVariant: '#080C08',
+    onSurfaceVariant: '#8AAA8A',
+    outline: 'rgba(57, 255, 20, 0.12)',
+    outlineVariant: 'rgba(57, 255, 20, 0.06)',
   },
 
   // Common colors — defaults to light for backward compat
@@ -317,14 +317,14 @@ export const materialDesign3Theme = {
     },
   },
 
-  // Elevation — glow-based for dark, subtle for light
+  // Elevation — cyberpunk neon glow system
   elevation: {
     level0: 'none',
-    level1: '0 0 10px rgba(57, 255, 20, 0.15)',
-    level2: '0 0 20px rgba(57, 255, 20, 0.25)',
-    level3: '0 0 35px rgba(57, 255, 20, 0.4)',
-    level4: '0 4px 15px rgba(0, 0, 0, 0.3)',
-    level5: '0 8px 30px rgba(0, 0, 0, 0.4)',
+    level1: '0 0 12px rgba(57, 255, 20, 0.15), inset 0 0 20px rgba(57, 255, 20, 0.02)',
+    level2: '0 0 24px rgba(57, 255, 20, 0.25), 0 0 4px rgba(57, 255, 20, 0.1)',
+    level3: '0 0 40px rgba(57, 255, 20, 0.35), 0 0 8px rgba(57, 255, 20, 0.15)',
+    level4: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(57, 255, 20, 0.1)',
+    level5: '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(57, 255, 20, 0.15)',
   },
 
   borderRadius: {
@@ -436,8 +436,8 @@ export const getThemedColor = (mode: 'light' | 'dark', colorPath: string): strin
 export const getCardColors = (mode: 'light' | 'dark') => {
   const colors = getThemeColors(mode);
   return {
-    background: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : colors.surfaceBg,
-    border: mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : colors.outlineVariant,
+    background: mode === 'dark' ? 'rgba(6, 20, 6, 0.75)' : colors.surfaceBg,
+    border: mode === 'dark' ? 'rgba(57, 255, 20, 0.12)' : colors.outlineVariant,
     text: colors.onSurface,
     textSecondary: colors.onSurfaceVariant,
   };
@@ -460,11 +460,11 @@ export const getButtonColors = (mode: 'light' | 'dark', variant: 'primary' | 'se
 export const getMenuColors = (mode: 'light' | 'dark') => {
   const colors = getThemeColors(mode);
   return {
-    background: mode === 'dark' ? '#0A0A0A' : colors.surfaceBg,
+    background: mode === 'dark' ? 'rgba(6, 8, 6, 0.95)' : colors.surfaceBg,
     border: colors.outline,
     text: colors.onSurface,
     textSecondary: colors.onSurfaceVariant,
-    hover: mode === 'dark' ? 'rgba(57, 255, 20, 0.05)' : colors.surfaceVariant,
+    hover: mode === 'dark' ? 'rgba(57, 255, 20, 0.06)' : colors.surfaceVariant,
     separator: colors.outlineVariant,
   };
 };

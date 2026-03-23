@@ -55,12 +55,12 @@ export const HistoryPage: React.FC = () => {
 
             {/* Connect Wallet Alert */}
             <Card.Root
-              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-              backdropFilter={isDark ? 'blur(10px)' : 'none'}
+              bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(12px)' : 'none'}
               css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
               borderRadius="16px"
               border="1px solid"
-              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
               overflow="hidden"
             >
               <Flex
@@ -208,12 +208,12 @@ export const HistoryPage: React.FC = () => {
           justify="space-between"
           align="center"
           p={4}
-          bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-          backdropFilter={isDark ? 'blur(10px)' : 'none'}
+          bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+          backdropFilter={isDark ? 'blur(12px)' : 'none'}
           css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
           borderRadius="16px"
           border="1px solid"
-          borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+          borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         >
           {/* Page Info */}
           <Text fontSize="sm" color={cardColors.textSecondary}>
@@ -228,8 +228,8 @@ export const HistoryPage: React.FC = () => {
               onClick={handlePrevPage}
               disabled={currentPage === 1 || isFetching}
               borderRadius={materialDesign3Theme.borderRadius.xs}
-              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
-              color={isDark ? '#E0E0E0' : '#1A1A1A'}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+              color={isDark ? '#D4E8D4' : '#1A1A1A'}
               _hover={{
                 borderColor: isDark ? '#39FF14' : '#1FAE5C',
                 color: isDark ? '#39FF14' : '#1FAE5C',
@@ -239,7 +239,7 @@ export const HistoryPage: React.FC = () => {
               Prev
             </Button>
 
-            <Text fontSize="sm" fontWeight="medium" px={3} color={isDark ? '#E0E0E0' : '#1A1A1A'}>
+            <Text fontSize="sm" fontWeight="medium" px={3} color={isDark ? '#D4E8D4' : '#1A1A1A'}>
               Page {currentPage} of {totalPages}
             </Text>
 
@@ -249,8 +249,8 @@ export const HistoryPage: React.FC = () => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages || isFetching}
               borderRadius={materialDesign3Theme.borderRadius.xs}
-              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
-              color={isDark ? '#E0E0E0' : '#1A1A1A'}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
+              color={isDark ? '#D4E8D4' : '#1A1A1A'}
               _hover={{
                 borderColor: isDark ? '#39FF14' : '#1FAE5C',
                 color: isDark ? '#39FF14' : '#1FAE5C',
@@ -265,12 +265,12 @@ export const HistoryPage: React.FC = () => {
 
       {/* Transaction Table Card */}
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         borderRadius="16px"
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         overflow="hidden"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >

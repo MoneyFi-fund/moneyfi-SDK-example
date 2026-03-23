@@ -240,10 +240,10 @@ export default function Stats() {
               alignItems="center"
               justifyContent="center"
               p={8}
-              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-              backdropFilter={isDark ? 'blur(10px)' : 'none'}
+              bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(12px)' : 'none'}
               border="1px solid"
-              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
               borderRadius="16px"
             >
               <Spinner size="xl" color={isDark ? '#39FF14' : '#1FAE5C'} borderWidth="4px" />
@@ -251,7 +251,8 @@ export default function Stats() {
                 mt={4}
                 fontSize={materialDesign3Theme.typography.titleMedium.fontSize}
                 fontWeight="medium"
-                color={isDark ? '#999999' : '#666666'}
+                color={isDark ? '#8AAA8A' : '#666666'}
+                letterSpacing={isDark ? '0.04em' : 'normal'}
               >
                 Loading your statistics...
               </Text>
@@ -302,24 +303,26 @@ export default function Stats() {
                 return (
                   <Card.Root
                     key={stat.key}
-                    bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-                    backdropFilter={isDark ? 'blur(10px)' : 'none'}
-                    css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
+                    bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+                    backdropFilter={isDark ? 'blur(12px)' : 'none'}
+                    css={isDark ? { WebkitBackdropFilter: 'blur(12px)' } : {}}
                     border="1px solid"
-                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius="16px"
-                    transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                     _hover={{
                       borderColor: isDark ? 'rgba(57,255,20,0.3)' : 'rgba(31,174,92,0.3)',
-                      bg: isDark ? 'rgba(255,255,255,0.10)' : '#FAFAFA',
+                      bg: isDark ? 'rgba(6, 30, 6, 0.85)' : '#FAFAFA',
+                      boxShadow: isDark ? '0 0 20px rgba(57,255,20,0.08)' : 'none',
                     }}
                     overflow="hidden"
+                    className={isDark ? 'cyber-corners' : undefined}
                   >
                     {/* Card Header with Icon and Label */}
                     <Box
-                      bg={isDark ? 'rgba(255,255,255,0.03)' : '#F8F8F8'}
+                      bg={isDark ? 'rgba(57,255,20,0.02)' : '#F8F8F8'}
                       borderBottom="1px solid"
-                      borderBottomColor={isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0'}
+                      borderBottomColor={isDark ? 'rgba(57,255,20,0.06)' : '#F0F0F0'}
                       p={4}
                     >
                       <HStack gap={3}>
@@ -335,10 +338,12 @@ export default function Stats() {
                           />
                         </Box>
                         <Text
-                          fontSize="12px"
+                          fontSize="11px"
                           fontWeight="medium"
-                          color={isDark ? '#999999' : '#666666'}
+                          color={isDark ? '#8AAA8A' : '#666666'}
                           lineHeight="1.2"
+                          letterSpacing={isDark ? '0.04em' : 'normal'}
+                          textTransform={isDark ? 'uppercase' : 'none'}
                         >
                           {stat.label}
                         </Text>
@@ -351,9 +356,10 @@ export default function Stats() {
                         fontSize="24px"
                         fontWeight="bold"
                         fontFamily="'JetBrains Mono', monospace"
-                        color={isDark ? '#FFFFFF' : '#0A0A0A'}
+                        color={isDark ? '#E8FFE8' : '#0A0A0A'}
                         lineHeight="1.1"
                         letterSpacing="-0.02em"
+                        className={isDark ? 'mono-value' : undefined}
                       >
                         {formattedValue}
                       </Text>
@@ -369,22 +375,22 @@ export default function Stats() {
             <Box
               textAlign="center"
               p={12}
-              bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-              backdropFilter={isDark ? 'blur(10px)' : 'none'}
+              bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+              backdropFilter={isDark ? 'blur(12px)' : 'none'}
               border="1px solid"
-              borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+              borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
               borderRadius="16px"
             >
               <Text
                 fontSize={materialDesign3Theme.typography.titleLarge.fontSize}
                 fontWeight="medium"
-                color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                color={isDark ? '#D4E8D4' : '#1A1A1A'}
                 mb={2}
               >
                 No Statistics Available
               </Text>
               <Text
-                color={isDark ? '#999999' : '#666666'}
+                color={isDark ? '#8AAA8A' : '#666666'}
                 fontSize={materialDesign3Theme.typography.bodyMedium.fontSize}
               >
                 Click "Refresh Statistics" to load your statistics.

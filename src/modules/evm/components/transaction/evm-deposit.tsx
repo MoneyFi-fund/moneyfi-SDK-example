@@ -194,11 +194,11 @@ export const EVMDepositComponent: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
@@ -233,11 +233,11 @@ export const EVMDepositComponent: React.FC = () => {
   if (!isEVMConnected) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
@@ -271,11 +271,11 @@ export const EVMDepositComponent: React.FC = () => {
 
   return (
     <Card.Root
-      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
       css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       borderRadius="16px"
       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       _hover={{
@@ -325,9 +325,9 @@ export const EVMDepositComponent: React.FC = () => {
                 <Select.Control>
                   <Select.Trigger
                     border="1px solid"
-                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
-                    color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                    color={isDark ? '#D4E8D4' : '#1A1A1A'}
                     bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
                     minH="48px"
                     px={4}
@@ -350,9 +350,9 @@ export const EVMDepositComponent: React.FC = () => {
                 <Portal>
                   <Select.Positioner>
                     <Select.Content
-                      bg={isDark ? '#0A0A0A' : '#FFFFFF'}
+                      bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                       border="1px solid"
-                      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                       borderRadius={materialDesign3Theme.borderRadius.sm}
                       boxShadow={materialDesign3Theme.elevation.level3}
                     >
@@ -360,7 +360,7 @@ export const EVMDepositComponent: React.FC = () => {
                         <Select.Item
                           item={chain}
                           key={chain.value}
-                          color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                          color={isDark ? '#D4E8D4' : '#1A1A1A'}
                           _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                           px={4}
                           py={3}
@@ -408,9 +408,9 @@ export const EVMDepositComponent: React.FC = () => {
                 <Select.Control>
                   <Select.Trigger
                     border="1px solid"
-                    borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                    borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                     borderRadius={materialDesign3Theme.borderRadius.sm}
-                    color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                    color={isDark ? '#D4E8D4' : '#1A1A1A'}
                     bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
                     minH="48px"
                     px={4}
@@ -437,9 +437,9 @@ export const EVMDepositComponent: React.FC = () => {
                 <Portal>
                   <Select.Positioner>
                     <Select.Content
-                      bg={isDark ? '#0A0A0A' : '#FFFFFF'}
+                      bg={isDark ? 'rgba(6, 8, 6, 0.95)' : '#FFFFFF'}
                       border="1px solid"
-                      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+                      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
                       borderRadius={materialDesign3Theme.borderRadius.sm}
                       boxShadow={materialDesign3Theme.elevation.level3}
                     >
@@ -447,7 +447,7 @@ export const EVMDepositComponent: React.FC = () => {
                         <Select.Item
                           item={token}
                           key={token.value}
-                          color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                          color={isDark ? '#D4E8D4' : '#1A1A1A'}
                           _hover={{ bg: isDark ? 'rgba(57,255,20,0.08)' : '#F0FDF4' }}
                           px={4}
                           py={3}
@@ -518,7 +518,7 @@ export const EVMDepositComponent: React.FC = () => {
               minH="48px"
               px={4}
               bg={isDark ? 'rgba(255,255,255,0.05)' : '#F9F9F9'}
-              color={isDark ? '#E0E0E0' : '#1A1A1A'}
+              color={isDark ? '#D4E8D4' : '#1A1A1A'}
               fontFamily="'JetBrains Mono', monospace"
               _placeholder={{ color: isDark ? '#999999' : '#666666' }}
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -616,7 +616,7 @@ export const EVMDepositComponent: React.FC = () => {
                       fontSize={
                         materialDesign3Theme.typography.bodySmall.fontSize
                       }
-                      color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                      color={isDark ? '#D4E8D4' : '#1A1A1A'}
                     >
                       Transaction:
                     </Text>
@@ -645,7 +645,7 @@ export const EVMDepositComponent: React.FC = () => {
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        color={isDark ? '#999999' : '#666666'}
+                        color={isDark ? '#8AAA8A' : '#666666'}
                       >
                         Checking bridge status...
                       </Text>
@@ -657,7 +657,7 @@ export const EVMDepositComponent: React.FC = () => {
                         fontSize={
                           materialDesign3Theme.typography.bodySmall.fontSize
                         }
-                        color={isDark ? '#E0E0E0' : '#1A1A1A'}
+                        color={isDark ? '#D4E8D4' : '#1A1A1A'}
                       >
                         Bridge Status:
                       </Text>

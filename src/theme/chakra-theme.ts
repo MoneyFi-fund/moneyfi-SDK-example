@@ -108,14 +108,14 @@ const createDynamicColors = () => ({
   outlineVariant: 'var(--chakra-colors-outline-variant)',
 });
 
-// Web3 glow-based shadow system
+// Cyberpunk neon glow shadow system
 const web3Shadows = {
   xs: 'none',
-  sm: '0 0 10px rgba(57, 255, 20, 0.15)',
-  md: '0 0 20px rgba(57, 255, 20, 0.25)',
-  lg: '0 0 35px rgba(57, 255, 20, 0.4)',
-  xl: '0 4px 15px rgba(0, 0, 0, 0.3)',
-  '2xl': '0 8px 30px rgba(0, 0, 0, 0.4)',
+  sm: '0 0 12px rgba(57, 255, 20, 0.15), inset 0 0 20px rgba(57, 255, 20, 0.02)',
+  md: '0 0 24px rgba(57, 255, 20, 0.25), 0 0 4px rgba(57, 255, 20, 0.1)',
+  lg: '0 0 40px rgba(57, 255, 20, 0.35), 0 0 8px rgba(57, 255, 20, 0.15)',
+  xl: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(57, 255, 20, 0.1)',
+  '2xl': '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(57, 255, 20, 0.15)',
 }
 
 const web3Radii = {

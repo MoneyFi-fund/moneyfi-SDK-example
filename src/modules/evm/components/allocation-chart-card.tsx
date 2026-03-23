@@ -28,11 +28,11 @@ export function AllocationChartCard({
 
   return (
     <Card.Root
-      bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-      backdropFilter={isDark ? 'blur(10px)' : 'none'}
+      bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+      backdropFilter={isDark ? 'blur(12px)' : 'none'}
       css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
       border="1px solid"
-      borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+      borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
       borderRadius="16px"
       height="100%"
     >
@@ -40,7 +40,7 @@ export function AllocationChartCard({
         <Text fontSize="md" fontWeight="semibold" color={cardColors.text}>
           {title}
         </Text>
-        <Text fontSize="xs" color={isDark ? '#999999' : '#666666'} fontFamily="'JetBrains Mono', monospace">
+        <Text fontSize="xs" color={isDark ? '#8AAA8A' : '#666666'} fontFamily="'JetBrains Mono', monospace">
           {totalLabel}: {formatBalance(total)} • {countLabel}: {data.length}
         </Text>
       </Card.Header>
@@ -99,7 +99,7 @@ export function AllocationChartCard({
                       {item.name}
                     </Text>
                   </HStack>
-                  <Text color={isDark ? '#999999' : '#666666'} fontFamily="'JetBrains Mono', monospace">
+                  <Text color={isDark ? '#8AAA8A' : '#666666'} fontFamily="'JetBrains Mono', monospace">
                     {formatBalance(item.value)}
                   </Text>
                 </HStack>

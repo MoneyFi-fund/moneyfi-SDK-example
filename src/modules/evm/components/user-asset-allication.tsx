@@ -70,11 +70,11 @@ export default function UserAssetAllocationComponent({
   if (!isConnected) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
       >
         <Card.Header>
@@ -97,11 +97,11 @@ export default function UserAssetAllocationComponent({
   if (allocationQuery.isPending) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
       >
         <Card.Header>
@@ -125,11 +125,11 @@ export default function UserAssetAllocationComponent({
   if (allocationQuery.isError) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
       >
         <Card.Header>
@@ -161,11 +161,11 @@ export default function UserAssetAllocationComponent({
   if (!allocation) {
     return (
       <Card.Root
-        bg={isDark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'}
-        backdropFilter={isDark ? 'blur(10px)' : 'none'}
+        bg={isDark ? 'rgba(6, 20, 6, 0.75)' : '#FFFFFF'}
+        backdropFilter={isDark ? 'blur(12px)' : 'none'}
         css={isDark ? { WebkitBackdropFilter: 'blur(10px)' } : {}}
         border="1px solid"
-        borderColor={isDark ? 'rgba(255,255,255,0.15)' : '#E0E0E0'}
+        borderColor={isDark ? 'rgba(57,255,20,0.1)' : '#E0E0E0'}
         borderRadius="16px"
       >
         <Card.Header>
